@@ -37,27 +37,31 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static void bp(uint32_t f,uint32_t ms) {
-    uint32_t d=1193182/f;
-    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)0xB6),"d"((uint16_t)0x43));
-    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)(d&0xFF)),"d"((uint16_t)0x42));
-    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)(d>>8)),"d"((uint16_t)0x42));
-    uint8_t t; __asm__ volatile("inb %%dx,%0":"=a"(t):"d"((uint16_t)0x61));
-    __asm__ volatile("outb %%al,%%dx"::"a"(t|3),"d"((uint16_t)0x61));
-    dl(ms*8000);
-    __asm__ volatile("inb %%dx,%0":"=a"(t):"d"((uint16_t)0x61));
-    __asm__ volatile("outb %%al,%%dx"::"a"(t&0xFC),"d"((uint16_t)0x61));
-}
-
 void stage57_entry(void) {
     kf(); clr(0);
-    txt((COLS-28)/2,12,"PC Speaker Melody (Stage 57)",13);
-    uint16_t nm[]={523,659,784,1047,784,659,523,659,784,523,587,659,698,784,880,988,1047,784,523};
-    uint16_t nd[]={100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,200,200,200};
-    for(int i=0;i<19;i++) {
-        bp(nm[i],nd[i]);
+    txt((COLS-24)/2,0,"JavaScript Demo (Stage 57)",13);
+    int boxes[6][4];
+    for(int i=0;i<6;i++){boxes[i][0]=5+i*12;boxes[i][1]=4+i%3*6;boxes[i][2]=8;boxes[i][3]=4;}
+    for(int f=0;f<200;f++) {
+        clr(0);
+        txt((COLS-24)/2,0,"JavaScript Demo (Stage 57)",13);
+        txt(2,2,"// DOM-like animation",13+2);
+        for(int i=0;i<6;i++) {
+            int idx=(f+i)%6;
+            boxes[idx][0]+=(i%3-1);
+            boxes[idx][1]+=(i%2?1:-1);
+            int bx=boxes[idx][0],by=boxes[idx][1];
+            if(bx<1||bx>72)boxes[idx][0]=bx<1?5:69;
+            if(by<2||by>21)boxes[idx][1]=by<2?4:20;
+            bx=boxes[idx][0];by=boxes[idx][1];
+            for(int dy=0;dy<boxes[idx][3];dy++)
+                for(int dx=0;dx<boxes[idx][2];dx++)
+                    px(bx+dx,by+dy,0xDB,(13+idx)%15+1);
+        }
+        txt(2,24,"for box of boxes { box.x+=vx; box.y+=vy; }",8);
+        dl(30000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

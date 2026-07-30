@@ -37,42 +37,34 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-#define NR 5
-struct rec {const char *n;const char *c;int a;};
-static struct rec tab[NR]={{.n="Alice",.c="NYC",.a=25},{.n="Bob",.c="SF",.a=31},{.n="Carol",.c="LA",.a=22},{.n="Dave",.c="CHI",.a=38},{.n="Eve",.c="SEA",.a=29}};
+static uint32_t rnd=1185120;
+static int rn(void){rnd=rnd*1103515245+12345;return(rnd>>16)&0x7FFF;}
 
 void stage96_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"AWK Demo (Stage 96)",7);
-    for(int p=0;p<6;p++) {
-        clr(0);
-        txt((COLS-18)/2,0,"AWK Demo (Stage 96)",7);
-        txt(2,2,"Awk program: ",7);
-        const char *progs[]={"{print $0}",              "{print $1, $3}",
-                             "/[ou]/",                     "$3 > 30",
-                             "{sum+=$3} {print sum}",  "{print $2}"};
-        txt(16,2,progs[p],7+2);
-        int sum=0;
-        for(int i=0;i<NR;i++) {
-            int y=6+i*2;
-            txt(4,y,"$0:",7);txt(8,y,tab[i].n,7);txt(16,y,tab[i].c,7);pn(26,y,tab[i].a,7);
-            int hi=0;
-            if(p==0){}/* print all */
-            else if(p==1){}/* print $1 $3 */
-            else if(p==2){int m=0;for(int j=0;tab[i].n[j];j++)if(tab[i].n[j]=='o'||tab[i].n[j]=='u')m=1;hi=m;}
-            else if(p==3){hi=(tab[i].a>30);}
-            else if(p==4){sum+=tab[i].a;}
-            else if(p==5){}/* print $2 */
-            if(hi){txt(8,y,tab[i].n,7+4);txt(16,y,tab[i].c,7+4);pn(26,y,tab[i].a,7+4);}
-            if(p==1){txt(4,y,"$1 $3:",7);txt(8,y,tab[i].n,7+2);pn(26,y,tab[i].a,7+2);}
-            if(p==5){txt(4,y,"$2:",7);txt(16,y,tab[i].c,7+2);}
+    txt((COLS-24)/2,0,"Maze Generator (Stage 96)",7);
+    uint8_t m[80*24];for(int i=0;i<80*24;i++)m[i]=1;
+    int sx=2,sy=2;m[sy*80+sx]=0;
+    int dx[]={1,-1,0,0},dy[]={0,0,1,-1};
+    for(int c=0;c<500;c++) {
+        int d=rn()%4;
+        int nx=sx+dx[d]*2,ny=sy+dy[d]*2;
+        if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]) {
+            m[(sy+dy[d])*80+sx+dx[d]]=0;
+            m[ny*80+nx]=0;
+            sx=nx;sy=ny;
+        } else {
+            int ok=0;
+            for(int t=0;t<20;t++) {
+                d=rn()%4;
+                nx=sx+dx[d]*2;ny=sy+dy[d]*2;
+                if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]){ok=1;break;}
+            }
+            if(!ok){sx=2+rn()%38*2;sy=2+rn()%10*2;}
         }
-        if(p==4){txt(4,16,"Sum age:",7);pn(15,16,sum,7+2);}
-        if(p==1){txt(4,18,"(print name + age only)",8);}
-        if(p==2){txt(4,18,"(pattern /[ou]/ in name)",8);}
-        if(p==3){txt(4,18,"(filter: age > 30)",8);}
-        if(p==5){txt(4,18,"(print cities only)",8);}
-        dl(800000);
+        for(int y=2;y<23;y++)for(int x=0;x<80;x++)
+            px(x,y,m[y*80+x]?0xDB:' ',(m[y*80+x]?7:0));
+        dl(5000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

@@ -39,22 +39,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage58_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Star Field (Stage 58)",14);
-    uint32_t r=722799;
-    for(int f=0;f<200;f++) {
+    txt((COLS-16)/2,0,"Ruby Demo (Stage 58)",14);
+    for(int f=0;f<150;f++) {
+        clr(0);
+        txt((COLS-16)/2,0,"Ruby Demo (Stage 58)",14);
+        txt(2,2,"5.times do |i|",14+2);
         for(int i=0;i<5;i++) {
-            r=r*1103515245+12345;
-            int x=(r>>16)%80,y=((r>>8)%22)+1;
-            px(x,y,0xDB,0x08);
+            int y=5+i*3;
+            int n=i+1+(f%(5-i));
+            txt(2,y,"  puts",8);
+            for(int d=0;d<n;d++)px(10+d,y,0x2A,14+(i+d)%7+1);
+            pn(16+n,y,n,14+2);
+            txt(2,y+1,"  yield i*2",14+4);
+            pn(16,y+1,i*2,14+4);
         }
-        {{if(kh()){kg();break;}}}
-        dl(200800);
-        for(int i=0;i<3;i++) {
-            r=r*1103515245+12345;
-            int x=(r>>16)%80,y=((r>>8)%22)+1;
-            px(x,y,' ',0);
-        }
+        txt(2,22,"end",14+2);
+        txt(2,23,"# => iterates 5 times with block",8);
+        dl(60000);
+        if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

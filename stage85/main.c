@@ -37,25 +37,12 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static int ip(int v) {
-    if(v<2)return 0;
-    for(int i=2;i*i<=v;i++)if(v%i==0)return 0;
-    return 1;
-}
-
 void stage85_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Prime Numbers (Stage 85)",11);
-    int cnt=0,v=2;
-    while(cnt<80) {
-        if(ip(v)) {
-            pn(5+(cnt%8)*9,3+(cnt/8)*2,v,11+(cnt%7));
-            cnt++;
-        }
-        v++;
-        if(cnt%5==0)dl(20000);
-        if(kh()){kg();break;}
-    }
+    txt((COLS-30)/2,0,"Color Test Pattern (Stage 85)",0x0F);
+    for(int y=0;y<20;y++)
+        for(int x=0;x<80;x++)
+            px(x,y+2,0xDB,(x/5)+(y*4)%16);
     txt((COLS-20)/2,23,"Press any key...",8);
     wa();
 }

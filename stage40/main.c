@@ -39,16 +39,18 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage40_entry(void) {
     kf(); clr(0);
-    txt((COLS-26)/2,0,"Fibonacci Sequence (Stage 40)",11);
-    uint32_t a=0,b=1;
-    for(int i=0;i<60;i++) {
-        pn(10,5+i/10*2,i,11+2);
-        px(13,5+i/10*2,':',11);
-        pn(15,5+i/10*2,a,11);
-        uint32_t nxt=a+b;
-        if(nxt<a){txt(10,22,"Overflow!",4);break;}
-        a=b;b=nxt;
-        dl(400000);
+    txt((COLS-28)/2,0,"Border Animation (Stage 40)",11);
+    for(int f=0;f<100;f++) {
+        int o=f%80;
+        for(int x=0;x<80;x++) { px(x,1,' ',0); px(x,23,' ',0); }
+        for(int y=2;y<23;y++) { px(0,y,' ',0); px(79,y,' ',0); }
+        px(o,1,'*',11);
+        px(79-o,23,'*',11);
+        px(o,23,'*',11);
+        px(79-o,1,'*',11);
+        px(0,2+o%21,'*',11);
+        px(79,2+(o+10)%21,'*',11);
+        dl(150000);
         if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);

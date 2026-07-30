@@ -37,27 +37,19 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t sr=3722185;
-static int srn(void){sr=sr*1103515245+12345;return(sr>>16)&0x7FFF;}
-
 void stage67_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Falling Snow (Stage 67)",10);
-    int sx[57],sy[57];
-    for(int i=0;i<57;i++){sx[i]=srn()%80;sy[i]=srn()%22+2;}
-
-    for(int f=0;f<300;f++) {
-        for(int i=0;i<57;i++) {
-            px(sx[i],sy[i],' ',0);
-            sy[i]++;if(sy[i]>=24){sy[i]=2;sx[i]=srn()%80;}
-            if(srn()%3==0)sx[i]+=(srn()%3)-1;
-            if(sx[i]<0)sx[i]=79;
-            if(sx[i]>=80)sx[i]=0;
-            px(sx[i],sy[i],'.',10);
+    txt((COLS-22)/2,0,"Progress Bars (Stage 67)",8);
+    for(int p=0;p<=100;p++) {
+        for(int b=0;b<5;b++) {
+            int w=p*(60-(b*8))/100;
+            int y=5+b*3;
+            for(int x=0;x<60;x++)px(10+x,y,' ',7);
+            for(int x=0;x<w;x++)px(10+x,y,0xDB,8+b);
         }
-        dl(15000);
+        dl(150200);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

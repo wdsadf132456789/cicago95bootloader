@@ -39,17 +39,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage83_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Progress Bars (Stage 83)",9);
-    for(int p=0;p<=100;p++) {
-        for(int b=0;b<5;b++) {
-            int w=p*(60-(b*8))/100;
-            int y=5+b*3;
-            for(int x=0;x<60;x++)px(10+x,y,' ',7);
-            for(int x=0;x<w;x++)px(10+x,y,0xDB,9+b);
+    txt((COLS-16)/2,0,"Ruby Demo (Stage 83)",9);
+    for(int f=0;f<150;f++) {
+        clr(0);
+        txt((COLS-16)/2,0,"Ruby Demo (Stage 83)",9);
+        txt(2,2,"5.times do |i|",9+2);
+        for(int i=0;i<5;i++) {
+            int y=5+i*3;
+            int n=i+1+(f%(5-i));
+            txt(2,y,"  puts",8);
+            for(int d=0;d<n;d++)px(10+d,y,0x2A,9+(i+d)%7+1);
+            pn(16+n,y,n,9+2);
+            txt(2,y+1,"  yield i*2",9+4);
+            pn(16,y+1,i*2,9+4);
         }
-        dl(150300);
+        txt(2,22,"end",9+2);
+        txt(2,23,"# => iterates 5 times with block",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

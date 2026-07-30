@@ -39,15 +39,15 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage61_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Progress Bars (Stage 61)",2);
-    for(int p=0;p<=100;p++) {
-        for(int b=0;b<5;b++) {
-            int w=p*(60-(b*8))/100;
-            int y=5+b*3;
-            for(int x=0;x<60;x++)px(10+x,y,' ',7);
-            for(int x=0;x<w;x++)px(10+x,y,0xDB,2+b);
-        }
-        dl(150100);
+    txt((COLS-25)/2,0,"Counting Demo (Stage 61)",2);
+    for(int i=1;i<=999;i++) {
+        int v=i;
+        for(int x=0;x<9;x++) px(36+x,12,' ',7);
+        int p=44;
+        if(v>=100){px(p-3,12,'0'+v/100,2);v%=100;}
+        if(i>=10){px(p-2,12,'0'+v/10,2);v%=10;}
+        px(p-1,12,'0'+v,2);
+        dl(2001000);
         if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);

@@ -39,17 +39,30 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage99_entry(void) {
     kf(); clr(0);
-    txt((COLS-25)/2,0,"Counting Demo (Stage 99)",10);
-    for(int i=1;i<=999;i++) {
-        int v=i;
-        for(int x=0;x<9;x++) px(36+x,12,' ',7);
-        int p=44;
-        if(v>=100){px(p-3,12,'0'+v/100,10);v%=100;}
-        if(i>=10){px(p-2,12,'0'+v/10,10);v%=10;}
-        px(p-1,12,'0'+v,10);
-        dl(2004000);
+    txt((COLS-18)/2,0,"Fire Effect (Stage 99)",7);
+    uint8_t fv[80*24];for(int i=0;i<80*24;i++)fv[i]=0;
+    for(int t=0;t<300;t++) {
+        for(int x=0;x<80;x++)fv[(23)*80+x]=(t%2)?(49):(0);
+        for(int y=2;y<23;y++)for(int x=1;x<79;x++) {
+            int v=fv[(y+1)*80+x];
+            if(v>(5))v-=(5);
+            else v=0;
+            if(x>0){int av=fv[(y+1)*80+x-1];if(av>v)v=av;}
+            if(x<79){int av=fv[(y+1)*80+x+1];if(av>v)v=av;}
+            if(v>0)v-=(1);
+            if(v<0)v=0;
+            fv[y*80+x]=v;
+            uint8_t cc=0;
+            if(v>24)cc=7*16+7;
+            else if(v>13)cc=7*16+((7+8)&0xF);
+            else if(v>8)cc=((7+6)&0xF)*16+((7+6)&0xF);
+            else if(v>2)cc=0x80+0x08;
+            else cc=0;
+            if(cc)px(x,y,0xDB,cc);else px(x,y,' ',0);
+        }
+        dl(10000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

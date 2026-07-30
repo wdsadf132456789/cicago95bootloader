@@ -37,17 +37,29 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
+static uint32_t lr=3966627;
+static int lrn(void){lr=lr*1103515245+12345;return(lr>>16)&0x7FFF;}
+
 void stage51_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Collatz Conjecture (Stage 51)",7);
-    uint32_t v=367;
-    for(int i=0;i<200;i++) {
-        pn(5,5+i/18*2,i,7+2);
-        px(8,5+i/18*2,':',7+2);
-        pn(10,5+i/18*2,v,7);
-        if(v%2==0)v/=2;else v=v*3+1;
-        if(v==1){txt(30,12,"Reached 1!",7+4);break;}
-        dl(400300);
+    txt((COLS-20)/2,0,"Game of Life (Stage 51)",5);
+    uint8_t g[82*26]={0};
+    for(int i=0;i<400;i++)g[(2+(lrn()%21))*82+1+(lrn()%78)]=1;
+
+    for(int gen=0;gen<100;gen++) {
+        uint8_t ng[82*26]={0};
+        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
+            int n=g[(y-1)*82+(x-1)]+g[(y-1)*82+x]+g[(y-1)*82+(x+1)]
+                 +g[y*82+(x-1)]+g[y*82+(x+1)]
+                 +g[(y+1)*82+(x-1)]+g[(y+1)*82+x]+g[(y+1)*82+(x+1)];
+            if(g[y*82+x])ng[y*82+x]=(n==2||n==3)?1:0;
+            else ng[y*82+x]=(n==3)?1:0;
+        }
+        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
+            g[y*82+x]=ng[y*82+x];
+            px(x,y,g[y*82+x]?0xDB:' ',g[y*82+x]?(5):0);
+        }
+        dl(20000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

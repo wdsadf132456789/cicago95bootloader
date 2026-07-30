@@ -39,16 +39,11 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage62_entry(void) {
     kf(); clr(0);
-    txt((COLS-26)/2,0,"Fibonacci Sequence (Stage 62)",3);
-    uint32_t a=0,b=1;
-    for(int i=0;i<60;i++) {
-        pn(10,5+i/10*2,i,3+2);
-        px(13,5+i/10*2,':',3);
-        pn(15,5+i/10*2,a,3);
-        uint32_t nxt=a+b;
-        if(nxt<a){txt(10,22,"Overflow!",4);break;}
-        a=b;b=nxt;
-        dl(400600);
+    for(int i=0;i<80+35;i++) {
+        for(int x=0;x<80;x++) px(x,12,' ',7);
+        for(int j=0;"Stage 62 - Scrolling Text Demo"[j]&&i+j<80;j++)
+            px(i+j,12,"Stage 62 - Scrolling Text Demo"[j],3);
+        dl(300200);
         if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);

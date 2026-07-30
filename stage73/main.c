@@ -37,17 +37,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
+static uint32_t sr=4055515;
+static int srn(void){sr=sr*1103515245+12345;return(sr>>16)&0x7FFF;}
+
 void stage73_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Collatz Conjecture (Stage 73)",14);
-    uint32_t v=521;
-    for(int i=0;i<200;i++) {
-        pn(5,5+i/18*2,i,14+2);
-        px(8,5+i/18*2,':',14+2);
-        pn(10,5+i/18*2,v,14);
-        if(v%2==0)v/=2;else v=v*3+1;
-        if(v==1){txt(30,12,"Reached 1!",14+4);break;}
-        dl(400100);
+    txt((COLS-20)/2,0,"Falling Snow (Stage 73)",8);
+    int sx[63],sy[63];
+    for(int i=0;i<63;i++){sx[i]=srn()%80;sy[i]=srn()%22+2;}
+
+    for(int f=0;f<300;f++) {
+        for(int i=0;i<63;i++) {
+            px(sx[i],sy[i],' ',0);
+            sy[i]++;if(sy[i]>=24){sy[i]=2;sx[i]=srn()%80;}
+            if(srn()%3==0)sx[i]+=(srn()%3)-1;
+            if(sx[i]<0)sx[i]=79;
+            if(sx[i]>=80)sx[i]=0;
+            px(sx[i],sy[i],'.',8);
+        }
+        dl(15000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

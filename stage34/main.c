@@ -39,12 +39,16 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage34_entry(void) {
     kf(); clr(0);
-    for(int i=0;i<80+35;i++) {
-        for(int x=0;x<80;x++) px(x,12,' ',7);
-        for(int j=0;"Hello from Stage 34!"[j]&&i+j<80;j++)
-            px(i+j,12,"Hello from Stage 34!"[j],5);
-        dl(300400);
+    txt((COLS-30)/2,0,"Bouncing Ball Demo (Stage 34)",7);
+    int x=1,y=1,dx=1,dy=1;
+    for(int i=0;i<500;i++) {
+        px(x,y,' ',0);
+        x+=dx;y+=dy;
+        if(x<=0||x>=COLS-1)dx=-dx;
+        if(y<=0||y>=23)dy=-dy;
+        px(x,y,'%',7);
         if(kh()){kg();break;}
+        dl(24000);
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();

@@ -39,30 +39,20 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage90_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Fire Effect (Stage 90)",6);
-    uint8_t fv[80*24];for(int i=0;i<80*24;i++)fv[i]=0;
-    for(int t=0;t<300;t++) {
-        for(int x=0;x<80;x++)fv[(23)*80+x]=(t%2)?(40):(0);
-        for(int y=2;y<23;y++)for(int x=1;x<79;x++) {
-            int v=fv[(y+1)*80+x];
-            if(v>(4))v-=(4);
-            else v=0;
-            if(x>0){int av=fv[(y+1)*80+x-1];if(av>v)v=av;}
-            if(x<79){int av=fv[(y+1)*80+x+1];if(av>v)v=av;}
-            if(v>0)v-=(1);
-            if(v<0)v=0;
-            fv[y*80+x]=v;
-            uint8_t cc=0;
-            if(v>15)cc=6*16+6;
-            else if(v>12)cc=6*16+((6+8)&0xF);
-            else if(v>5)cc=((6+6)&0xF)*16+((6+6)&0xF);
-            else if(v>2)cc=0x80+0x08;
-            else cc=0;
-            if(cc)px(x,y,0xDB,cc);else px(x,y,' ',0);
-        }
-        dl(10000);
+    txt((COLS-28)/2,0,"Border Animation (Stage 90)",1);
+    for(int f=0;f<100;f++) {
+        int o=f%80;
+        for(int x=0;x<80;x++) { px(x,1,' ',0); px(x,23,' ',0); }
+        for(int y=2;y<23;y++) { px(0,y,' ',0); px(79,y,' ',0); }
+        px(o,1,'*',1);
+        px(79-o,23,'*',1);
+        px(o,23,'*',1);
+        px(79-o,1,'*',1);
+        px(0,2+o%21,'*',1);
+        px(79,2+(o+10)%21,'*',1);
+        dl(50000);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

@@ -37,27 +37,34 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
+static uint32_t rnd=876495;
+static int rn(void){rnd=rnd*1103515245+12345;return(rnd>>16)&0x7FFF;}
+
 void stage71_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Binary Clock (Stage 71)",12);
-    for(int f=0;f<200;f++) {
-        int b[]={f/3600%24,(f/60)%60,f%60};
-        for(int i=0;i<3;i++) {
-            for(int y=0;y<6;y++) {
-                int bit=(b[i]>>(5-y))&1;
-                for(int x=0;x<3;x++)
-                    px(10+i*25+x,5+y,bit?0xDB:' ',bit?(12+i*4):0);
+    txt((COLS-24)/2,0,"Maze Generator (Stage 71)",12);
+    uint8_t m[80*24];for(int i=0;i<80*24;i++)m[i]=1;
+    int sx=2,sy=2;m[sy*80+sx]=0;
+    int dx[]={1,-1,0,0},dy[]={0,0,1,-1};
+    for(int c=0;c<500;c++) {
+        int d=rn()%4;
+        int nx=sx+dx[d]*2,ny=sy+dy[d]*2;
+        if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]) {
+            m[(sy+dy[d])*80+sx+dx[d]]=0;
+            m[ny*80+nx]=0;
+            sx=nx;sy=ny;
+        } else {
+            int ok=0;
+            for(int t=0;t<20;t++) {
+                d=rn()%4;
+                nx=sx+dx[d]*2;ny=sy+dy[d]*2;
+                if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]){ok=1;break;}
             }
+            if(!ok){sx=2+rn()%38*2;sy=2+rn()%10*2;}
         }
-        for(int i=0;i<3;i++) {
-            txt(10+i*25,12,":",12);
-            int v=b[i];
-            px(16+i*25,12,'0'+(v/10)%10,12);
-            px(19+i*25,12,'0'+v%10,12);
-            txt(10+i*25,13,"-----",12);
-        }
-        txt(10,14,"H",12);txt(35,14,"M",12);txt(60,14,"S",12);
-        dl(50000);
+        for(int y=2;y<23;y++)for(int x=0;x<80;x++)
+            px(x,y,m[y*80+x]?0xDB:' ',(m[y*80+x]?12:0));
+        dl(5000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

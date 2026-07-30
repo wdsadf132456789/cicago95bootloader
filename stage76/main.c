@@ -37,12 +37,31 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
+static uint32_t lr=5911052;
+static int lrn(void){lr=lr*1103515245+12345;return(lr>>16)&0x7FFF;}
+
 void stage76_entry(void) {
     kf(); clr(0);
-    txt((COLS-30)/2,0,"Color Test Pattern (Stage 76)",0x0F);
-    for(int y=0;y<20;y++)
-        for(int x=0;x<80;x++)
-            px(x,y+2,0xDB,(x/5)+(y*4)%16);
-    txt((COLS-20)/2,23,"Press any key...",8);
+    txt((COLS-20)/2,0,"Game of Life (Stage 76)",6);
+    uint8_t g[82*26]={0};
+    for(int i=0;i<400;i++)g[(2+(lrn()%21))*82+1+(lrn()%78)]=1;
+
+    for(int gen=0;gen<100;gen++) {
+        uint8_t ng[82*26]={0};
+        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
+            int n=g[(y-1)*82+(x-1)]+g[(y-1)*82+x]+g[(y-1)*82+(x+1)]
+                 +g[y*82+(x-1)]+g[y*82+(x+1)]
+                 +g[(y+1)*82+(x-1)]+g[(y+1)*82+x]+g[(y+1)*82+(x+1)];
+            if(g[y*82+x])ng[y*82+x]=(n==2||n==3)?1:0;
+            else ng[y*82+x]=(n==3)?1:0;
+        }
+        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
+            g[y*82+x]=ng[y*82+x];
+            px(x,y,g[y*82+x]?0xDB:' ',g[y*82+x]?(6):0);
+        }
+        dl(20000);
+        if(kh()){kg();break;}
+    }
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

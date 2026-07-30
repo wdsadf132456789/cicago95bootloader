@@ -39,17 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage77_entry(void) {
     kf(); clr(0);
-    txt((COLS-25)/2,0,"Counting Demo (Stage 77)",3);
-    for(int i=1;i<=999;i++) {
-        int v=i;
-        for(int x=0;x<9;x++) px(36+x,12,' ',7);
-        int p=44;
-        if(v>=100){px(p-3,12,'0'+v/100,3);v%=100;}
-        if(i>=10){px(p-2,12,'0'+v/10,3);v%=10;}
-        px(p-1,12,'0'+v,3);
-        dl(2002000);
+    txt((COLS-18)/2,0,"Binary Clock (Stage 77)",3);
+    for(int f=0;f<200;f++) {
+        int b[]={f/3600%24,(f/60)%60,f%60};
+        for(int i=0;i<3;i++) {
+            for(int y=0;y<6;y++) {
+                int bit=(b[i]>>(5-y))&1;
+                for(int x=0;x<3;x++)
+                    px(10+i*25+x,5+y,bit?0xDB:' ',bit?(3+i*4):0);
+            }
+        }
+        for(int i=0;i<3;i++) {
+            txt(10+i*25,12,":",3);
+            int v=b[i];
+            px(16+i*25,12,'0'+(v/10)%10,3);
+            px(19+i*25,12,'0'+v%10,3);
+            txt(10+i*25,13,"-----",3);
+        }
+        txt(10,14,"H",3);txt(35,14,"M",3);txt(60,14,"S",3);
+        dl(50000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

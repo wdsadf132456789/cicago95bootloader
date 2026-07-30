@@ -37,19 +37,20 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
+static uint32_t nr=5299947;
+static int nrn(void){nr=nr*1103515245+12345;return(nr>>16)&0x7FFF;}
+
 void stage53_entry(void) {
     kf(); clr(0);
-    txt((COLS-30)/2,0,"Bouncing Ball Demo (Stage 53)",12);
-    int x=1,y=1,dx=1,dy=1;
-    for(int i=0;i<500;i++) {
-        px(x,y,' ',0);
-        x+=dx;y+=dy;
-        if(x<=0||x>=COLS-1)dx=-dx;
-        if(y<=0||y>=23)dy=-dy;
-        px(x,y,'#',12);
+    txt((COLS-24)/2,0,"Perlin-ish Noise (Stage 53)",9);
+    for(int f=0;f<200;f++) {
+        for(int y=2;y<24;y++)for(int x=0;x<80;x++) {
+            int v=nrn()%(13);
+            px(x,y,v>2?0xDB:' ',v>2?(9+v%8):0);
+        }
+        dl(15000);
         if(kh()){kg();break;}
-        dl(23000);
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

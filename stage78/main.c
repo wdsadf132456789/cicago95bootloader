@@ -37,15 +37,20 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
+static uint32_t nr=7799922;
+static int nrn(void){nr=nr*1103515245+12345;return(nr>>16)&0x7FFF;}
+
 void stage78_entry(void) {
     kf(); clr(0);
-    for(int i=0;i<80+35;i++) {
-        for(int x=0;x<80;x++) px(x,12,' ',7);
-        for(int j=0;"ASCII art is the true art form"[j]&&i+j<80;j++)
-            px(i+j,12,"ASCII art is the true art form"[j],4);
-        dl(300800);
+    txt((COLS-24)/2,0,"Perlin-ish Noise (Stage 78)",4);
+    for(int f=0;f<200;f++) {
+        for(int y=2;y<24;y++)for(int x=0;x<80;x++) {
+            int v=nrn()%(22);
+            px(x,y,v>2?0xDB:' ',v>2?(4+v%8):0);
+        }
+        dl(15000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

@@ -39,21 +39,16 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage36_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Star Field (Stage 36)",7);
-    uint32_t r=451209;
-    for(int f=0;f<200;f++) {
-        for(int i=0;i<5;i++) {
-            r=r*1103515245+12345;
-            int x=(r>>16)%80,y=((r>>8)%22)+1;
-            px(x,y,0xDB,0x08);
-        }
-        {{if(kh()){kg();break;}}}
-        dl(200600);
-        for(int i=0;i<3;i++) {
-            r=r*1103515245+12345;
-            int x=(r>>16)%80,y=((r>>8)%22)+1;
-            px(x,y,' ',0);
-        }
+    txt((COLS-25)/2,0,"Counting Demo (Stage 36)",7);
+    for(int i=1;i<=999;i++) {
+        int v=i;
+        for(int x=0;x<9;x++) px(36+x,12,' ',7);
+        int p=44;
+        if(v>=100){px(p-3,12,'0'+v/100,7);v%=100;}
+        if(i>=10){px(p-2,12,'0'+v/10,7);v%=10;}
+        px(p-1,12,'0'+v,7);
+        dl(2001000);
+        if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();

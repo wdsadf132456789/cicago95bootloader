@@ -39,27 +39,18 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage93_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Binary Clock (Stage 93)",4);
-    for(int f=0;f<200;f++) {
-        int b[]={f/3600%24,(f/60)%60,f%60};
-        for(int i=0;i<3;i++) {
-            for(int y=0;y<6;y++) {
-                int bit=(b[i]>>(5-y))&1;
-                for(int x=0;x<3;x++)
-                    px(10+i*25+x,5+y,bit?0xDB:' ',bit?(4+i*4):0);
-            }
-        }
-        for(int i=0;i<3;i++) {
-            txt(10+i*25,12,":",4);
-            int v=b[i];
-            px(16+i*25,12,'0'+(v/10)%10,4);
-            px(19+i*25,12,'0'+v%10,4);
-            txt(10+i*25,13,"-----",4);
-        }
-        txt(10,14,"H",4);txt(35,14,"M",4);txt(60,14,"S",4);
-        dl(50000);
+    txt((COLS-26)/2,0,"Fibonacci Sequence (Stage 93)",4);
+    uint32_t a=0,b=1;
+    for(int i=0;i<60;i++) {
+        pn(10,5+i/10*2,i,4+2);
+        px(13,5+i/10*2,':',4);
+        pn(15,5+i/10*2,a,4);
+        uint32_t nxt=a+b;
+        if(nxt<a){txt(10,22,"Overflow!",4);break;}
+        a=b;b=nxt;
+        dl(400500);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

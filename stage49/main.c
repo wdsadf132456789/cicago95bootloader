@@ -39,25 +39,28 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage49_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Binary Clock (Stage 49)",5);
-    for(int f=0;f<200;f++) {
-        int b[]={f/3600%24,(f/60)%60,f%60};
-        for(int i=0;i<3;i++) {
-            for(int y=0;y<6;y++) {
-                int bit=(b[i]>>(5-y))&1;
-                for(int x=0;x<3;x++)
-                    px(10+i*25+x,5+y,bit?0xDB:' ',bit?(5+i*4):0);
-            }
+    txt((COLS-18)/2,0,"Fire Effect (Stage 49)",5);
+    uint8_t fv[80*24];for(int i=0;i<80*24;i++)fv[i]=0;
+    for(int t=0;t<300;t++) {
+        for(int x=0;x<80;x++)fv[(23)*80+x]=(t%2)?(39):(0);
+        for(int y=2;y<23;y++)for(int x=1;x<79;x++) {
+            int v=fv[(y+1)*80+x];
+            if(v>(3))v-=(3);
+            else v=0;
+            if(x>0){int av=fv[(y+1)*80+x-1];if(av>v)v=av;}
+            if(x<79){int av=fv[(y+1)*80+x+1];if(av>v)v=av;}
+            if(v>0)v-=(2);
+            if(v<0)v=0;
+            fv[y*80+x]=v;
+            uint8_t cc=0;
+            if(v>24)cc=5*16+5;
+            else if(v>11)cc=5*16+((5+8)&0xF);
+            else if(v>6)cc=((5+6)&0xF)*16+((5+6)&0xF);
+            else if(v>2)cc=0x80+0x08;
+            else cc=0;
+            if(cc)px(x,y,0xDB,cc);else px(x,y,' ',0);
         }
-        for(int i=0;i<3;i++) {
-            txt(10+i*25,12,":",5);
-            int v=b[i];
-            px(16+i*25,12,'0'+(v/10)%10,5);
-            px(19+i*25,12,'0'+v%10,5);
-            txt(10+i*25,13,"-----",5);
-        }
-        txt(10,14,"H",5);txt(35,14,"M",5);txt(60,14,"S",5);
-        dl(50000);
+        dl(10000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

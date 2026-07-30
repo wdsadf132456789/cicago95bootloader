@@ -37,36 +37,15 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t rnd=1074015;
-static int rn(void){rnd=rnd*1103515245+12345;return(rnd>>16)&0x7FFF;}
-
 void stage87_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Maze Generator (Stage 87)",13);
-    uint8_t m[80*24];for(int i=0;i<80*24;i++)m[i]=1;
-    int sx=2,sy=2;m[sy*80+sx]=0;
-    int dx[]={1,-1,0,0},dy[]={0,0,1,-1};
-    for(int c=0;c<500;c++) {
-        int d=rn()%4;
-        int nx=sx+dx[d]*2,ny=sy+dy[d]*2;
-        if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]) {
-            m[(sy+dy[d])*80+sx+dx[d]]=0;
-            m[ny*80+nx]=0;
-            sx=nx;sy=ny;
-        } else {
-            int ok=0;
-            for(int t=0;t<20;t++) {
-                d=rn()%4;
-                nx=sx+dx[d]*2;ny=sy+dy[d]*2;
-                if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]){ok=1;break;}
-            }
-            if(!ok){sx=2+rn()%38*2;sy=2+rn()%10*2;}
-        }
-        for(int y=2;y<23;y++)for(int x=0;x<80;x++)
-            px(x,y,m[y*80+x]?0xDB:' ',(m[y*80+x]?13:0));
-        dl(5000);
+    for(int i=0;i<80+35;i++) {
+        for(int x=0;x<80;x++) px(x,12,' ',7);
+        for(int j=0;"Booting the revolution, one sector at a time"[j]&&i+j<80;j++)
+            px(i+j,12,"Booting the revolution, one sector at a time"[j],13);
+        dl(300700);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

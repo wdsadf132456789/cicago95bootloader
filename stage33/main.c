@@ -39,17 +39,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage33_entry(void) {
     kf(); clr(0);
-    txt((COLS-25)/2,0,"Counting Demo (Stage 33)",4);
-    for(int i=1;i<=999;i++) {
-        int v=i;
-        for(int x=0;x<9;x++) px(36+x,12,' ',7);
-        int p=44;
-        if(v>=100){px(p-3,12,'0'+v/100,4);v%=100;}
-        if(i>=10){px(p-2,12,'0'+v/10,4);v%=10;}
-        px(p-1,12,'0'+v,4);
-        dl(2003000);
+    txt((COLS-16)/2,0,"Ruby Demo (Stage 33)",4);
+    for(int f=0;f<150;f++) {
+        clr(0);
+        txt((COLS-16)/2,0,"Ruby Demo (Stage 33)",4);
+        txt(2,2,"5.times do |i|",4+2);
+        for(int i=0;i<5;i++) {
+            int y=5+i*3;
+            int n=i+1+(f%(5-i));
+            txt(2,y,"  puts",8);
+            for(int d=0;d<n;d++)px(10+d,y,0x2A,4+(i+d)%7+1);
+            pn(16+n,y,n,4+2);
+            txt(2,y+1,"  yield i*2",4+4);
+            pn(16,y+1,i*2,4+4);
+        }
+        txt(2,22,"end",4+2);
+        txt(2,23,"# => iterates 5 times with block",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

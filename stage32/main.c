@@ -39,10 +39,29 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage32_entry(void) {
     kf(); clr(0);
-    txt((COLS-30)/2,0,"Color Test Pattern (Stage 32)",0x0F);
-    for(int y=0;y<20;y++)
-        for(int x=0;x<80;x++)
-            px(x,y+2,0xDB,(x/5)+(y*4)%16);
-    txt((COLS-20)/2,23,"Press any key...",8);
+    txt((COLS-24)/2,0,"JavaScript Demo (Stage 32)",3);
+    int boxes[6][4];
+    for(int i=0;i<6;i++){boxes[i][0]=5+i*12;boxes[i][1]=4+i%3*6;boxes[i][2]=8;boxes[i][3]=4;}
+    for(int f=0;f<200;f++) {
+        clr(0);
+        txt((COLS-24)/2,0,"JavaScript Demo (Stage 32)",3);
+        txt(2,2,"// DOM-like animation",3+2);
+        for(int i=0;i<6;i++) {
+            int idx=(f+i)%6;
+            boxes[idx][0]+=(i%3-1);
+            boxes[idx][1]+=(i%2?1:-1);
+            int bx=boxes[idx][0],by=boxes[idx][1];
+            if(bx<1||bx>72)boxes[idx][0]=bx<1?5:69;
+            if(by<2||by>21)boxes[idx][1]=by<2?4:20;
+            bx=boxes[idx][0];by=boxes[idx][1];
+            for(int dy=0;dy<boxes[idx][3];dy++)
+                for(int dx=0;dx<boxes[idx][2];dx++)
+                    px(bx+dx,by+dy,0xDB,(3+idx)%15+1);
+        }
+        txt(2,24,"for box of boxes { box.x+=vx; box.y+=vy; }",8);
+        dl(30000);
+        if(kh()){kg();break;}
+    }
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

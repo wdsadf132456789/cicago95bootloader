@@ -39,10 +39,17 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage54_entry(void) {
     kf(); clr(0);
-    txt((COLS-30)/2,0,"Color Test Pattern (Stage 54)",0x0F);
-    for(int y=0;y<20;y++)
-        for(int x=0;x<80;x++)
-            px(x,y+2,0xDB,(x/5)+(y*4)%16);
-    txt((COLS-20)/2,23,"Press any key...",8);
+    txt((COLS-24)/2,0,"Collatz Conjecture (Stage 54)",10);
+    uint32_t v=388;
+    for(int i=0;i<200;i++) {
+        pn(5,5+i/18*2,i,10+2);
+        px(8,5+i/18*2,':',10+2);
+        pn(10,5+i/18*2,v,10);
+        if(v%2==0)v/=2;else v=v*3+1;
+        if(v==1){txt(30,12,"Reached 1!",10+4);break;}
+        dl(400600);
+        if(kh()){kg();break;}
+    }
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

@@ -39,16 +39,21 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage39_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Progress Bars (Stage 39)",10);
-    for(int p=0;p<=100;p++) {
-        for(int b=0;b<5;b++) {
-            int w=p*(60-(b*8))/100;
-            int y=5+b*3;
-            for(int x=0;x<60;x++)px(10+x,y,' ',7);
-            for(int x=0;x<w;x++)px(10+x,y,0xDB,10+b);
+    txt((COLS-20)/2,0,"Star Field (Stage 39)",10);
+    uint32_t r=488244;
+    for(int f=0;f<200;f++) {
+        for(int i=0;i<5;i++) {
+            r=r*1103515245+12345;
+            int x=(r>>16)%80,y=((r>>8)%22)+1;
+            px(x,y,0xDB,0x08);
         }
-        dl(150400);
-        if(kh()){kg();break;}
+        {{if(kh()){kg();break;}}}
+        dl(200900);
+        for(int i=0;i<3;i++) {
+            r=r*1103515245+12345;
+            int x=(r>>16)%80,y=((r>>8)%22)+1;
+            px(x,y,' ',0);
+        }
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();

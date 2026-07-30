@@ -39,13 +39,32 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage56_entry(void) {
     kf(); clr(0);
-    for(int i=0;i<80+35;i++) {
-        for(int x=0;x<80;x++) px(x,12,' ',7);
-        for(int j=0;"Chicago-95: Where the past meets the future"[j]&&i+j<80;j++)
-            px(i+j,12,"Chicago-95: Where the past meets the future"[j],12);
-        dl(300600);
+    txt((COLS-16)/2,0,"PHP Demo (Stage 56)",12);
+    const char *rows[]={"$row[0]='Alice'; $row[1]=25; $row[2]='NYC';",
+                          "$row[0]='Bob';   $row[1]=31; $row[2]='SF';",
+                          "$row[0]='Carol'; $row[1]=22; $row[2]='LA';",
+                          "$row[0]='Dave';  $row[1]=38; $row[2]='CHI';",
+                          "$row[0]='Eve';   $row[1]=29; $row[2]='SEA';"};
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-16)/2,0,"PHP Demo (Stage 56)",12);
+        txt(2,2,"<?php",12+2);
+        txt(2,4,"$data = [",7);
+        for(int i=0;i<5;i++) {
+            int y=6+i*2;
+            txt(4,y,rows[i],f%2?7:12+4);
+            if(i==f%5){txt(4,y,rows[i],12+6);}
+        }
+        txt(2,17,"];",7);
+        txt(2,19,"echo '<table>'",7);
+        txt(2,21,"foreach($data as $r):",7);
+        txt(2,22,"  echo '<tr>...</tr>';",7);
+        txt(2,23,"endforeach;",7);
+        int stage=f%6;
+        txt(2,19+(stage>2),stage<3?"/* BUILDING TABLE */":"/* RENDERING HTML */",12+2);
+        dl(50000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

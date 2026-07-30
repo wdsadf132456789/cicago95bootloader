@@ -37,42 +37,30 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-#define NR 5
-struct rec {const char *n;const char *c;int a;};
-static struct rec tab[NR]={{.n="Alice",.c="NYC",.a=25},{.n="Bob",.c="SF",.a=31},{.n="Carol",.c="LA",.a=22},{.n="Dave",.c="CHI",.a=38},{.n="Eve",.c="SEA",.a=29}};
-
 void stage74_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"AWK Demo (Stage 74)",15);
-    for(int p=0;p<6;p++) {
-        clr(0);
-        txt((COLS-18)/2,0,"AWK Demo (Stage 74)",15);
-        txt(2,2,"Awk program: ",7);
-        const char *progs[]={"{print $0}",              "{print $1, $3}",
-                             "/[ou]/",                     "$3 > 30",
-                             "{sum+=$3} {print sum}",  "{print $2}"};
-        txt(16,2,progs[p],15+2);
-        int sum=0;
-        for(int i=0;i<NR;i++) {
-            int y=6+i*2;
-            txt(4,y,"$0:",7);txt(8,y,tab[i].n,7);txt(16,y,tab[i].c,7);pn(26,y,tab[i].a,7);
-            int hi=0;
-            if(p==0){}/* print all */
-            else if(p==1){}/* print $1 $3 */
-            else if(p==2){int m=0;for(int j=0;tab[i].n[j];j++)if(tab[i].n[j]=='o'||tab[i].n[j]=='u')m=1;hi=m;}
-            else if(p==3){hi=(tab[i].a>30);}
-            else if(p==4){sum+=tab[i].a;}
-            else if(p==5){}/* print $2 */
-            if(hi){txt(8,y,tab[i].n,15+4);txt(16,y,tab[i].c,15+4);pn(26,y,tab[i].a,15+4);}
-            if(p==1){txt(4,y,"$1 $3:",7);txt(8,y,tab[i].n,15+2);pn(26,y,tab[i].a,15+2);}
-            if(p==5){txt(4,y,"$2:",7);txt(16,y,tab[i].c,15+2);}
+    txt((COLS-18)/2,0,"Fire Effect (Stage 74)",6);
+    uint8_t fv[80*24];for(int i=0;i<80*24;i++)fv[i]=0;
+    for(int t=0;t<300;t++) {
+        for(int x=0;x<80;x++)fv[(23)*80+x]=(t%2)?(44):(0);
+        for(int y=2;y<23;y++)for(int x=1;x<79;x++) {
+            int v=fv[(y+1)*80+x];
+            if(v>(4))v-=(4);
+            else v=0;
+            if(x>0){int av=fv[(y+1)*80+x-1];if(av>v)v=av;}
+            if(x<79){int av=fv[(y+1)*80+x+1];if(av>v)v=av;}
+            if(v>0)v-=(3);
+            if(v<0)v=0;
+            fv[y*80+x]=v;
+            uint8_t cc=0;
+            if(v>19)cc=6*16+6;
+            else if(v>12)cc=6*16+((6+8)&0xF);
+            else if(v>7)cc=((6+6)&0xF)*16+((6+6)&0xF);
+            else if(v>2)cc=0x80+0x08;
+            else cc=0;
+            if(cc)px(x,y,0xDB,cc);else px(x,y,' ',0);
         }
-        if(p==4){txt(4,16,"Sum age:",7);pn(15,16,sum,15+2);}
-        if(p==1){txt(4,18,"(print name + age only)",8);}
-        if(p==2){txt(4,18,"(pattern /[ou]/ in name)",8);}
-        if(p==3){txt(4,18,"(filter: age > 30)",8);}
-        if(p==5){txt(4,18,"(print cities only)",8);}
-        dl(800000);
+        dl(10000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

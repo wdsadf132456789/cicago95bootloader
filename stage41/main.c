@@ -37,25 +37,18 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static int ip(int v) {
-    if(v<2)return 0;
-    for(int i=2;i*i<=v;i++)if(v%i==0)return 0;
-    return 1;
-}
-
 void stage41_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Prime Numbers (Stage 41)",12);
-    int cnt=0,v=2;
-    while(cnt<80) {
-        if(ip(v)) {
-            pn(5+(cnt%8)*9,3+(cnt/8)*2,v,12+(cnt%7));
-            cnt++;
+    txt((COLS-18)/2,0,"Sine Wave (Stage 41)",12);
+    for(int f=0;f<200;f++) {
+        for(int x=0;x<80;x++)px(x,12,' ',7);
+        for(int x=0;x<80;x++) {
+            int y=12+(6*(((x+7*f)%14)%(14)-7.0))/6;
+            if(y>=2&&y<=22) px(x,y,0xDB,12);
         }
-        v++;
-        if(cnt%5==0)dl(20000);
+        dl(5000);
         if(kh()){kg();break;}
     }
-    txt((COLS-20)/2,23,"Press any key...",8);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

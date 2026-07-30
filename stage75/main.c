@@ -37,19 +37,28 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
+static uint32_t mr=2499975;
+static int mrn(void){mr=mr*1103515245+12345;return(mr>>16)&0x7FFF;}
+
 void stage75_entry(void) {
     kf(); clr(0);
-    txt((COLS-30)/2,0,"Bouncing Ball Demo (Stage 75)",6);
-    int x=1,y=1,dx=1,dy=1;
-    for(int i=0;i<500;i++) {
-        px(x,y,' ',0);
-        x+=dx;y+=dy;
-        if(x<=0||x>=COLS-1)dx=-dx;
-        if(y<=0||y>=23)dy=-dy;
-        px(x,y,'&',6);
+    txt((COLS-20)/2,0,"Digital Rain (Stage 75)",10);
+    int pos[80],spd[80],len[80];
+    for(int i=0;i<80;i++){pos[i]=mrn()%24;spd[i]=1+(mrn()%4);len[i]=3+(mrn()%10);}
+    const char ch[]={0x41,0x4B,0x51,0x30,0x39,0x7C,0x24,0x25,0x23,0x40};
+
+    for(int f=0;f<200;f++) {
+        for(int x=0;x<80;x++) {
+            if(f%spd[x]==0) {
+                if(pos[x]>0&&pos[x]<=24)px(x,pos[x]-1,' ',0);
+                if(pos[x]>=0&&pos[x]<24)px(x,pos[x],ch[mrn()%10],10);
+                pos[x]++;
+                if(pos[x]>=24+len[x]){pos[x]=0;spd[x]=1+(mrn()%4);len[x]=3+(mrn()%10);}
+            }
+        }
+        dl(8000);
         if(kh()){kg();break;}
-        dl(25000);
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

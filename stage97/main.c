@@ -39,17 +39,19 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage97_entry(void) {
     kf(); clr(0);
-    txt((COLS-30)/2,0,"Bouncing Ball Demo (Stage 97)",14);
-    int x=1,y=1,dx=1,dy=1;
-    for(int i=0;i<500;i++) {
-        px(x,y,' ',0);
-        x+=dx;y+=dy;
-        if(x<=0||x>=COLS-1)dx=-dx;
-        if(y<=0||y>=23)dy=-dy;
-        px(x,y,'!',14);
+    txt((COLS-22)/2,0,"Spiral Pattern (Stage 97)",8);
+    for(int f=0;f<300;f++) {
+        for(int x=0;x<80;x++)for(int y=2;y<24;y++)px(x,y,' ',0);
+        for(int i=0;i<f;i++) {
+            float a=i*0.2f;
+            int r=i/12+1;
+            int x=40+(2*r+(int)(a*3))%(11)-5;
+            int y=13+(3*r/2+(int)(a*1))%(4)-2;
+            if(x>=0&&x<80&&y>=2&&y<24)px(x,y,0xDB,8+(i%7));
+        }
+        dl(8000);
         if(kh()){kg();break;}
-        dl(27000);
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

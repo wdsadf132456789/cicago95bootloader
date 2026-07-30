@@ -39,17 +39,16 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage84_entry(void) {
     kf(); clr(0);
-    txt((COLS-26)/2,0,"Fibonacci Sequence (Stage 84)",10);
-    uint32_t a=0,b=1;
-    for(int i=0;i<60;i++) {
-        pn(10,5+i/10*2,i,10+2);
-        px(13,5+i/10*2,':',10);
-        pn(15,5+i/10*2,a,10);
-        uint32_t nxt=a+b;
-        if(nxt<a){txt(10,22,"Overflow!",4);break;}
-        a=b;b=nxt;
-        dl(400400);
+    txt((COLS-30)/2,0,"Bouncing Ball Demo (Stage 84)",1);
+    int x=1,y=1,dx=1,dy=1;
+    for(int i=0;i<500;i++) {
+        px(x,y,' ',0);
+        x+=dx;y+=dy;
+        if(x<=0||x>=COLS-1)dx=-dx;
+        if(y<=0||y>=23)dy=-dy;
+        px(x,y,'%',1);
         if(kh()){kg();break;}
+        dl(14000);
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();

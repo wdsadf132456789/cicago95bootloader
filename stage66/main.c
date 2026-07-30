@@ -39,19 +39,16 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage66_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Spiral Pattern (Stage 66)",7);
-    for(int f=0;f<300;f++) {
-        for(int x=0;x<80;x++)for(int y=2;y<24;y++)px(x,y,' ',0);
-        for(int i=0;i<f;i++) {
-            float a=i*0.2f;
-            int r=i/12+1;
-            int x=40+(3*r+(int)(a*2))%(1)-5;
-            int y=13+(4*r/2+(int)(a*3))%(6)-3;
-            if(x>=0&&x<80&&y>=2&&y<24)px(x,y,0xDB,7+(i%7));
+    txt((COLS-18)/2,0,"Sine Wave (Stage 66)",7);
+    for(int f=0;f<200;f++) {
+        for(int x=0;x<80;x++)px(x,12,' ',7);
+        for(int x=0;x<80;x++) {
+            int y=12+(7*(((x+2*f)%15)%(15)-7.5))/6;
+            if(y>=2&&y<=22) px(x,y,0xDB,7);
         }
-        dl(8000);
+        dl(5000);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

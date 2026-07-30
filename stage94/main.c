@@ -37,20 +37,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t nr=9399906;
-static int nrn(void){nr=nr*1103515245+12345;return(nr>>16)&0x7FFF;}
+static int ip(int v) {
+    if(v<2)return 0;
+    for(int i=2;i*i<=v;i++)if(v%i==0)return 0;
+    return 1;
+}
 
 void stage94_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Perlin-ish Noise (Stage 94)",5);
-    for(int f=0;f<200;f++) {
-        for(int y=2;y<24;y++)for(int x=0;x<80;x++) {
-            int v=nrn()%(22);
-            px(x,y,v>2?0xDB:' ',v>2?(5+v%8):0);
+    txt((COLS-22)/2,0,"Prime Numbers (Stage 94)",5);
+    int cnt=0,v=2;
+    while(cnt<80) {
+        if(ip(v)) {
+            pn(5+(cnt%8)*9,3+(cnt/8)*2,v,5+(cnt%7));
+            cnt++;
         }
-        dl(15000);
+        v++;
+        if(cnt%5==0)dl(20000);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    txt((COLS-20)/2,23,"Press any key...",8);
     wa();
 }

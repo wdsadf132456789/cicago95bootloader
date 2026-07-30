@@ -39,23 +39,17 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage42_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"Solo Pong (Stage 42)",13);
-    int bx=40,by=12,bdx=1,bdy=1;
-    int py=12;
-    for(int f=0;f<500;f++) {
-        for(int i=0;i<80;i++){px(i,1,' ',0);px(i,24,' ',0);}
-        px(1,py,0xDB,13);px(1,py+1,0xDB,13);px(1,py+2,0xDB,13);
-        bx+=bdx;by+=bdy;
-        if(by<=2||by>=23)bdy=-bdy;
-        if(bx<=2){bdx=-bdx;if(by>=py-1&&by<=py+3){}else{txt(30,12,"GAME OVER",4);wa();clr(0);txt((COLS-20)/2,12,"Score: 0",7);goto scr;}}
-        if(bx>=78)bdx=-bdx;
-        px(bx,by,0xDB,13+3);
-        if(kh()){uint8_t k=kg();if(!(k&0x80)){if(k==0x48&&py>2)py--;if(k==0x50&&py<21)py++;}}
-        dl(14000);
+    txt((COLS-22)/2,0,"Progress Bars (Stage 42)",13);
+    for(int p=0;p<=100;p++) {
+        for(int b=0;b<5;b++) {
+            int w=p*(60-(b*8))/100;
+            int y=5+b*3;
+            for(int x=0;x<60;x++)px(10+x,y,' ',7);
+            for(int x=0;x<w;x++)px(10+x,y,0xDB,13+b);
+        }
+        dl(150200);
         if(kh()){kg();break;}
     }
-    clr(0);
-scr:
-    txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

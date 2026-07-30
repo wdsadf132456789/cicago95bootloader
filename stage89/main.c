@@ -37,27 +37,24 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t sr=4944395;
-static int srn(void){sr=sr*1103515245+12345;return(sr>>16)&0x7FFF;}
-
 void stage89_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Falling Snow (Stage 89)",8);
-    int sx[39],sy[39];
-    for(int i=0;i<39;i++){sx[i]=srn()%80;sy[i]=srn()%22+2;}
-
-    for(int f=0;f<300;f++) {
-        for(int i=0;i<39;i++) {
-            px(sx[i],sy[i],' ',0);
-            sy[i]++;if(sy[i]>=24){sy[i]=2;sx[i]=srn()%80;}
-            if(srn()%3==0)sx[i]+=(srn()%3)-1;
-            if(sx[i]<0)sx[i]=79;
-            if(sx[i]>=80)sx[i]=0;
-            px(sx[i],sy[i],'.',8);
+    txt((COLS-20)/2,0,"Star Field (Stage 89)",15);
+    uint32_t r=1105494;
+    for(int f=0;f<200;f++) {
+        for(int i=0;i<5;i++) {
+            r=r*1103515245+12345;
+            int x=(r>>16)%80,y=((r>>8)%22)+1;
+            px(x,y,0xDB,0x08);
         }
-        dl(15000);
-        if(kh()){kg();break;}
+        {{if(kh()){kg();break;}}}
+        dl(200900);
+        for(int i=0;i<3;i++) {
+            r=r*1103515245+12345;
+            int x=(r>>16)%80,y=((r>>8)%22)+1;
+            px(x,y,' ',0);
+        }
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

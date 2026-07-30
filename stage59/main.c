@@ -39,19 +39,16 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage59_entry(void) {
     kf(); clr(0);
-    txt((COLS-28)/2,0,"Border Animation (Stage 59)",15);
-    for(int f=0;f<100;f++) {
-        int o=f%80;
-        for(int x=0;x<80;x++) { px(x,1,' ',0); px(x,23,' ',0); }
-        for(int y=2;y<23;y++) { px(0,y,' ',0); px(79,y,' ',0); }
-        px(o,1,'=',15);
-        px(79-o,23,'=',15);
-        px(o,23,'=',15);
-        px(79-o,1,'=',15);
-        px(0,2+o%21,'=',15);
-        px(79,2+(o+10)%21,'=',15);
-        dl(190000);
+    txt((COLS-30)/2,0,"Bouncing Ball Demo (Stage 59)",4);
+    int x=1,y=1,dx=1,dy=1;
+    for(int i=0;i<500;i++) {
+        px(x,y,' ',0);
+        x+=dx;y+=dy;
+        if(x<=0||x>=COLS-1)dx=-dx;
+        if(y<=0||y>=23)dy=-dy;
+        px(x,y,'.',4);
         if(kh()){kg();break;}
+        dl(29000);
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();

@@ -39,16 +39,10 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage60_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Sine Wave (Stage 60)",1);
-    for(int f=0;f<200;f++) {
-        for(int x=0;x<80;x++)px(x,12,' ',7);
-        for(int x=0;x<80;x++) {
-            int y=12+(9*(((x+2*f)%17)%(17)-8.5))/6;
-            if(y>=2&&y<=22) px(x,y,0xDB,1);
-        }
-        dl(5000);
-        if(kh()){kg();break;}
-    }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    txt((COLS-30)/2,0,"Color Test Pattern (Stage 60)",0x0F);
+    for(int y=0;y<20;y++)
+        for(int x=0;x<80;x++)
+            px(x,y+2,0xDB,(x/5)+(y*4)%16);
+    txt((COLS-20)/2,23,"Press any key...",8);
     wa();
 }
