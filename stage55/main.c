@@ -37,42 +37,29 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-#define NR 5
-struct rec {const char *n;const char *c;int a;};
-static struct rec tab[NR]={{.n="Alice",.c="NYC",.a=25},{.n="Bob",.c="SF",.a=31},{.n="Carol",.c="LA",.a=22},{.n="Dave",.c="CHI",.a=38},{.n="Eve",.c="SEA",.a=29}};
-
 void stage55_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"AWK Demo (Stage 55)",11);
-    for(int p=0;p<6;p++) {
+    txt((COLS-16)/2,0,"Zig Demo (Stage 55)",11);
+    for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-18)/2,0,"AWK Demo (Stage 55)",11);
-        txt(2,2,"Awk program: ",7);
-        const char *progs[]={"{print $0}",              "{print $1, $3}",
-                             "/[ou]/",                     "$3 > 30",
-                             "{sum+=$3} {print sum}",  "{print $2}"};
-        txt(16,2,progs[p],11+2);
-        int sum=0;
-        for(int i=0;i<NR;i++) {
-            int y=6+i*2;
-            txt(4,y,"$0:",7);txt(8,y,tab[i].n,7);txt(16,y,tab[i].c,7);pn(26,y,tab[i].a,7);
-            int hi=0;
-            if(p==0){}/* print all */
-            else if(p==1){}/* print $1 $3 */
-            else if(p==2){int m=0;for(int j=0;tab[i].n[j];j++)if(tab[i].n[j]=='o'||tab[i].n[j]=='u')m=1;hi=m;}
-            else if(p==3){hi=(tab[i].a>30);}
-            else if(p==4){sum+=tab[i].a;}
-            else if(p==5){}/* print $2 */
-            if(hi){txt(8,y,tab[i].n,11+4);txt(16,y,tab[i].c,11+4);pn(26,y,tab[i].a,11+4);}
-            if(p==1){txt(4,y,"$1 $3:",7);txt(8,y,tab[i].n,11+2);pn(26,y,tab[i].a,11+2);}
-            if(p==5){txt(4,y,"$2:",7);txt(16,y,tab[i].c,11+2);}
+        txt((COLS-16)/2,0,"Zig Demo (Stage 55)",11);
+        txt(2,2,"// comptime metaprogramming",11+2);
+        txt(2,4,"const std = @import(\"std\");",7);
+        txt(2,5,"fn max(comptime T: type, a: T, b: T) T {",7);
+        txt(2,6,"    return if (a > b) a else b;",7);
+        txt(2,7,"}",7);
+        txt(2,9,"const result = max(u8, 42, 100);",11+4);
+        txt(2,10,"// comptime eval at compile time",8);
+        for(int i=0;i<6;i++) {
+            int y=12+i;
+            int a=i*7,b=(i+1)*(f%5+2);
+            pn(4,y,a,11);txt(2,y+6,",",7);pn(9,y,b,11+2);
+            txt(2,y+4,"max=",7);pn(5,y+13,a>b?a:b,11+4);
         }
-        if(p==4){txt(4,16,"Sum age:",7);pn(15,16,sum,11+2);}
-        if(p==1){txt(4,18,"(print name + age only)",8);}
-        if(p==2){txt(4,18,"(pattern /[ou]/ in name)",8);}
-        if(p==3){txt(4,18,"(filter: age > 30)",8);}
-        if(p==5){txt(4,18,"(print cities only)",8);}
-        dl(800000);
+        txt(2,20,"pub fn main() void {",11+2);
+        txt(2,21,"    std.debug.print(\"Hello, Zig!\n\", .{});",7);
+        txt(2,22,"}",11+2);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

@@ -37,19 +37,20 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
+static uint32_t nr=8599914;
+static int nrn(void){nr=nr*1103515245+12345;return(nr>>16)&0x7FFF;}
+
 void stage86_entry(void) {
     kf(); clr(0);
-    txt((COLS-25)/2,0,"Counting Demo (Stage 86)",12);
-    for(int i=1;i<=999;i++) {
-        int v=i;
-        for(int x=0;x<9;x++) px(36+x,12,' ',7);
-        int p=44;
-        if(v>=100){px(p-3,12,'0'+v/100,12);v%=100;}
-        if(i>=10){px(p-2,12,'0'+v/10,12);v%=10;}
-        px(p-1,12,'0'+v,12);
-        dl(2001000);
+    txt((COLS-24)/2,0,"Perlin-ish Noise (Stage 86)",12);
+    for(int f=0;f<200;f++) {
+        for(int y=2;y<24;y++)for(int x=0;x<80;x++) {
+            int v=nrn()%(14);
+            px(x,y,v>2?0xDB:' ',v>2?(12+v%8):0);
+        }
+        dl(15000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

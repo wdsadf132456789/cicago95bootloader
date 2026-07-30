@@ -37,27 +37,34 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static void bp(uint32_t f,uint32_t ms) {
-    uint32_t d=1193182/f;
-    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)0xB6),"d"((uint16_t)0x43));
-    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)(d&0xFF)),"d"((uint16_t)0x42));
-    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)(d>>8)),"d"((uint16_t)0x42));
-    uint8_t t; __asm__ volatile("inb %%dx,%0":"=a"(t):"d"((uint16_t)0x61));
-    __asm__ volatile("outb %%al,%%dx"::"a"(t|3),"d"((uint16_t)0x61));
-    dl(ms*8000);
-    __asm__ volatile("inb %%dx,%0":"=a"(t):"d"((uint16_t)0x61));
-    __asm__ volatile("outb %%al,%%dx"::"a"(t&0xFC),"d"((uint16_t)0x61));
-}
-
 void stage63_entry(void) {
     kf(); clr(0);
-    txt((COLS-28)/2,12,"PC Speaker Melody (Stage 63)",4);
-    uint16_t nm[]={523,659,784,1047,784,659,523,659,784,523,587,659,698,784,880,988,1047,784,523};
-    uint16_t nd[]={100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,200,200,200};
-    for(int i=0;i<19;i++) {
-        bp(nm[i],nd[i]);
+    txt((COLS-18)/2,0,"Logo Demo (Stage 63)",4);
+    for(int f=0;f<150;f++) {
+        clr(0);
+        txt((COLS-18)/2,0,"Logo Demo (Stage 63)",4);
+        txt(2,2,"; Turtle graphics for children",4+2);
+        txt(2,4,"TO SQUARE :SIZE",7);
+        txt(2,5,"  REPEAT 4 [FD :SIZE RT 90]",7);
+        txt(2,6,"END",7);
+        txt(2,8,"TO SPIRAL :SIZE",4+4);
+        txt(2,9,"  IF :SIZE > 100 [STOP]",7);
+        txt(2,10,"  FD :SIZE RT 90",7);
+        txt(2,11,"  SPIRAL :SIZE + 5",7);
+        txt(2,12,"END",4+4);
+        txt(2,14,"SPIRAL 10",7);
+        int cx=35,cy=12;
+        int x=cx,y=cy,size=5+f%4;
+        for(int i=0;i<f%20+3;i++) {
+            px(x/2,y,0x2A,4+(i%7));
+            x+=size;y+=(i%2?size:-size);
+            px(x/2,y,0x2A,4+(i%7));
+        }
+        txt(2,22,"; The first educational language",8);
+        txt(2,23,"; Seymour Papert, MIT 1967",8);
+        dl(50000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

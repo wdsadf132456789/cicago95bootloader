@@ -37,29 +37,29 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t lr=3966627;
-static int lrn(void){lr=lr*1103515245+12345;return(lr>>16)&0x7FFF;}
-
 void stage51_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Game of Life (Stage 51)",5);
-    uint8_t g[82*26]={0};
-    for(int i=0;i<400;i++)g[(2+(lrn()%21))*82+1+(lrn()%78)]=1;
-
-    for(int gen=0;gen<100;gen++) {
-        uint8_t ng[82*26]={0};
-        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
-            int n=g[(y-1)*82+(x-1)]+g[(y-1)*82+x]+g[(y-1)*82+(x+1)]
-                 +g[y*82+(x-1)]+g[y*82+(x+1)]
-                 +g[(y+1)*82+(x-1)]+g[(y+1)*82+x]+g[(y+1)*82+(x+1)];
-            if(g[y*82+x])ng[y*82+x]=(n==2||n==3)?1:0;
-            else ng[y*82+x]=(n==3)?1:0;
+    txt((COLS-20)/2,0,"Prolog Demo (Stage 51)",7);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-20)/2,0,"Prolog Demo (Stage 51)",7);
+        txt(2,2,"%% Logic / declarative programming",7+2);
+        txt(2,4,"parent(alice, bob).",7);
+        txt(2,5,"parent(bob, carol).",7);
+        txt(2,6,"grandparent(X, Z) :- parent(X, Y), parent(Y, Z).",7);
+        for(int i=0;i<4;i++) {
+            int y=8+i*2;
+            txt(2,y,"?- ancestor(",7);
+            pn(14,y,i+1,7+(i%3)+2);
+            txt(2,y+4,", X).",7);
         }
-        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
-            g[y*82+x]=ng[y*82+x];
-            px(x,y,g[y*82+x]?0xDB:' ',g[y*82+x]?(5):0);
-        }
-        dl(20000);
+        txt(2,17,"%% Query results:",7+4);
+        txt(2,18,"X = alice ;",7+(f%3));
+        txt(2,19,"X = bob ;",7+((f+1)%3));
+        txt(2,20,"X = carol ;",7+((f+2)%3));
+        txt(2,21,"false.",8);
+        txt(2,23,"%% Backtracking finds all solutions!",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

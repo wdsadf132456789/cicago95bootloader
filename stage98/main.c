@@ -37,25 +37,37 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t sr=5444390;
-static int srn(void){sr=sr*1103515245+12345;return(sr>>16)&0x7FFF;}
-
 void stage98_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Falling Snow (Stage 98)",9);
-    int sx[48],sy[48];
-    for(int i=0;i<48;i++){sx[i]=srn()%80;sy[i]=srn()%22+2;}
-
-    for(int f=0;f<300;f++) {
-        for(int i=0;i<48;i++) {
-            px(sx[i],sy[i],' ',0);
-            sy[i]++;if(sy[i]>=24){sy[i]=2;sx[i]=srn()%80;}
-            if(srn()%3==0)sx[i]+=(srn()%3)-1;
-            if(sx[i]<0)sx[i]=79;
-            if(sx[i]>=80)sx[i]=0;
-            px(sx[i],sy[i],'.',9);
+    txt((COLS-24)/2,0,"Brainfuck Demo (Stage 98)",9);
+    char tape[16];for(int i=0;i<16;i++)tape[i]=0;
+    int ptr=0;
+    const char *prog="+++++[>+++++<-]>+++++.";
+    for(int f=0;f<200;f++) {
+        clr(0);
+        txt((COLS-24)/2,0,"Brainfuck Demo (Stage 98)",9);
+        txt(2,2,"Program:",9+2);
+        txt(2,3,prog,7);
+        txt(2,5,"Tape:",9+2);
+        for(int i=0;i<16;i++) {
+            int hi=(i==ptr);
+            txt(3+i*4,6,"[",hi?9+4:7);
+            pn(4+i*4,6,(int)tape[i],hi?9+6:7);
+            txt(3+i*4+8,6,"]",hi?9+4:7);
         }
-        dl(15000);
+        txt(2,8,"Ptr:",7);pn(7,8,ptr,9+2);
+        if(f%5==0&&f<160) {
+            int step=f/5;
+            int pc=step%17;
+            if(pc<14&&tape[ptr]<255)tape[ptr]+=(pc<5?1:0);
+            if(pc>=5&&pc<10&&ptr<15)ptr++;
+            if(pc==10&&ptr>0)ptr--;
+        }
+        txt(2,10,"Accumulator:",7);pn(14,10,(int)tape[ptr],9+4);
+        int n=f%24;
+        for(int i=0;i<n;i++)px(30+(i%20),12+(i/20),0xB0,9+i%7+1);
+        txt(2,14,"BF commands: + - > < [ ] , .",8);
+        dl(40000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

@@ -39,16 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage41_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Sine Wave (Stage 41)",12);
-    for(int f=0;f<200;f++) {
-        for(int x=0;x<80;x++)px(x,12,' ',7);
-        for(int x=0;x<80;x++) {
-            int y=12+(6*(((x+7*f)%14)%(14)-7.0))/6;
-            if(y>=2&&y<=22) px(x,y,0xDB,12);
+    txt((COLS-14)/2,0,"Lua Demo (Stage 41)",12);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-14)/2,0,"Lua Demo (Stage 41)",12);
+        txt(2,2,"-- Tables are everything!",12+2);
+        txt(2,4,"local t = {name=\"Alice\", age=25}",7);
+        txt(2,5,"t.city = \"NYC\"",7);
+        txt(2,6,"print(t.name, t.age)",7);
+        txt(2,8,"local function fib(n)",12+4);
+        txt(2,9,"  if n <= 1 then return n end",7);
+        txt(2,10,"  return fib(n-1) + fib(n-2)",7);
+        txt(2,11,"end",12+4);
+        for(int i=0;i<6;i++) {
+            int y=13+i;
+            int v=i*f%10;
+            txt(2,y,"fib(",7);pn(6,y,i,12+2);txt(2,y+8,")=",7);pn(11,y,v,12+4);
         }
-        dl(5000);
+        txt(2,21,"for k,v in pairs(t) do print(k,v) end",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

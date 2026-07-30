@@ -37,27 +37,22 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t sr=4055515;
-static int srn(void){sr=sr*1103515245+12345;return(sr>>16)&0x7FFF;}
-
 void stage73_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Falling Snow (Stage 73)",8);
-    int sx[63],sy[63];
-    for(int i=0;i<63;i++){sx[i]=srn()%80;sy[i]=srn()%22+2;}
-
-    for(int f=0;f<300;f++) {
-        for(int i=0;i<63;i++) {
-            px(sx[i],sy[i],' ',0);
-            sy[i]++;if(sy[i]>=24){sy[i]=2;sx[i]=srn()%80;}
-            if(srn()%3==0)sx[i]+=(srn()%3)-1;
-            if(sx[i]<0)sx[i]=79;
-            if(sx[i]>=80)sx[i]=0;
-            px(sx[i],sy[i],'.',8);
-        }
-        dl(15000);
+    txt((COLS-28)/2,0,"Border Animation (Stage 73)",14);
+    for(int f=0;f<100;f++) {
+        int o=f%80;
+        for(int x=0;x<80;x++) { px(x,1,' ',0); px(x,23,' ',0); }
+        for(int y=2;y<23;y++) { px(0,y,' ',0); px(79,y,' ',0); }
+        px(o,1,'&',14);
+        px(79-o,23,'&',14);
+        px(o,23,'&',14);
+        px(79-o,1,'&',14);
+        px(0,2+o%21,'&',14);
+        px(79,2+(o+10)%21,'&',14);
+        dl(180000);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

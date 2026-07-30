@@ -39,10 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage85_entry(void) {
     kf(); clr(0);
-    txt((COLS-30)/2,0,"Color Test Pattern (Stage 85)",0x0F);
-    for(int y=0;y<20;y++)
-        for(int x=0;x<80;x++)
-            px(x,y+2,0xDB,(x/5)+(y*4)%16);
-    txt((COLS-20)/2,23,"Press any key...",8);
+    txt((COLS-18)/2,0,"Binary Clock (Stage 85)",11);
+    for(int f=0;f<200;f++) {
+        int b[]={f/3600%24,(f/60)%60,f%60};
+        for(int i=0;i<3;i++) {
+            for(int y=0;y<6;y++) {
+                int bit=(b[i]>>(5-y))&1;
+                for(int x=0;x<3;x++)
+                    px(10+i*25+x,5+y,bit?0xDB:' ',bit?(11+i*4):0);
+            }
+        }
+        for(int i=0;i<3;i++) {
+            txt(10+i*25,12,":",11);
+            int v=b[i];
+            px(16+i*25,12,'0'+(v/10)%10,11);
+            px(19+i*25,12,'0'+v%10,11);
+            txt(10+i*25,13,"-----",11);
+        }
+        txt(10,14,"H",11);txt(35,14,"M",11);txt(60,14,"S",11);
+        dl(50000);
+        if(kh()){kg();break;}
+    }
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

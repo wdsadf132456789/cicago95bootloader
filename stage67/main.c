@@ -39,16 +39,16 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage67_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Progress Bars (Stage 67)",8);
-    for(int p=0;p<=100;p++) {
-        for(int b=0;b<5;b++) {
-            int w=p*(60-(b*8))/100;
-            int y=5+b*3;
-            for(int x=0;x<60;x++)px(10+x,y,' ',7);
-            for(int x=0;x<w;x++)px(10+x,y,0xDB,8+b);
-        }
-        dl(150200);
+    txt((COLS-30)/2,0,"Bouncing Ball Demo (Stage 67)",12);
+    int x=1,y=1,dx=1,dy=1;
+    for(int i=0;i<500;i++) {
+        px(x,y,' ',0);
+        x+=dx;y+=dy;
+        if(x<=0||x>=COLS-1)dx=-dx;
+        if(y<=0||y>=23)dy=-dy;
+        px(x,y,'!',12);
         if(kh()){kg();break;}
+        dl(17000);
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();

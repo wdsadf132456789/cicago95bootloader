@@ -39,23 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage95_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"Solo Pong (Stage 95)",6);
-    int bx=40,by=12,bdx=1,bdy=1;
-    int py=12;
-    for(int f=0;f<500;f++) {
-        for(int i=0;i<80;i++){px(i,1,' ',0);px(i,24,' ',0);}
-        px(1,py,0xDB,6);px(1,py+1,0xDB,6);px(1,py+2,0xDB,6);
-        bx+=bdx;by+=bdy;
-        if(by<=2||by>=23)bdy=-bdy;
-        if(bx<=2){bdx=-bdx;if(by>=py-1&&by<=py+3){}else{txt(30,12,"GAME OVER",4);wa();clr(0);txt((COLS-20)/2,12,"Score: 0",7);goto scr;}}
-        if(bx>=78)bdx=-bdx;
-        px(bx,by,0xDB,6+3);
-        if(kh()){uint8_t k=kg();if(!(k&0x80)){if(k==0x48&&py>2)py--;if(k==0x50&&py<21)py++;}}
-        dl(19000);
+    txt((COLS-16)/2,0,"Lisp Demo (Stage 95)",6);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-16)/2,0,"Lisp Demo (Stage 95)",6);
+        txt(2,2,";; Parentheses: the final frontier",6+2);
+        txt(2,4,"(defun fib (n)",7);
+        txt(2,5,"  (if (<= n 1)",7);
+        txt(2,6,"      n",7);
+        txt(2,7,"      (+ (fib (- n 1))",7);
+        txt(2,8,"         (fib (- n 2)))))",7);
+        for(int i=0;i<6;i++) {
+            int y=10+i*2;
+            txt(2,y,"(mapcar (lambda (x) (* x 2))",6+(i%3)+1);
+            txt(2,y+1,"        '(",7);
+            for(int d=0;d<=i;d++){pn(12+d*4,y+1,(d+1)*2,6+d+1);if(d<i)px(15+d*4,y+1,' ',7);}
+            txt(2,y+1+8,"))",6+(i%3)+1);
+        }
+        txt(2,24,";; (loop for x from 0 to 10 collect x)",8);
+        dl(70000);
         if(kh()){kg();break;}
     }
-    clr(0);
-scr:
-    txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

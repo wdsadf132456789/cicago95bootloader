@@ -39,20 +39,29 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage90_entry(void) {
     kf(); clr(0);
-    txt((COLS-28)/2,0,"Border Animation (Stage 90)",1);
-    for(int f=0;f<100;f++) {
-        int o=f%80;
-        for(int x=0;x<80;x++) { px(x,1,' ',0); px(x,23,' ',0); }
-        for(int y=2;y<23;y++) { px(0,y,' ',0); px(79,y,' ',0); }
-        px(o,1,'*',1);
-        px(79-o,23,'*',1);
-        px(o,23,'*',1);
-        px(79-o,1,'*',1);
-        px(0,2+o%21,'*',1);
-        px(79,2+(o+10)%21,'*',1);
-        dl(50000);
+    txt((COLS-24)/2,0,"JavaScript Demo (Stage 90)",1);
+    int boxes[6][4];
+    for(int i=0;i<6;i++){boxes[i][0]=5+i*12;boxes[i][1]=4+i%3*6;boxes[i][2]=8;boxes[i][3]=4;}
+    for(int f=0;f<200;f++) {
+        clr(0);
+        txt((COLS-24)/2,0,"JavaScript Demo (Stage 90)",1);
+        txt(2,2,"// DOM-like animation",1+2);
+        for(int i=0;i<6;i++) {
+            int idx=(f+i)%6;
+            boxes[idx][0]+=(i%3-1);
+            boxes[idx][1]+=(i%2?1:-1);
+            int bx=boxes[idx][0],by=boxes[idx][1];
+            if(bx<1||bx>72)boxes[idx][0]=bx<1?5:69;
+            if(by<2||by>21)boxes[idx][1]=by<2?4:20;
+            bx=boxes[idx][0];by=boxes[idx][1];
+            for(int dy=0;dy<boxes[idx][3];dy++)
+                for(int dx=0;dx<boxes[idx][2];dx++)
+                    px(bx+dx,by+dy,0xDB,(1+idx)%15+1);
+        }
+        txt(2,24,"for box of boxes { box.x+=vx; box.y+=vy; }",8);
+        dl(30000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

@@ -39,17 +39,23 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage97_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Spiral Pattern (Stage 97)",8);
-    for(int f=0;f<300;f++) {
-        for(int x=0;x<80;x++)for(int y=2;y<24;y++)px(x,y,' ',0);
-        for(int i=0;i<f;i++) {
-            float a=i*0.2f;
-            int r=i/12+1;
-            int x=40+(2*r+(int)(a*3))%(11)-5;
-            int y=13+(3*r/2+(int)(a*1))%(4)-2;
-            if(x>=0&&x<80&&y>=2&&y<24)px(x,y,0xDB,8+(i%7));
+    txt((COLS-20)/2,0,"Haskell Demo (Stage 97)",8);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-20)/2,0,"Haskell Demo (Stage 97)",8);
+        txt(2,2,"-- Pure functional programming",8+2);
+        txt(2,4,"fibs = 0 : 1 : zipWith (+) fibs (tail fibs)",7);
+        txt(2,6,"fmap (+1) (Just 5)  -- Just 6",7);
+        txt(2,8,"pure (*2) <*> [1,2,3] -- [2,4,6]",7);
+        for(int i=0;i<6;i++) {
+            int y=10+i*2;
+            int a=i;
+            txt(2,y,"let x = ",7);pn(9,y,a,8+2);
+            txt(2,y+1,"let y = fmap (*",7);pn(9,y+1,f%5+1,8+3);txt(2,y+1+8,") x",7);
         }
-        dl(8000);
+        txt(2,23,"main = putStrLn \"Hello, Haskell!\"",8);
+        txt(2,24,"-- Result: ",8);pn(12,24,f%10,8+4);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

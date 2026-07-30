@@ -37,25 +37,33 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static int ip(int v) {
-    if(v<2)return 0;
-    for(int i=2;i*i<=v;i++)if(v%i==0)return 0;
-    return 1;
-}
-
 void stage94_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Prime Numbers (Stage 94)",5);
-    int cnt=0,v=2;
-    while(cnt<80) {
-        if(ip(v)) {
-            pn(5+(cnt%8)*9,3+(cnt/8)*2,v,5+(cnt%7));
-            cnt++;
+    txt((COLS-14)/2,0,"Go Demo (Stage 94)",5);
+    for(int f=0;f<150;f++) {
+        clr(0);
+        txt((COLS-14)/2,0,"Go Demo (Stage 94)",5);
+        txt(2,2,"package main",5+2);
+        txt(2,4,"func main() {",7);
+        txt(2,5,"  ch := make(chan int)",7);
+        txt(2,6,"  go func() {",5+4);
+        txt(2,7,"    for i := 0; i < 5; i++ {",7);
+        txt(2,8,"      ch <- i * 2",7);
+        txt(2,9,"    }",7);
+        txt(2,10,"    close(ch)",7);
+        txt(2,11,"  }()",5+4);
+        for(int i=0;i<5;i++) {
+            int y=13+i;
+            int v=i*(2+f%4);
+            pn(6,y,v,5+(i%6)+1);
+            for(int d=0;d<v;d++)px(10+d,y,0xFE,5+(d%7));
         }
-        v++;
-        if(cnt%5==0)dl(20000);
+        txt(2,20,"  for v := range ch {",5+2);
+        txt(2,21,"    fmt.Println(v)",7);
+        txt(2,22,"  }",5+2);
+        dl(50000);
         if(kh()){kg();break;}
     }
-    txt((COLS-20)/2,23,"Press any key...",8);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

@@ -39,18 +39,29 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage93_entry(void) {
     kf(); clr(0);
-    txt((COLS-26)/2,0,"Fibonacci Sequence (Stage 93)",4);
-    uint32_t a=0,b=1;
-    for(int i=0;i<60;i++) {
-        pn(10,5+i/10*2,i,4+2);
-        px(13,5+i/10*2,':',4);
-        pn(15,5+i/10*2,a,4);
-        uint32_t nxt=a+b;
-        if(nxt<a){txt(10,22,"Overflow!",4);break;}
-        a=b;b=nxt;
-        dl(400500);
+    txt((COLS-16)/2,0,"Rust Demo (Stage 93)",4);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-16)/2,0,"Rust Demo (Stage 93)",4);
+        txt(2,2,"let v = vec![1,2,3,4,5];",4+2);
+        txt(2,4,"let doubled: Vec<i32> =",7);
+        txt(2,5,"    v.iter().map(|x| x * 2).collect();",7);
+        for(int i=0;i<5;i++) {
+            int val=(i+1)*(1+f%6);
+            pn(6+i*5,8,val,4+(i%7));
+            px(10+i*5,8,',',7);
+        }
+        txt(2,10,"let owned = v.clone(); // ownership",4+4);
+        txt(2,12,"match doubled[0] {",4+2);
+        txt(2,13,"  2 => println!(\"first is 2\"),",7);
+        txt(2,14,"  _ => (),",7);
+        txt(2,15,"}",4+2);
+        txt(2,17,"fn greet(name: &str) -> String {",4+3);
+        txt(2,18,"    format!(\"Hello {}\", name)",7);
+        txt(2,19,"}",4+3);
+        dl(60000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

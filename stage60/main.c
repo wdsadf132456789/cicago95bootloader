@@ -39,10 +39,32 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage60_entry(void) {
     kf(); clr(0);
-    txt((COLS-30)/2,0,"Color Test Pattern (Stage 60)",0x0F);
-    for(int y=0;y<20;y++)
-        for(int x=0;x<80;x++)
-            px(x,y+2,0xDB,(x/5)+(y*4)%16);
-    txt((COLS-20)/2,23,"Press any key...",8);
+    txt((COLS-18)/2,0,"VHDL Demo (Stage 60)",1);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-18)/2,0,"VHDL Demo (Stage 60)",1);
+        txt(2,2,"-- Hardware Description Language",1+2);
+        txt(2,4,"entity counter is",7);
+        txt(2,5,"  port (clk, rst : in std_logic;",7);
+        txt(2,6,"        count : out std_logic_vector(7 downto 0));",7);
+        txt(2,7,"end counter;",7);
+        txt(2,9,"architecture arch of counter is",1+4);
+        txt(2,10,"  signal tmp : unsigned(7 downto 0);",7);
+        txt(2,11,"begin",7);
+        txt(2,12,"  process(clk)",7);
+        txt(2,13,"  begin",7);
+        txt(2,14,"    if rising_edge(clk) then",7);
+        txt(2,15,"      tmp <= tmp + 1;",7);
+        txt(2,16,"    end if;",7);
+        txt(2,17,"  end process;",7);
+        txt(2,18,"  count <= std_logic_vector(tmp);",7);
+        txt(2,19,"end arch;",1+4);
+        int n=f%256;
+        txt(2,21,"Count:",7);pn(8,21,n,1+4);
+        txt(2,23,"-- Synthesizable VHDL",8);
+        dl(60000);
+        if(kh()){kg();break;}
+    }
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

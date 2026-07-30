@@ -37,36 +37,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t rnd=876495;
-static int rn(void){rnd=rnd*1103515245+12345;return(rnd>>16)&0x7FFF;}
+static void bp(uint32_t f,uint32_t ms) {
+    uint32_t d=1193182/f;
+    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)0xB6),"d"((uint16_t)0x43));
+    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)(d&0xFF)),"d"((uint16_t)0x42));
+    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)(d>>8)),"d"((uint16_t)0x42));
+    uint8_t t; __asm__ volatile("inb %%dx,%0":"=a"(t):"d"((uint16_t)0x61));
+    __asm__ volatile("outb %%al,%%dx"::"a"(t|3),"d"((uint16_t)0x61));
+    dl(ms*8000);
+    __asm__ volatile("inb %%dx,%0":"=a"(t):"d"((uint16_t)0x61));
+    __asm__ volatile("outb %%al,%%dx"::"a"(t&0xFC),"d"((uint16_t)0x61));
+}
 
 void stage71_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Maze Generator (Stage 71)",12);
-    uint8_t m[80*24];for(int i=0;i<80*24;i++)m[i]=1;
-    int sx=2,sy=2;m[sy*80+sx]=0;
-    int dx[]={1,-1,0,0},dy[]={0,0,1,-1};
-    for(int c=0;c<500;c++) {
-        int d=rn()%4;
-        int nx=sx+dx[d]*2,ny=sy+dy[d]*2;
-        if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]) {
-            m[(sy+dy[d])*80+sx+dx[d]]=0;
-            m[ny*80+nx]=0;
-            sx=nx;sy=ny;
-        } else {
-            int ok=0;
-            for(int t=0;t<20;t++) {
-                d=rn()%4;
-                nx=sx+dx[d]*2;ny=sy+dy[d]*2;
-                if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]){ok=1;break;}
-            }
-            if(!ok){sx=2+rn()%38*2;sy=2+rn()%10*2;}
-        }
-        for(int y=2;y<23;y++)for(int x=0;x<80;x++)
-            px(x,y,m[y*80+x]?0xDB:' ',(m[y*80+x]?12:0));
-        dl(5000);
+    txt((COLS-28)/2,12,"PC Speaker Melody (Stage 71)",12);
+    uint16_t nm[]={523,659,784,1047,784,659,523,659,784,523,587,659,698,784,880,988,1047,784,523};
+    uint16_t nd[]={100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,200,200,200};
+    for(int i=0;i<19;i++) {
+        bp(nm[i],nd[i]);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

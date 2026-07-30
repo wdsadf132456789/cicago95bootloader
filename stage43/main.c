@@ -39,18 +39,31 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage43_entry(void) {
     kf(); clr(0);
-    txt((COLS-26)/2,0,"Fibonacci Sequence (Stage 43)",14);
-    uint32_t a=0,b=1;
-    for(int i=0;i<60;i++) {
-        pn(10,5+i/10*2,i,14+2);
-        px(13,5+i/10*2,':',14);
-        pn(15,5+i/10*2,a,14);
-        uint32_t nxt=a+b;
-        if(nxt<a){txt(10,22,"Overflow!",4);break;}
-        a=b;b=nxt;
-        dl(400300);
+    txt((COLS-16)/2,0,"Bash Demo (Stage 43)",14);
+    for(int f=0;f<150;f++) {
+        clr(0);
+        txt((COLS-16)/2,0,"Bash Demo (Stage 43)",14);
+        txt(2,2,"#!/bin/bash",14+2);
+        txt(2,4,"for file in *.txt; do",7);
+        txt(2,5,"  echo \"Processing $file...\"",7);
+        txt(2,6,"  grep 'error' \"$file\" | wc -l",7);
+        txt(2,7,"done",7);
+        txt(2,9,"ls -la | awk '{print $9, $5}'",7);
+        txt(2,11,"PIPELINE:",14+4);
+        const char *stages[]={"ls","grep","sort","uniq","wc"};
+        for(int i=0;i<5;i++) {
+            int c=i==(f/6)%5?14+6:8;
+            txt(4+i*13,13,stages[i],c);
+            if(i<4)txt(16+i*13,13,"|",7);
+        }
+        txt(2,15,"$ find /home -name \"*.conf\" 2>/dev/null",8);
+        txt(2,17,"$  ",7);pn(5,17,f%1000,14+2);txt(2,18," exit code",8);
+        for(int i=0;i<5;i++) {
+            pn(4+i*15,20,i*f%256,14+i+1);
+        }
+        dl(50000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

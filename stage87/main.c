@@ -39,13 +39,17 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage87_entry(void) {
     kf(); clr(0);
-    for(int i=0;i<80+35;i++) {
-        for(int x=0;x<80;x++) px(x,12,' ',7);
-        for(int j=0;"Booting the revolution, one sector at a time"[j]&&i+j<80;j++)
-            px(i+j,12,"Booting the revolution, one sector at a time"[j],13);
-        dl(300700);
+    txt((COLS-24)/2,0,"Collatz Conjecture (Stage 87)",13);
+    uint32_t v=619;
+    for(int i=0;i<200;i++) {
+        pn(5,5+i/18*2,i,13+2);
+        px(8,5+i/18*2,':',13+2);
+        pn(10,5+i/18*2,v,13);
+        if(v%2==0)v/=2;else v=v*3+1;
+        if(v==1){txt(30,12,"Reached 1!",13+4);break;}
+        dl(400700);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

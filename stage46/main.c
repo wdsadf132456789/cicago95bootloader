@@ -37,34 +37,28 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t rnd=567870;
-static int rn(void){rnd=rnd*1103515245+12345;return(rnd>>16)&0x7FFF;}
-
 void stage46_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Maze Generator (Stage 46)",2);
-    uint8_t m[80*24];for(int i=0;i<80*24;i++)m[i]=1;
-    int sx=2,sy=2;m[sy*80+sx]=0;
-    int dx[]={1,-1,0,0},dy[]={0,0,1,-1};
-    for(int c=0;c<500;c++) {
-        int d=rn()%4;
-        int nx=sx+dx[d]*2,ny=sy+dy[d]*2;
-        if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]) {
-            m[(sy+dy[d])*80+sx+dx[d]]=0;
-            m[ny*80+nx]=0;
-            sx=nx;sy=ny;
-        } else {
-            int ok=0;
-            for(int t=0;t<20;t++) {
-                d=rn()%4;
-                nx=sx+dx[d]*2;ny=sy+dy[d]*2;
-                if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]){ok=1;break;}
-            }
-            if(!ok){sx=2+rn()%38*2;sy=2+rn()%10*2;}
+    txt((COLS-20)/2,0,"Kotlin Demo (Stage 46)",2);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-20)/2,0,"Kotlin Demo (Stage 46)",2);
+        txt(2,2,"// Null safety + lambdas",2+2);
+        txt(2,4,"val numbers = listOf(1, 2, 3, 4, 5)",7);
+        txt(2,5,"val doubled = numbers.map { it * 2 }",7);
+        txt(2,6,"val even = numbers.filter { it % 2 == 0 }",7);
+        for(int i=0;i<5;i++) {
+            int v=(i+1)*(f%6+2);
+            pn(6+i*5,8,v,2+(i%7));
         }
-        for(int y=2;y<23;y++)for(int x=0;x<80;x++)
-            px(x,y,m[y*80+x]?0xDB:' ',(m[y*80+x]?2:0));
-        dl(5000);
+        txt(2,10,"data class Person(val name: String, val age: Int)",2+4);
+        txt(2,12,"val alice = Person(\"Alice\", 25)",7);
+        txt(2,13,"val (name, age) = alice  // destructuring",7);
+        txt(2,15,"val result: String? = null",2+2);
+        txt(2,16,"println(result ?: \"default\")  // elvis op",7);
+        txt(2,18,"fun Int.isEven() = this % 2 == 0  // extension",2+3);
+        txt(2,20,"println(42.isEven())  // true",7);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

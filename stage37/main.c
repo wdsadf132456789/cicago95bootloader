@@ -39,13 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage37_entry(void) {
     kf(); clr(0);
-    for(int i=0;i<80+35;i++) {
-        for(int x=0;x<80;x++) px(x,12,' ',7);
-        for(int j=0;"Booting the revolution, one sector at a time"[j]&&i+j<80;j++)
-            px(i+j,12,"Booting the revolution, one sector at a time"[j],8);
-        dl(300700);
+    txt((COLS-16)/2,0,"Lisp Demo (Stage 37)",8);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-16)/2,0,"Lisp Demo (Stage 37)",8);
+        txt(2,2,";; Parentheses: the final frontier",8+2);
+        txt(2,4,"(defun fib (n)",7);
+        txt(2,5,"  (if (<= n 1)",7);
+        txt(2,6,"      n",7);
+        txt(2,7,"      (+ (fib (- n 1))",7);
+        txt(2,8,"         (fib (- n 2)))))",7);
+        for(int i=0;i<6;i++) {
+            int y=10+i*2;
+            txt(2,y,"(mapcar (lambda (x) (* x 2))",8+(i%3)+1);
+            txt(2,y+1,"        '(",7);
+            for(int d=0;d<=i;d++){pn(12+d*4,y+1,(d+1)*2,8+d+1);if(d<i)px(15+d*4,y+1,' ',7);}
+            txt(2,y+1+8,"))",8+(i%3)+1);
+        }
+        txt(2,24,";; (loop for x from 0 to 10 collect x)",8);
+        dl(70000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

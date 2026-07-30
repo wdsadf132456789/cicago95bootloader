@@ -39,23 +39,31 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage45_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"Solo Pong (Stage 45)",1);
-    int bx=40,by=12,bdx=1,bdy=1;
-    int py=12;
-    for(int f=0;f<500;f++) {
-        for(int i=0;i<80;i++){px(i,1,' ',0);px(i,24,' ',0);}
-        px(1,py,0xDB,1);px(1,py+1,0xDB,1);px(1,py+2,0xDB,1);
-        bx+=bdx;by+=bdy;
-        if(by<=2||by>=23)bdy=-bdy;
-        if(bx<=2){bdx=-bdx;if(by>=py-1&&by<=py+3){}else{txt(30,12,"GAME OVER",4);wa();clr(0);txt((COLS-20)/2,12,"Score: 0",7);goto scr;}}
-        if(bx>=78)bdx=-bdx;
-        px(bx,by,0xDB,1+3);
-        if(kh()){uint8_t k=kg();if(!(k&0x80)){if(k==0x48&&py>2)py--;if(k==0x50&&py<21)py++;}}
-        dl(17000);
+    txt((COLS-24)/2,0,"TypeScript Demo (Stage 45)",1);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-24)/2,0,"TypeScript Demo (Stage 45)",1);
+        txt(2,2,"interface Person {",1+2);
+        txt(2,3,"  readonly name: string;",7);
+        txt(2,4,"  age: number;",7);
+        txt(2,5,"  city?: string;",7);
+        txt(2,6,"}",1+2);
+        txt(2,8,"const alice: Person = {",7);
+        txt(2,9,"  name: 'Alice',",7);
+        txt(2,10,"  age: 25,",7);
+        txt(2,11,"  city: 'NYC'",7);
+        txt(2,12,"};",7);
+        for(int i=0;i<4;i++) {
+            int y=14+i;
+            txt(2,y,"type Result<T> = T | null;",1+i+1);
+        }
+        txt(2,19,"function identity<T>(arg: T): T {",1+4);
+        txt(2,20,"  return arg;",7);
+        txt(2,21,"}",1+4);
+        txt(2,23,"const num = identity<number>(42);",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
-    clr(0);
-scr:
-    txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

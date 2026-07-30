@@ -39,16 +39,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage91_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Sine Wave (Stage 91)",2);
-    for(int f=0;f<200;f++) {
-        for(int x=0;x<80;x++)px(x,12,' ',7);
-        for(int x=0;x<80;x++) {
-            int y=12+(8*(((x+3*f)%16)%(16)-8.0))/6;
-            if(y>=2&&y<=22) px(x,y,0xDB,2);
+    txt((COLS-16)/2,0,"Ruby Demo (Stage 91)",2);
+    for(int f=0;f<150;f++) {
+        clr(0);
+        txt((COLS-16)/2,0,"Ruby Demo (Stage 91)",2);
+        txt(2,2,"5.times do |i|",2+2);
+        for(int i=0;i<5;i++) {
+            int y=5+i*3;
+            int n=i+1+(f%(5-i));
+            txt(2,y,"  puts",8);
+            for(int d=0;d<n;d++)px(10+d,y,0x2A,2+(i+d)%7+1);
+            pn(16+n,y,n,2+2);
+            txt(2,y+1,"  yield i*2",2+4);
+            pn(16,y+1,i*2,2+4);
         }
-        dl(5000);
+        txt(2,22,"end",2+2);
+        txt(2,23,"# => iterates 5 times with block",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

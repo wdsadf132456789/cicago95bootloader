@@ -39,17 +39,23 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage92_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Progress Bars (Stage 92)",3);
-    for(int p=0;p<=100;p++) {
-        for(int b=0;b<5;b++) {
-            int w=p*(60-(b*8))/100;
-            int y=5+b*3;
-            for(int x=0;x<60;x++)px(10+x,y,' ',7);
-            for(int x=0;x<w;x++)px(10+x,y,0xDB,3+b);
+    txt((COLS-20)/2,0,"Python Demo (Stage 92)",3);
+    for(int f=0;f<150;f++) {
+        clr(0);
+        txt((COLS-20)/2,0,"Python Demo (Stage 92)",3);
+        txt(2,2,"# list comprehension",3+2);
+        for(int i=0;i<8;i++) {
+            int y=4+i*2;
+            txt(2,y,"result = [x*2 for x in range(10)]",7);
+            pn(2,y+1,i*2,3+3);
+            px(16,y+1,'|',7);
+            int n=1+(i+f)%10;
+            for(int d=0;d<n;d++)px(18+d,y+1,0xFE,3+d%6+1);
         }
-        dl(150200);
+        txt(2,22,"# => [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]",8);
+        dl(50000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

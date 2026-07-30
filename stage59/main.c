@@ -39,17 +39,29 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage59_entry(void) {
     kf(); clr(0);
-    txt((COLS-30)/2,0,"Bouncing Ball Demo (Stage 59)",4);
-    int x=1,y=1,dx=1,dy=1;
-    for(int i=0;i<500;i++) {
-        px(x,y,' ',0);
-        x+=dx;y+=dy;
-        if(x<=0||x>=COLS-1)dx=-dx;
-        if(y<=0||y>=23)dy=-dy;
-        px(x,y,'.',4);
+    txt((COLS-22)/2,0,"Clojure Demo (Stage 59)",15);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-22)/2,0,"Clojure Demo (Stage 59)",15);
+        txt(2,2,";; Lisp on the JVM",15+2);
+        txt(2,4,"(ns demo.core)",7);
+        txt(2,5,"(:require [clojure.string :as str])",7);
+        txt(2,7,"(defn fib [n]",15+4);
+        txt(2,8,"  (loop [a 0 b 1 n n]",7);
+        txt(2,9,"    (if (zero? n) a",7);
+        txt(2,10,"        (recur b (+ a b) (dec n)))))",7);
+        for(int i=0;i<6;i++) {
+            int y=12+i;
+            txt(2,y,"(->> (range 10)",15+(i%3)+1);
+            int n=i*f%10;
+            pn(8,y+1,n,15+4);
+        }
+        txt(2,19,"(map #(* % 2) [1 2 3 4 5])",7);
+        txt(2,21,"(filter even? (range 20))",7);
+        txt(2,23,";; Persistent data structures",8);
+        dl(60000);
         if(kh()){kg();break;}
-        dl(29000);
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

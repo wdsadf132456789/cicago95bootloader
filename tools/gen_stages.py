@@ -829,6 +829,1239 @@ void stage{n}_entry(void) {{
 
 TEMPLATES.append(t_ruby)
 
+def t_python(n):
+    msg = f"Python Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-20)/2,0,"{msg}",{col});
+    for(int f=0;f<150;f++) {{
+        clr(0);
+        txt((COLS-20)/2,0,"{msg}",{col});
+        txt(2,2,"# list comprehension",{col}+2);
+        for(int i=0;i<8;i++) {{
+            int y=4+i*2;
+            txt(2,y,"result = [x*2 for x in range(10)]",7);
+            pn(2,y+1,i*2,{col}+3);
+            px(16,y+1,'|',7);
+            int n=1+(i+f)%10;
+            for(int d=0;d<n;d++)px(18+d,y+1,0xFE,{col}+d%6+1);
+        }}
+        txt(2,22,"# => [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]",8);
+        dl(50000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_python)
+
+def t_rust(n):
+    msg = f"Rust Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-16)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-16)/2,0,"{msg}",{col});
+        txt(2,2,"let v = vec![1,2,3,4,5];",{col}+2);
+        txt(2,4,"let doubled: Vec<i32> =",7);
+        txt(2,5,"    v.iter().map(|x| x * 2).collect();",7);
+        for(int i=0;i<5;i++) {{
+            int val=(i+1)*(1+f%6);
+            pn(6+i*5,8,val,{col}+(i%7));
+            px(10+i*5,8,',',7);
+        }}
+        txt(2,10,"let owned = v.clone(); // ownership",{col}+4);
+        txt(2,12,"match doubled[0] {{",{col}+2);
+        txt(2,13,"  2 => println!(\\"first is 2\\"),",7);
+        txt(2,14,"  _ => (),",7);
+        txt(2,15,"}}",{col}+2);
+        txt(2,17,"fn greet(name: &str) -> String {{",{col}+3);
+        txt(2,18,"    format!(\\\"Hello {{}}\\", name)",7);
+        txt(2,19,"}}",{col}+3);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_rust)
+
+def t_go(n):
+    msg = f"Go Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-14)/2,0,"{msg}",{col});
+    for(int f=0;f<150;f++) {{
+        clr(0);
+        txt((COLS-14)/2,0,"{msg}",{col});
+        txt(2,2,"package main",{col}+2);
+        txt(2,4,"func main() {{",7);
+        txt(2,5,"  ch := make(chan int)",7);
+        txt(2,6,"  go func() {{",{col}+4);
+        txt(2,7,"    for i := 0; i < 5; i++ {{",7);
+        txt(2,8,"      ch <- i * 2",7);
+        txt(2,9,"    }}",7);
+        txt(2,10,"    close(ch)",7);
+        txt(2,11,"  }}()",{col}+4);
+        for(int i=0;i<5;i++) {{
+            int y=13+i;
+            int v=i*(2+f%4);
+            pn(6,y,v,{col}+(i%6)+1);
+            for(int d=0;d<v;d++)px(10+d,y,0xFE,{col}+(d%7));
+        }}
+        txt(2,20,"  for v := range ch {{",{col}+2);
+        txt(2,21,"    fmt.Println(v)",7);
+        txt(2,22,"  }}",{col}+2);
+        dl(50000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_go)
+
+def t_lisp(n):
+    msg = f"Lisp Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-16)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-16)/2,0,"{msg}",{col});
+        txt(2,2,";; Parentheses: the final frontier",{col}+2);
+        txt(2,4,"(defun fib (n)",7);
+        txt(2,5,"  (if (<= n 1)",7);
+        txt(2,6,"      n",7);
+        txt(2,7,"      (+ (fib (- n 1))",7);
+        txt(2,8,"         (fib (- n 2)))))",7);
+        for(int i=0;i<6;i++) {{
+            int y=10+i*2;
+            txt(2,y,"(mapcar (lambda (x) (* x 2))",{col}+(i%3)+1);
+            txt(2,y+1,"        '(",7);
+            for(int d=0;d<=i;d++){{pn(12+d*4,y+1,(d+1)*2,{col}+d+1);if(d<i)px(15+d*4,y+1,' ',7);}}
+            txt(2,y+1+8,"))",{col}+(i%3)+1);
+        }}
+        txt(2,24,";; (loop for x from 0 to 10 collect x)",8);
+        dl(70000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_lisp)
+
+def t_sql(n):
+    msg = f"SQL Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-14)/2,0,"{msg}",{col});
+    const char *data[]={{"1|Alice|25|NYC","2|Bob|31|SF","3|Carol|22|LA","4|Dave|38|CHI","5|Eve|29|SEA"}};
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-14)/2,0,"{msg}",{col});
+        txt(2,2,"SELECT users.name, orders.total",{col}+2);
+        txt(2,3,"FROM users",{col}+2);
+        txt(2,4,"JOIN orders ON users.id = orders.user_id",{col}+4);
+        txt(2,5,"WHERE users.age > 25",7);
+        txt(2,6,"ORDER BY orders.total DESC;",7);
+        txt(2,8,"+----+-------+-----+-------+",{col}+1);
+        txt(2,9,"| id | name  | age | city  |",{col}+3);
+        txt(2,10,"+----+-------+-----+-------+",{col}+1);
+        for(int i=0;i<5;i++) {{
+            int hi=(f%5)==i;
+            txt(2,11+i,data[i],hi?{col}+6:7);
+        }}
+        txt(2,16,"+----+-------+-----+-------+",{col}+1);
+        int cnt=0;for(int i=0;i<5;i++)if(i*10+20<f)cnt++;
+        txt(2,18,"Rows returned:",7);
+        pn(14,18,cnt,{col}+2);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_sql)
+
+def t_haskell(n):
+    msg = f"Haskell Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-20)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-20)/2,0,"{msg}",{col});
+        txt(2,2,"-- Pure functional programming",{col}+2);
+        txt(2,4,"fibs = 0 : 1 : zipWith (+) fibs (tail fibs)",7);
+        txt(2,6,"fmap (+1) (Just 5)  -- Just 6",7);
+        txt(2,8,"pure (*2) <*> [1,2,3] -- [2,4,6]",7);
+        for(int i=0;i<6;i++) {{
+            int y=10+i*2;
+            int a=i;
+            txt(2,y,"let x = ",7);pn(9,y,a,{col}+2);
+            txt(2,y+1,"let y = fmap (*",7);pn(9,y+1,f%5+1,{col}+3);txt(2,y+1+8,") x",7);
+        }}
+        txt(2,23,"main = putStrLn \\\"Hello, Haskell!\\\"",8);
+        txt(2,24,"-- Result: ",8);pn(12,24,f%10,{col}+4);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_haskell)
+
+def t_brainfuck(n):
+    msg = f"Brainfuck Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-24)/2,0,"{msg}",{col});
+    char tape[16];for(int i=0;i<16;i++)tape[i]=0;
+    int ptr=0;
+    const char *prog="+++++[>+++++<-]>+++++.";
+    for(int f=0;f<200;f++) {{
+        clr(0);
+        txt((COLS-24)/2,0,"{msg}",{col});
+        txt(2,2,"Program:",{col}+2);
+        txt(2,3,prog,7);
+        txt(2,5,"Tape:",{col}+2);
+        for(int i=0;i<16;i++) {{
+            int hi=(i==ptr);
+            txt(3+i*4,6,"[",hi?{col}+4:7);
+            pn(4+i*4,6,(int)tape[i],hi?{col}+6:7);
+            txt(3+i*4+8,6,"]",hi?{col}+4:7);
+        }}
+        txt(2,8,"Ptr:",7);pn(7,8,ptr,{col}+2);
+        if(f%5==0&&f<160) {{
+            int step=f/5;
+            int pc=step%17;
+            if(pc<14&&tape[ptr]<255)tape[ptr]+=(pc<5?1:0);
+            if(pc>=5&&pc<10&&ptr<15)ptr++;
+            if(pc==10&&ptr>0)ptr--;
+        }}
+        txt(2,10,"Accumulator:",7);pn(14,10,(int)tape[ptr],{col}+4);
+        int n=f%24;
+        for(int i=0;i<n;i++)px(30+(i%20),12+(i/20),0xB0,{col}+i%7+1);
+        txt(2,14,"BF commands: + - > < [ ] , .",8);
+        dl(40000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_brainfuck)
+
+def t_lua(n):
+    msg = f"Lua Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-14)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-14)/2,0,"{msg}",{col});
+        txt(2,2,"-- Tables are everything!",{col}+2);
+        txt(2,4,"local t = {{name=\\"Alice\\", age=25}}",7);
+        txt(2,5,"t.city = \\"NYC\\"",7);
+        txt(2,6,"print(t.name, t.age)",7);
+        txt(2,8,"local function fib(n)",{col}+4);
+        txt(2,9,"  if n <= 1 then return n end",7);
+        txt(2,10,"  return fib(n-1) + fib(n-2)",7);
+        txt(2,11,"end",{col}+4);
+        for(int i=0;i<6;i++) {{
+            int y=13+i;
+            int v=i*f%10;
+            txt(2,y,"fib(",7);pn(6,y,i,{col}+2);txt(2,y+8,")=",7);pn(11,y,v,{col}+4);
+        }}
+        txt(2,21,"for k,v in pairs(t) do print(k,v) end",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_lua)
+
+def t_cpp(n):
+    msg = f"C++ Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-16)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-16)/2,0,"{msg}",{col});
+        txt(2,2,"template<typename T>",{col}+2);
+        txt(2,3,"class Vector {{",{col}+2);
+        txt(2,4,"  T* data; size_t len;",7);
+        txt(2,5,"public:",{col}+4);
+        txt(2,6,"  Vector() : data(nullptr), len(0) {{}}",7);
+        txt(2,7,"  void push_back(const T& val) {{...}}",7);
+        txt(2,8,"  T& operator[](size_t i) {{ return data[i]; }}",7);
+        txt(2,9,"}};",{col}+2);
+        txt(2,11,"Vector<int> v;",7);
+        txt(2,12,"v.push_back(42);",7);
+        for(int i=0;i<6;i++) {{
+            int y=14+i;
+            txt(2,y,"v[",7);pn(4,y,i,{col});txt(2,y+6,"]=",7);pn(9,y,(i+1)*(f%5+1),{col}+3);
+        }}
+        txt(2,22,"auto result = v | views::filter(...)",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_cpp)
+
+def t_bash(n):
+    msg = f"Bash Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-16)/2,0,"{msg}",{col});
+    for(int f=0;f<150;f++) {{
+        clr(0);
+        txt((COLS-16)/2,0,"{msg}",{col});
+        txt(2,2,"#!/bin/bash",{col}+2);
+        txt(2,4,"for file in *.txt; do",7);
+        txt(2,5,"  echo \\"Processing $file...\\"",7);
+        txt(2,6,"  grep 'error' \\"$file\\" | wc -l",7);
+        txt(2,7,"done",7);
+        txt(2,9,"ls -la | awk '{{print $9, $5}}'",7);
+        txt(2,11,"PIPELINE:",{col}+4);
+        const char *stages[]={{"ls","grep","sort","uniq","wc"}};
+        for(int i=0;i<5;i++) {{
+            int c=i==(f/6)%5?{col}+6:8;
+            txt(4+i*13,13,stages[i],c);
+            if(i<4)txt(16+i*13,13,"|",7);
+        }}
+        txt(2,15,"$ find /home -name \\"*.conf\\" 2>/dev/null",8);
+        txt(2,17,"$  ",7);pn(5,17,f%1000,{col}+2);txt(2,18," exit code",8);
+        for(int i=0;i<5;i++) {{
+            pn(4+i*15,20,i*f%256,{col}+i+1);
+        }}
+        dl(50000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_bash)
+
+def t_perl(n):
+    msg = f"Perl Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-16)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-16)/2,0,"{msg}",{col});
+        txt(2,2,"#!/usr/bin/perl -w",{col}+2);
+        txt(2,4,"my @array = (1..10);",7);
+        txt(2,5,"my %hash = (foo => 42, bar => 99);",7);
+        txt(2,6,"print map {{ $_ * 2 }} @array;",7);
+        for(int i=0;i<8;i++) {{
+            int v=(i+1)*(f%6+1);
+            pn(4+i*5,8,v,{col}+(i%7));
+        }}
+        txt(2,10,"s/foo/bar/g if /regex/",{col}+4);
+        txt(2,12,"sub greet {{",7);
+        txt(2,13,"  my ($name) = @_;",7);
+        txt(2,14,"  return \\"Hello, $name!\\";",7);
+        txt(2,15,"}}",7);
+        txt(2,17,"print greet('World');",{col}+2);
+        txt(2,19,"TMTOWTDI:",8);
+        txt(2,20,"There's More Than One Way To Do It",{col}+3);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_perl)
+
+def t_typescript(n):
+    msg = f"TypeScript Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-24)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-24)/2,0,"{msg}",{col});
+        txt(2,2,"interface Person {{",{col}+2);
+        txt(2,3,"  readonly name: string;",7);
+        txt(2,4,"  age: number;",7);
+        txt(2,5,"  city?: string;",7);
+        txt(2,6,"}}",{col}+2);
+        txt(2,8,"const alice: Person = {{",7);
+        txt(2,9,"  name: 'Alice',",7);
+        txt(2,10,"  age: 25,",7);
+        txt(2,11,"  city: 'NYC'",7);
+        txt(2,12,"}};",7);
+        for(int i=0;i<4;i++) {{
+            int y=14+i;
+            txt(2,y,"type Result<T> = T | null;",{col}+i+1);
+        }}
+        txt(2,19,"function identity<T>(arg: T): T {{",{col}+4);
+        txt(2,20,"  return arg;",7);
+        txt(2,21,"}}",{col}+4);
+        txt(2,23,"const num = identity<number>(42);",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_typescript)
+
+def t_kotlin(n):
+    msg = f"Kotlin Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-20)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-20)/2,0,"{msg}",{col});
+        txt(2,2,"// Null safety + lambdas",{col}+2);
+        txt(2,4,"val numbers = listOf(1, 2, 3, 4, 5)",7);
+        txt(2,5,"val doubled = numbers.map {{ it * 2 }}",7);
+        txt(2,6,"val even = numbers.filter {{ it % 2 == 0 }}",7);
+        for(int i=0;i<5;i++) {{
+            int v=(i+1)*(f%6+2);
+            pn(6+i*5,8,v,{col}+(i%7));
+        }}
+        txt(2,10,"data class Person(val name: String, val age: Int)",{col}+4);
+        txt(2,12,"val alice = Person(\\"Alice\\", 25)",7);
+        txt(2,13,"val (name, age) = alice  // destructuring",7);
+        txt(2,15,"val result: String? = null",{col}+2);
+        txt(2,16,"println(result ?: \\"default\\")  // elvis op",7);
+        txt(2,18,"fun Int.isEven() = this % 2 == 0  // extension",{col}+3);
+        txt(2,20,"println(42.isEven())  // true",7);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_kotlin)
+
+def t_swift(n):
+    msg = f"Swift Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-20)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-20)/2,0,"{msg}",{col});
+        txt(2,2,"// Protocol-oriented programming",{col}+2);
+        txt(2,4,"protocol Greetable {{",7);
+        txt(2,5,"  var name: String {{ get }}",7);
+        txt(2,6,"  func greet() -> String",7);
+        txt(2,7,"}}",7);
+        txt(2,9,"struct Person: Greetable {{",{col}+4);
+        txt(2,10,"  let name: String",7);
+        txt(2,11,"  func greet() -> String {{",7);
+        txt(2,12,"    return \\"Hi, \\(name)!\\"",7);
+        txt(2,13,"  }}",7);
+        txt(2,14,"}}",{col}+4);
+        for(int i=0;i<5;i++) {{
+            int y=16+i;
+            txt(2,y,"let x = Optional(",7);pn(8,y,i*2,{col}+2);txt(2,y+8,")",7);
+        }}
+        txt(2,22,"let alice = Person(name: \\"Alice\\")",8);
+        txt(2,23,"print(alice.greet())  // Hi, Alice!",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_swift)
+
+def t_dart(n):
+    msg = f"Dart Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-20)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-20)/2,0,"{msg}",{col});
+        txt(2,2,"// Async/await + named params",{col}+2);
+        txt(2,4,"Future<void> fetchData() async {{",7);
+        txt(2,5,"  var response = await http.get(url);",7);
+        txt(2,6,"  print(response.body);",7);
+        txt(2,7,"}}",7);
+        txt(2,9,"void main() {{",{col}+4);
+        txt(2,10,"  var list = [1, 2, 3, 4, 5];",7);
+        txt(2,11,"  var mapped = list.map((e) => e * 2);",7);
+        for(int i=0;i<5;i++) {{
+            int v=(i+1)*(f%8+1);
+            pn(6+i*6,13,v,{col}+(i%7));
+        }}
+        txt(2,15,"  named({{required int x, int y = 0}})",{col}+2);
+        txt(2,17,"  var result = named(x: 42, y: 10);",7);
+        txt(2,19,"  runApp(MyApp());",7);
+        txt(2,20,"}}",{col}+4);
+        txt(2,22,"class MyApp extends StatelessWidget {{...}}",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_dart)
+
+def t_csharp(n):
+    msg = f"C# Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-16)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-16)/2,0,"{msg}",{col});
+        txt(2,2,"using System.Linq;",{col}+2);
+        txt(2,4,"class Program {{",7);
+        txt(2,5,"  static void Main() {{",7);
+        txt(2,6,"    var nums = new[] {{1,2,3,4,5}};",7);
+        txt(2,7,"    var evens = nums.Where(n => n % 2 == 0);",7);
+        txt(2,8,"    var squared = nums.Select(n => n * n);",7);
+        for(int i=0;i<5;i++) {{
+            int v=(i+1)*(i+1);
+            int y=10+i*2;
+            pn(6,y,v,{col}+(i%7));
+            px(12,y,'=',7);
+            pn(14,y,i+1,{col}+2);txt(2,y+6,"^2",7);
+        }}
+        txt(2,21,"    Console.WriteLine(evens.Count());",7);
+        txt(2,22,"  }}",7);
+        txt(2,23,"}}",{col}+2);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_csharp)
+
+def t_forth(n):
+    msg = f"Forth Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-18)/2,0,"{msg}",{col});
+    int stack[8];int sp=0;
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-18)/2,0,"{msg}",{col});
+        txt(2,2,"\\\\ Stack-based, minimal, beautiful",{col}+2);
+        txt(2,4,": square  dup * ;",7);
+        txt(2,5,": fib     dup 1 > if 1- dup fib swap 1- fib + then ;",7);
+        txt(2,7,"5 3 + 2 * .  \\\\ prints 16",7);
+        if(f%3==0&&sp<8){{stack[sp]=f%32;sp++;}}
+        if(f%5==0&&sp>0)sp--;
+        txt(2,9,"Stack:",{col}+4);
+        for(int i=0;i<sp;i++) {{
+            pn(8+i*5,10,stack[i],{col}+(i%6)+1);
+        }}
+        txt(2,12,": stars ( n -- ) 0 do 42 emit loop ;",7);
+        int ns=f%16;
+        txt(2,14,"10 stars => ",7);
+        for(int i=0;i<ns;i++)px(14+i,14,0x2A,{col}+(i%7));
+        txt(2,16,": count  10 0 do i . cr loop ;",7);
+        txt(2,18,"( The stack is the way )",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_forth)
+
+def t_prolog(n):
+    msg = f"Prolog Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-20)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-20)/2,0,"{msg}",{col});
+        txt(2,2,"%% Logic / declarative programming",{col}+2);
+        txt(2,4,"parent(alice, bob).",7);
+        txt(2,5,"parent(bob, carol).",7);
+        txt(2,6,"grandparent(X, Z) :- parent(X, Y), parent(Y, Z).",7);
+        for(int i=0;i<4;i++) {{
+            int y=8+i*2;
+            txt(2,y,"?- ancestor(",7);
+            pn(14,y,i+1,{col}+(i%3)+2);
+            txt(2,y+4,", X).",7);
+        }}
+        txt(2,17,"%% Query results:",{col}+4);
+        txt(2,18,"X = alice ;",{col}+(f%3));
+        txt(2,19,"X = bob ;",{col}+((f+1)%3));
+        txt(2,20,"X = carol ;",{col}+((f+2)%3));
+        txt(2,21,"false.",8);
+        txt(2,23,"%% Backtracking finds all solutions!",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_prolog)
+
+def t_cobol(n):
+    msg = f"COBOL Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-20)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-20)/2,0,"{msg}",{col});
+        txt(2,2,"       IDENTIFICATION DIVISION.",{col}+2);
+        txt(2,3,"       PROGRAM-ID. HELLO.",{col}+2);
+        txt(2,4,"       DATA DIVISION.",7);
+        txt(2,5,"       WORKING-STORAGE SECTION.",7);
+        txt(2,6,"       01 WS-COUNT PIC 9(3) VALUE 0.",7);
+        txt(2,7,"       PROCEDURE DIVISION.",{col}+4);
+        txt(2,8,"           PERFORM VARYING WS-COUNT",7);
+        txt(2,9,"             FROM 1 BY 1 UNTIL WS-COUNT > 10",7);
+        txt(2,10,"             DISPLAY 'COUNT: ' WS-COUNT",7);
+        txt(2,11,"           END-PERFORM",7);
+        txt(2,12,"           STOP RUN.",{col}+4);
+        int n=f%10+1;
+        txt(2,14,"COUNT: ",{col}+2);pn(8,14,n,{col}+4);
+        txt(2,16,"01 WS-TABLE.",{col}+2);
+        txt(2,17,"   05 WS-ENTRY OCCURS 5 TIMES PIC X(3).",7);
+        for(int i=0;i<5;i++) {{
+            int y=19+i;
+            txt(2,y,"WS-ENTRY(",7);pn(11,y,i+1,{col});txt(2,y+6,")=",7);pn(15,y,(i+1)*(f%5+1),{col}+3);
+        }}
+        txt(2,24,"        (COBOL: still running the world)",8);
+        dl(70000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_cobol)
+
+def t_fortran(n):
+    msg = f"Fortran Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-22)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-22)/2,0,"{msg}",{col});
+        txt(2,2,"! Scientific computing since 1957",{col}+2);
+        txt(2,4,"program main",7);
+        txt(2,5,"  implicit none",7);
+        txt(2,6,"  integer :: i, n = 10",7);
+        txt(2,7,"  real :: matrix(3,3)",7);
+        txt(2,8,"  matrix = reshape([1,2,3,4,5,6,7,8,9], [3,3])",7);
+        for(int r=0;r<3;r++) {{
+            for(int c=0;c<3;c++) {{
+                int v=(r+c+1)*(f%4+1);
+                pn(6+c*6,10+r,v,{col}+(r*3+c)%7+1);
+            }}
+        }}
+        txt(2,14,"  do i = 1, n",{col}+4);
+        txt(2,15,"    print *, 'i = ', i",7);
+        txt(2,16,"  end do",{col}+4);
+        int fn=1;for(int i=1;i<=f%8+1;i++)fn*=i;
+        txt(2,18,"  ! Factorial:",8);
+        pn(14,18,f%8+1,{col}+2);txt(2,18,"=",7);pn(17,18,fn,{col}+4);
+        txt(2,20,"end program main",7);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_fortran)
+
+def t_julia(n):
+    msg = f"Julia Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-20)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-20)/2,0,"{msg}",{col});
+        txt(2,2,"# Multiple dispatch + speed of C",{col}+2);
+        txt(2,4,"using LinearAlgebra",7);
+        txt(2,5,"A = [1 2; 3 4]",7);
+        txt(2,6,"b = [5, 6]",7);
+        txt(2,7,"x = A \\\\ b  # solves linear system",7);
+        for(int i=0;i<4;i++) {{
+            int y=9+i;
+            int v=i*(f%10+1);
+            pn(4+i*6,y,v,{col}+(i%7));
+        }}
+        txt(2,14,"f(x) = x^2 + 2x - 1",{col}+2);
+        txt(2,15,"@show f(10)",7);
+        int r=100+f%200;
+        txt(2,17,"f(10) = ",7);pn(9,17,r,{col}+4);
+        txt(2,19,"using Plots",7);
+        txt(2,20,"plot(A[:,1], A[:,2])",7);
+        txt(2,22,"# Julia: walks like Python, runs like C",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_julia)
+
+def t_zig(n):
+    msg = f"Zig Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-16)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-16)/2,0,"{msg}",{col});
+        txt(2,2,"// comptime metaprogramming",{col}+2);
+        txt(2,4,"const std = @import(\\"std\\");",7);
+        txt(2,5,"fn max(comptime T: type, a: T, b: T) T {{",7);
+        txt(2,6,"    return if (a > b) a else b;",7);
+        txt(2,7,"}}",7);
+        txt(2,9,"const result = max(u8, 42, 100);",{col}+4);
+        txt(2,10,"// comptime eval at compile time",8);
+        for(int i=0;i<6;i++) {{
+            int y=12+i;
+            int a=i*7,b=(i+1)*(f%5+2);
+            pn(4,y,a,{col});txt(2,y+6,",",7);pn(9,y,b,{col}+2);
+            txt(2,y+4,"max=",7);pn(5,y+13,a>b?a:b,{col}+4);
+        }}
+        txt(2,20,"pub fn main() void {{",{col}+2);
+        txt(2,21,"    std.debug.print(\\"Hello, Zig!\\n\\", .{{}});",7);
+        txt(2,22,"}}",{col}+2);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_zig)
+
+def t_apl(n):
+    msg = f"APL Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-16)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-16)/2,0,"{msg}",{col});
+        txt(2,2,"â One line = an entire program",{col}+2);
+        txt(2,4,"âxââ·10         â numbers 1 to 10",7);
+        txt(2,5,"âxÃ2             â doubled",7);
+        txt(2,6,"â+/x              â sum of vector",7);
+        txt(2,7,"ââ©3 3ââ¬9        â 3x3 matrix",7);
+        txt(2,9,"ââ¬âÂ¨ x          â square root each",7);
+        for(int i=0;i<8;i++) {{
+            int y=11+i;
+            int v=(i+1)*(f%6+1);
+            txt(2,y,"ââ¬[",7);
+            px(6,y,0xFE,{col}+(i%7));
+            txt(2,y+2,"]",7);
+            pn(9,y,v,{col}+2);
+        }}
+        txt(2,21,"â (â£Ã·Ã·)  â¨rÃ·r  âÂ² ",8);
+        txt(2,22,"â (iota rho iota) â nonsense",8);
+        txt(2,24,"â APL: write once, read never",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_apl)
+
+def t_erlang(n):
+    msg = f"Erlang Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-20)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-20)/2,0,"{msg}",{col});
+        txt(2,2,"%% Actor model concurrency",{col}+2);
+        txt(2,4,"-module(hello).",7);
+        txt(2,5,"-export([start/0, loop/0]).",7);
+        txt(2,7,"start() ->",{col}+4);
+        txt(2,8,"    Pid = spawn(fun loop/0),",7);
+        txt(2,9,"    Pid ! {{hello, world}}.",7);
+        txt(2,11,"loop() ->",{col}+4);
+        txt(2,12,"    receive",7);
+        txt(2,13,"        {{hello, Msg}} -> io:format(\\"~s~n\\", [Msg])",7);
+        txt(2,14,"    end,",7);
+        txt(2,15,"    loop().",{col}+4);
+        for(int i=0;i<5;i++) {{
+            int y=17+i;
+            int n=i*(f%4+1);
+            txt(2,y,"Pid ! {{data, ",7);pn(14,y,n,{col}+2);txt(2,y+4,"}}",7);
+        }}
+        txt(2,23,"%% \\"Let it crash\\" philosophy",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_erlang)
+
+def t_elixir(n):
+    msg = f"Elixir Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-20)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-20)/2,0,"{msg}",{col});
+        txt(2,2,"# Elixir: Erlang VM with Ruby syntax",{col}+2);
+        txt(2,4,"defmodule Math do",7);
+        txt(2,5,"  def fib(0), do: 0",7);
+        txt(2,6,"  def fib(1), do: 1",7);
+        txt(2,7,"  def fib(n), do: fib(n-1) + fib(n-2)",7);
+        txt(2,8,"end",7);
+        txt(2,10,"[1,2,3,4,5]",{col}+4);
+        txt(2,11,"|> Enum.map(&(&1 * 2))",7);
+        txt(2,12,"|> Enum.filter(&(&1 > 4))",7);
+        txt(2,13,"|> IO.inspect()",7);
+        for(int i=0;i<5;i++) {{
+            int v=(i+1)*(f%6+1);
+            pn(6+i*5,15,v,{col}+(i%7));
+        }}
+        txt(2,17,"case result do",7);
+        txt(2,18,"  {{:ok, val}} -> IO.puts(val)",7);
+        txt(2,19,"  {{:error, _}} -> IO.puts(\\"error\\")",7);
+        txt(2,20,"end",7);
+        txt(2,22,"# Pipe operator |> is magical",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_elixir)
+
+def t_clojure(n):
+    msg = f"Clojure Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-22)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-22)/2,0,"{msg}",{col});
+        txt(2,2,";; Lisp on the JVM",{col}+2);
+        txt(2,4,"(ns demo.core)",7);
+        txt(2,5,"(:require [clojure.string :as str])",7);
+        txt(2,7,"(defn fib [n]",{col}+4);
+        txt(2,8,"  (loop [a 0 b 1 n n]",7);
+        txt(2,9,"    (if (zero? n) a",7);
+        txt(2,10,"        (recur b (+ a b) (dec n)))))",7);
+        for(int i=0;i<6;i++) {{
+            int y=12+i;
+            txt(2,y,"(->> (range 10)",{col}+(i%3)+1);
+            int n=i*f%10;
+            pn(8,y+1,n,{col}+4);
+        }}
+        txt(2,19,"(map #(* % 2) [1 2 3 4 5])",7);
+        txt(2,21,"(filter even? (range 20))",7);
+        txt(2,23,";; Persistent data structures",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_clojure)
+
+def t_vhdl(n):
+    msg = f"VHDL Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-18)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-18)/2,0,"{msg}",{col});
+        txt(2,2,"-- Hardware Description Language",{col}+2);
+        txt(2,4,"entity counter is",7);
+        txt(2,5,"  port (clk, rst : in std_logic;",7);
+        txt(2,6,"        count : out std_logic_vector(7 downto 0));",7);
+        txt(2,7,"end counter;",7);
+        txt(2,9,"architecture arch of counter is",{col}+4);
+        txt(2,10,"  signal tmp : unsigned(7 downto 0);",7);
+        txt(2,11,"begin",7);
+        txt(2,12,"  process(clk)",7);
+        txt(2,13,"  begin",7);
+        txt(2,14,"    if rising_edge(clk) then",7);
+        txt(2,15,"      tmp <= tmp + 1;",7);
+        txt(2,16,"    end if;",7);
+        txt(2,17,"  end process;",7);
+        txt(2,18,"  count <= std_logic_vector(tmp);",7);
+        txt(2,19,"end arch;",{col}+4);
+        int n=f%256;
+        txt(2,21,"Count:",7);pn(8,21,n,{col}+4);
+        txt(2,23,"-- Synthesizable VHDL",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_vhdl)
+
+def t_r(n):
+    msg = f"R Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-10)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-10)/2,0,"{msg}",{col});
+        txt(2,2,"# Statistical computing",{col}+2);
+        txt(2,4,"data <- c(1, 4, 6, 8, 10, 15, 21)",7);
+        txt(2,5,"mean(data)",7);
+        txt(2,6,"sd(data)",7);
+        txt(2,7,"summary(data)",7);
+        for(int i=0;i<7;i++) {{
+            int v=(i+1)*(f%6+1);
+            pn(4+i*5,9,v,{col}+(i%7));
+        }}
+        int m=0;for(int i=0;i<7;i++)m+=(i+1)*(f%6+1);
+        m/=7;
+        txt(2,11,"mean = ",7);pn(8,11,m,{col}+4);
+        txt(2,13,"lm(y ~ x, data=df)",{col}+2);
+        txt(2,14,"t.test(group1, group2)",7);
+        txt(2,16,"library(ggplot2)",7);
+        txt(2,17,"ggplot(df, aes(x, y)) + geom_point()",7);
+        for(int i=0;i<5;i++) {{
+            int y=19+i;
+            txt(2,y,"|",7);
+            for(int d=0;d<(i+1)*(f%3+1);d++)px(3+d,y,0xDB,{col}+(d%6));
+        }}
+        txt(2,24,"# R: data science since '93",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_r)
+
+def t_ada(n):
+    msg = f"Ada Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-14)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-14)/2,0,"{msg}",{col});
+        txt(2,2,"-- Strongly typed, safe, and readable",{col}+2);
+        txt(2,4,"with Ada.Text_IO; use Ada.Text_IO;",7);
+        txt(2,5,"procedure Main is",7);
+        txt(2,6,"   type Weekday is (Mon, Tue, Wed, Thu, Fri);",7);
+        txt(2,7,"   subtype Workday is Weekday range Mon..Fri;",7);
+        txt(2,8,"   Count : Integer := 0;",7);
+        txt(2,9,"begin",7);
+        txt(2,10,"   for I in 1 .. 10 loop",7);
+        txt(2,11,"      Count := Count + I;",7);
+        txt(2,12,"   end loop;",7);
+        txt(2,13,"   Put_Line(Integer'Image(Count));",7);
+        txt(2,14,"end Main;",7);
+        int n=0;for(int i=1;i<=f%10+1;i++)n+=i;
+        txt(2,16,"Sum 1..",7);pn(9,16,f%10+1,{col}+2);txt(13+8,16,"=",7);pn(15+8,16,n,{col}+4);
+        txt(2,18,"pragma Assert (Count > 0);",{col}+4);
+        txt(2,20,"-- Ada: used in avionics & railways",8);
+        for(int i=0;i<4;i++) {{
+            int y=22+i;
+            txt(2,y,"type Arr is array(1..",7);pn(8,y,i+2,{col});txt(2,y+6,") of Integer;",7);
+        }}
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_ada)
+
+def t_logo(n):
+    msg = f"Logo Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-18)/2,0,"{msg}",{col});
+    for(int f=0;f<150;f++) {{
+        clr(0);
+        txt((COLS-18)/2,0,"{msg}",{col});
+        txt(2,2,"; Turtle graphics for children",{col}+2);
+        txt(2,4,"TO SQUARE :SIZE",7);
+        txt(2,5,"  REPEAT 4 [FD :SIZE RT 90]",7);
+        txt(2,6,"END",7);
+        txt(2,8,"TO SPIRAL :SIZE",{col}+4);
+        txt(2,9,"  IF :SIZE > 100 [STOP]",7);
+        txt(2,10,"  FD :SIZE RT 90",7);
+        txt(2,11,"  SPIRAL :SIZE + 5",7);
+        txt(2,12,"END",{col}+4);
+        txt(2,14,"SPIRAL 10",7);
+        int cx=35,cy=12;
+        int x=cx,y=cy,size=5+f%4;
+        for(int i=0;i<f%20+3;i++) {{
+            px(x/2,y,0x2A,{col}+(i%7));
+            x+=size;y+=(i%2?size:-size);
+            px(x/2,y,0x2A,{col}+(i%7));
+        }}
+        txt(2,22,"; The first educational language",8);
+        txt(2,23,"; Seymour Papert, MIT 1967",8);
+        dl(50000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_logo)
+
+def t_smalltalk(n):
+    msg = f"Smalltalk Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-24)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-24)/2,0,"{msg}",{col});
+        txt(2,2,"\\" Everything is an object \\"",{col}+2);
+        txt(2,4,"| numbers |",7);
+        txt(2,5,"numbers := OrderedCollection new.",7);
+        txt(2,6,"numbers add: 42.",7);
+        txt(2,7,"numbers add: 99.",7);
+        txt(2,8,"numbers do: [ :n | Transcript show: n printString ]",7);
+        for(int i=0;i<6;i++) {{
+            int y=10+i;
+            int v=(i+1)*(f%5+1);
+            txt(2,y,"n := ",7);pn(6,y,v,{col}+2);
+        }}
+        txt(2,17,"3 timesRepeat: [ Transcript show: 'Hello' ]",{col}+4);
+        txt(2,19,"a := 5 factorial.",7);
+        txt(2,20,"b := #(1 2 3) collect: [ :e | e * 2 ].",7);
+        txt(2,22,"\\" Smalltalk inspired OOP & MVC \\"",8);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_smalltalk)
+
+def t_assembly(n):
+    msg = f"Assembly Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-24)/2,0,"{msg}",{col});
+    for(int f=0;f<120;f++) {{
+        clr(0);
+        txt((COLS-24)/2,0,"{msg}",{col});
+        txt(2,2,"; x86-64 assembly",{col}+2);
+        txt(2,4,"section .text",7);
+        txt(2,5,"global _start",7);
+        txt(2,6,"_start:",7);
+        txt(2,7,"    mov rax, 1        ; sys_write",7);
+        txt(2,8,"    mov rdi, 1        ; stdout",7);
+        txt(2,9,"    mov rsi, msg",7);
+        txt(2,10,"    mov rdx, len",7);
+        txt(2,11,"    syscall",7);
+        txt(2,12,"    mov rax, 60       ; sys_exit",7);
+        txt(2,13,"    xor rdi, rdi",7);
+        txt(2,14,"    syscall",7);
+        txt(2,16,"section .data",{col}+4);
+        txt(2,17,"msg: db \\"Hello, World!\\", 10",7);
+        int n=f%24;
+        for(int i=0;i<n;i++)px(2+i,19,0xDB,{col}+(i%7));
+        txt(2,21,"REGISTERS:",{col}+2);
+        txt(2,22,"RAX=",7);pn(6,22,f%65536,{col}+4);
+        txt(2,23,"RBX=",7);pn(6,23,f/256,{col}+3);
+        dl(60000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_assembly)
+
+def t_arch(n):
+    msg = f"Arch Linux Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-24)/2,0,"{msg}",{col});
+    for(int f=0;f<150;f++) {{
+        clr(0);
+        txt((COLS-24)/2,0,"{msg}",{col});
+        px(35,2,0x03,{col}+6);
+        px(36,2,'r',{col}+6);
+        px(37,2,'c',{col}+6);
+        px(38,2,'h',{col}+6);
+        txt(2,4,"$ sudo pacman -Syu",{col}+2);
+        txt(2,5,":: Synchronizing package databases...",7);
+        txt(2,6," core is up to date",7);
+        txt(2,7," extra is up to date",7);
+        txt(2,8," community is up to date",7);
+        txt(2,9,":: Starting full system upgrade...",7);
+        txt(2,10,":: Replace linux with linux-lts? [Y/n]",7);
+        int n=f%20;
+        for(int i=0;i<n;i++) {{
+            if(i<5) {{txt(2,12+i,"[✓] package-",7);pn(5,12+i,i,{col});}}
+        }}
+        if(f<100) {{
+            txt(2,14,"  downloading packages...",{col}+2);
+            for(int i=0;i<f/5;i++)px(4+i,15,0xDB,{col}+2);
+        }} else {{
+            txt(2,14,"$ sudo pacman -S base-devel",{col}+2);
+            txt(2,15,"  resolving dependencies...",7);
+            txt(2,16,"  looking for conflicting packages...",7);
+        }}
+        txt(2,18,"$ yay -S opencode-git",{col}+4);
+        txt(2,19,"  :: Proceed with installation? [Y/n]",8);
+        txt(2,21,"$ neofetch",{col}+2);
+        txt(2,22,"  OS: Arch Linux x86_64",{col}+f%7+1);
+        txt(2,23,"  Kernel: 6.14.1-arch1-1",{col}+f%5+1);
+        dl(50000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_arch)
+
 # Assign templates to stages 9-100
 def assign_templates():
     assignments = {}

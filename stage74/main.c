@@ -39,30 +39,16 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage74_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Fire Effect (Stage 74)",6);
-    uint8_t fv[80*24];for(int i=0;i<80*24;i++)fv[i]=0;
-    for(int t=0;t<300;t++) {
-        for(int x=0;x<80;x++)fv[(23)*80+x]=(t%2)?(44):(0);
-        for(int y=2;y<23;y++)for(int x=1;x<79;x++) {
-            int v=fv[(y+1)*80+x];
-            if(v>(4))v-=(4);
-            else v=0;
-            if(x>0){int av=fv[(y+1)*80+x-1];if(av>v)v=av;}
-            if(x<79){int av=fv[(y+1)*80+x+1];if(av>v)v=av;}
-            if(v>0)v-=(3);
-            if(v<0)v=0;
-            fv[y*80+x]=v;
-            uint8_t cc=0;
-            if(v>19)cc=6*16+6;
-            else if(v>12)cc=6*16+((6+8)&0xF);
-            else if(v>7)cc=((6+6)&0xF)*16+((6+6)&0xF);
-            else if(v>2)cc=0x80+0x08;
-            else cc=0;
-            if(cc)px(x,y,0xDB,cc);else px(x,y,' ',0);
+    txt((COLS-18)/2,0,"Sine Wave (Stage 74)",15);
+    for(int f=0;f<200;f++) {
+        for(int x=0;x<80;x++)px(x,12,' ',7);
+        for(int x=0;x<80;x++) {
+            int y=12+(7*(((x+4*f)%15)%(15)-7.5))/6;
+            if(y>=2&&y<=22) px(x,y,0xDB,15);
         }
-        dl(10000);
+        dl(5000);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

@@ -39,28 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage49_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Fire Effect (Stage 49)",5);
-    uint8_t fv[80*24];for(int i=0;i<80*24;i++)fv[i]=0;
-    for(int t=0;t<300;t++) {
-        for(int x=0;x<80;x++)fv[(23)*80+x]=(t%2)?(39):(0);
-        for(int y=2;y<23;y++)for(int x=1;x<79;x++) {
-            int v=fv[(y+1)*80+x];
-            if(v>(3))v-=(3);
-            else v=0;
-            if(x>0){int av=fv[(y+1)*80+x-1];if(av>v)v=av;}
-            if(x<79){int av=fv[(y+1)*80+x+1];if(av>v)v=av;}
-            if(v>0)v-=(2);
-            if(v<0)v=0;
-            fv[y*80+x]=v;
-            uint8_t cc=0;
-            if(v>24)cc=5*16+5;
-            else if(v>11)cc=5*16+((5+8)&0xF);
-            else if(v>6)cc=((5+6)&0xF)*16+((5+6)&0xF);
-            else if(v>2)cc=0x80+0x08;
-            else cc=0;
-            if(cc)px(x,y,0xDB,cc);else px(x,y,' ',0);
+    txt((COLS-16)/2,0,"C# Demo (Stage 49)",5);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-16)/2,0,"C# Demo (Stage 49)",5);
+        txt(2,2,"using System.Linq;",5+2);
+        txt(2,4,"class Program {",7);
+        txt(2,5,"  static void Main() {",7);
+        txt(2,6,"    var nums = new[] {1,2,3,4,5};",7);
+        txt(2,7,"    var evens = nums.Where(n => n % 2 == 0);",7);
+        txt(2,8,"    var squared = nums.Select(n => n * n);",7);
+        for(int i=0;i<5;i++) {
+            int v=(i+1)*(i+1);
+            int y=10+i*2;
+            pn(6,y,v,5+(i%7));
+            px(12,y,'=',7);
+            pn(14,y,i+1,5+2);txt(2,y+6,"^2",7);
         }
-        dl(10000);
+        txt(2,21,"    Console.WriteLine(evens.Count());",7);
+        txt(2,22,"  }",7);
+        txt(2,23,"}",5+2);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

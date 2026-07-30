@@ -37,25 +37,31 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static int ip(int v) {
-    if(v<2)return 0;
-    for(int i=2;i*i<=v;i++)if(v%i==0)return 0;
-    return 1;
-}
-
 void stage44_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Prime Numbers (Stage 44)",15);
-    int cnt=0,v=2;
-    while(cnt<80) {
-        if(ip(v)) {
-            pn(5+(cnt%8)*9,3+(cnt/8)*2,v,15+(cnt%7));
-            cnt++;
+    txt((COLS-16)/2,0,"Perl Demo (Stage 44)",15);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-16)/2,0,"Perl Demo (Stage 44)",15);
+        txt(2,2,"#!/usr/bin/perl -w",15+2);
+        txt(2,4,"my @array = (1..10);",7);
+        txt(2,5,"my %hash = (foo => 42, bar => 99);",7);
+        txt(2,6,"print map { $_ * 2 } @array;",7);
+        for(int i=0;i<8;i++) {
+            int v=(i+1)*(f%6+1);
+            pn(4+i*5,8,v,15+(i%7));
         }
-        v++;
-        if(cnt%5==0)dl(20000);
+        txt(2,10,"s/foo/bar/g if /regex/",15+4);
+        txt(2,12,"sub greet {",7);
+        txt(2,13,"  my ($name) = @_;",7);
+        txt(2,14,"  return \"Hello, $name!\";",7);
+        txt(2,15,"}",7);
+        txt(2,17,"print greet('World');",15+2);
+        txt(2,19,"TMTOWTDI:",8);
+        txt(2,20,"There's More Than One Way To Do It",15+3);
+        dl(60000);
         if(kh()){kg();break;}
     }
-    txt((COLS-20)/2,23,"Press any key...",8);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

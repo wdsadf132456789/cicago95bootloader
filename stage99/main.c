@@ -39,28 +39,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage99_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Fire Effect (Stage 99)",7);
-    uint8_t fv[80*24];for(int i=0;i<80*24;i++)fv[i]=0;
-    for(int t=0;t<300;t++) {
-        for(int x=0;x<80;x++)fv[(23)*80+x]=(t%2)?(49):(0);
-        for(int y=2;y<23;y++)for(int x=1;x<79;x++) {
-            int v=fv[(y+1)*80+x];
-            if(v>(5))v-=(5);
-            else v=0;
-            if(x>0){int av=fv[(y+1)*80+x-1];if(av>v)v=av;}
-            if(x<79){int av=fv[(y+1)*80+x+1];if(av>v)v=av;}
-            if(v>0)v-=(1);
-            if(v<0)v=0;
-            fv[y*80+x]=v;
-            uint8_t cc=0;
-            if(v>24)cc=7*16+7;
-            else if(v>13)cc=7*16+((7+8)&0xF);
-            else if(v>8)cc=((7+6)&0xF)*16+((7+6)&0xF);
-            else if(v>2)cc=0x80+0x08;
-            else cc=0;
-            if(cc)px(x,y,0xDB,cc);else px(x,y,' ',0);
+    txt((COLS-14)/2,0,"Lua Demo (Stage 99)",10);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-14)/2,0,"Lua Demo (Stage 99)",10);
+        txt(2,2,"-- Tables are everything!",10+2);
+        txt(2,4,"local t = {name=\"Alice\", age=25}",7);
+        txt(2,5,"t.city = \"NYC\"",7);
+        txt(2,6,"print(t.name, t.age)",7);
+        txt(2,8,"local function fib(n)",10+4);
+        txt(2,9,"  if n <= 1 then return n end",7);
+        txt(2,10,"  return fib(n-1) + fib(n-2)",7);
+        txt(2,11,"end",10+4);
+        for(int i=0;i<6;i++) {
+            int y=13+i;
+            int v=i*f%10;
+            txt(2,y,"fib(",7);pn(6,y,i,10+2);txt(2,y+8,")=",7);pn(11,y,v,10+4);
         }
-        dl(10000);
+        txt(2,21,"for k,v in pairs(t) do print(k,v) end",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

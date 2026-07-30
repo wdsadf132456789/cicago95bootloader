@@ -39,20 +39,32 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage65_entry(void) {
     kf(); clr(0);
-    txt((COLS-28)/2,0,"Border Animation (Stage 65)",6);
-    for(int f=0;f<100;f++) {
-        int o=f%80;
-        for(int x=0;x<80;x++) { px(x,1,' ',0); px(x,23,' ',0); }
-        for(int y=2;y<23;y++) { px(0,y,' ',0); px(79,y,' ',0); }
-        px(o,1,'$',6);
-        px(79-o,23,'$',6);
-        px(o,23,'$',6);
-        px(79-o,1,'$',6);
-        px(0,2+o%21,'$',6);
-        px(79,2+(o+10)%21,'$',6);
-        dl(100000);
+    txt((COLS-24)/2,0,"Assembly Demo (Stage 65)",6);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-24)/2,0,"Assembly Demo (Stage 65)",6);
+        txt(2,2,"; x86-64 assembly",6+2);
+        txt(2,4,"section .text",7);
+        txt(2,5,"global _start",7);
+        txt(2,6,"_start:",7);
+        txt(2,7,"    mov rax, 1        ; sys_write",7);
+        txt(2,8,"    mov rdi, 1        ; stdout",7);
+        txt(2,9,"    mov rsi, msg",7);
+        txt(2,10,"    mov rdx, len",7);
+        txt(2,11,"    syscall",7);
+        txt(2,12,"    mov rax, 60       ; sys_exit",7);
+        txt(2,13,"    xor rdi, rdi",7);
+        txt(2,14,"    syscall",7);
+        txt(2,16,"section .data",6+4);
+        txt(2,17,"msg: db \"Hello, World!\", 10",7);
+        int n=f%24;
+        for(int i=0;i<n;i++)px(2+i,19,0xDB,6+(i%7));
+        txt(2,21,"REGISTERS:",6+2);
+        txt(2,22,"RAX=",7);pn(6,22,f%65536,6+4);
+        txt(2,23,"RBX=",7);pn(6,23,f/256,6+3);
+        dl(60000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

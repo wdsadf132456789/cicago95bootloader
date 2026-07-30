@@ -39,17 +39,31 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage36_entry(void) {
     kf(); clr(0);
-    txt((COLS-25)/2,0,"Counting Demo (Stage 36)",7);
-    for(int i=1;i<=999;i++) {
-        int v=i;
-        for(int x=0;x<9;x++) px(36+x,12,' ',7);
-        int p=44;
-        if(v>=100){px(p-3,12,'0'+v/100,7);v%=100;}
-        if(i>=10){px(p-2,12,'0'+v/10,7);v%=10;}
-        px(p-1,12,'0'+v,7);
-        dl(2001000);
+    txt((COLS-14)/2,0,"Go Demo (Stage 36)",7);
+    for(int f=0;f<150;f++) {
+        clr(0);
+        txt((COLS-14)/2,0,"Go Demo (Stage 36)",7);
+        txt(2,2,"package main",7+2);
+        txt(2,4,"func main() {",7);
+        txt(2,5,"  ch := make(chan int)",7);
+        txt(2,6,"  go func() {",7+4);
+        txt(2,7,"    for i := 0; i < 5; i++ {",7);
+        txt(2,8,"      ch <- i * 2",7);
+        txt(2,9,"    }",7);
+        txt(2,10,"    close(ch)",7);
+        txt(2,11,"  }()",7+4);
+        for(int i=0;i<5;i++) {
+            int y=13+i;
+            int v=i*(2+f%4);
+            pn(6,y,v,7+(i%6)+1);
+            for(int d=0;d<v;d++)px(10+d,y,0xFE,7+(d%7));
+        }
+        txt(2,20,"  for v := range ch {",7+2);
+        txt(2,21,"    fmt.Println(v)",7);
+        txt(2,22,"  }",7+2);
+        dl(50000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

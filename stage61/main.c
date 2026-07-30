@@ -39,17 +39,35 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage61_entry(void) {
     kf(); clr(0);
-    txt((COLS-25)/2,0,"Counting Demo (Stage 61)",2);
-    for(int i=1;i<=999;i++) {
-        int v=i;
-        for(int x=0;x<9;x++) px(36+x,12,' ',7);
-        int p=44;
-        if(v>=100){px(p-3,12,'0'+v/100,2);v%=100;}
-        if(i>=10){px(p-2,12,'0'+v/10,2);v%=10;}
-        px(p-1,12,'0'+v,2);
-        dl(2001000);
+    txt((COLS-10)/2,0,"R Demo (Stage 61)",2);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-10)/2,0,"R Demo (Stage 61)",2);
+        txt(2,2,"# Statistical computing",2+2);
+        txt(2,4,"data <- c(1, 4, 6, 8, 10, 15, 21)",7);
+        txt(2,5,"mean(data)",7);
+        txt(2,6,"sd(data)",7);
+        txt(2,7,"summary(data)",7);
+        for(int i=0;i<7;i++) {
+            int v=(i+1)*(f%6+1);
+            pn(4+i*5,9,v,2+(i%7));
+        }
+        int m=0;for(int i=0;i<7;i++)m+=(i+1)*(f%6+1);
+        m/=7;
+        txt(2,11,"mean = ",7);pn(8,11,m,2+4);
+        txt(2,13,"lm(y ~ x, data=df)",2+2);
+        txt(2,14,"t.test(group1, group2)",7);
+        txt(2,16,"library(ggplot2)",7);
+        txt(2,17,"ggplot(df, aes(x, y)) + geom_point()",7);
+        for(int i=0;i<5;i++) {
+            int y=19+i;
+            txt(2,y,"|",7);
+            for(int d=0;d<(i+1)*(f%3+1);d++)px(3+d,y,0xDB,2+(d%6));
+        }
+        txt(2,24,"# R: data science since '93",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

@@ -39,17 +39,28 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage47_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Spiral Pattern (Stage 47)",3);
-    for(int f=0;f<300;f++) {
-        for(int x=0;x<80;x++)for(int y=2;y<24;y++)px(x,y,' ',0);
-        for(int i=0;i<f;i++) {
-            float a=i*0.2f;
-            int r=i/12+1;
-            int x=40+(4*r+(int)(a*4))%(21)-5;
-            int y=13+(1*r/2+(int)(a*2))%(8)-4;
-            if(x>=0&&x<80&&y>=2&&y<24)px(x,y,0xDB,3+(i%7));
+    txt((COLS-20)/2,0,"Swift Demo (Stage 47)",3);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-20)/2,0,"Swift Demo (Stage 47)",3);
+        txt(2,2,"// Protocol-oriented programming",3+2);
+        txt(2,4,"protocol Greetable {",7);
+        txt(2,5,"  var name: String { get }",7);
+        txt(2,6,"  func greet() -> String",7);
+        txt(2,7,"}",7);
+        txt(2,9,"struct Person: Greetable {",3+4);
+        txt(2,10,"  let name: String",7);
+        txt(2,11,"  func greet() -> String {",7);
+        txt(2,12,"    return \"Hi, \(name)!\"",7);
+        txt(2,13,"  }",7);
+        txt(2,14,"}",3+4);
+        for(int i=0;i<5;i++) {
+            int y=16+i;
+            txt(2,y,"let x = Optional(",7);pn(8,y,i*2,3+2);txt(2,y+8,")",7);
         }
-        dl(8000);
+        txt(2,22,"let alice = Person(name: \"Alice\")",8);
+        txt(2,23,"print(alice.greet())  // Hi, Alice!",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

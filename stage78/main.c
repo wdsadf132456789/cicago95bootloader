@@ -37,20 +37,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t nr=7799922;
-static int nrn(void){nr=nr*1103515245+12345;return(nr>>16)&0x7FFF;}
-
 void stage78_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Perlin-ish Noise (Stage 78)",4);
-    for(int f=0;f<200;f++) {
-        for(int y=2;y<24;y++)for(int x=0;x<80;x++) {
-            int v=nrn()%(22);
-            px(x,y,v>2?0xDB:' ',v>2?(4+v%8):0);
-        }
-        dl(15000);
+    txt((COLS-16)/2,0,"Solo Pong (Stage 78)",4);
+    int bx=40,by=12,bdx=1,bdy=1;
+    int py=12;
+    for(int f=0;f<500;f++) {
+        for(int i=0;i<80;i++){px(i,1,' ',0);px(i,24,' ',0);}
+        px(1,py,0xDB,4);px(1,py+1,0xDB,4);px(1,py+2,0xDB,4);
+        bx+=bdx;by+=bdy;
+        if(by<=2||by>=23)bdy=-bdy;
+        if(bx<=2){bdx=-bdx;if(by>=py-1&&by<=py+3){}else{txt(30,12,"GAME OVER",4);wa();clr(0);txt((COLS-20)/2,12,"Score: 0",7);goto scr;}}
+        if(bx>=78)bdx=-bdx;
+        px(bx,by,0xDB,4+3);
+        if(kh()){uint8_t k=kg();if(!(k&0x80)){if(k==0x48&&py>2)py--;if(k==0x50&&py<21)py++;}}
+        dl(14000);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);
+scr:
+    txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

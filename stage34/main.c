@@ -39,17 +39,23 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage34_entry(void) {
     kf(); clr(0);
-    txt((COLS-30)/2,0,"Bouncing Ball Demo (Stage 34)",7);
-    int x=1,y=1,dx=1,dy=1;
-    for(int i=0;i<500;i++) {
-        px(x,y,' ',0);
-        x+=dx;y+=dy;
-        if(x<=0||x>=COLS-1)dx=-dx;
-        if(y<=0||y>=23)dy=-dy;
-        px(x,y,'%',7);
+    txt((COLS-20)/2,0,"Python Demo (Stage 34)",5);
+    for(int f=0;f<150;f++) {
+        clr(0);
+        txt((COLS-20)/2,0,"Python Demo (Stage 34)",5);
+        txt(2,2,"# list comprehension",5+2);
+        for(int i=0;i<8;i++) {
+            int y=4+i*2;
+            txt(2,y,"result = [x*2 for x in range(10)]",7);
+            pn(2,y+1,i*2,5+3);
+            px(16,y+1,'|',7);
+            int n=1+(i+f)%10;
+            for(int d=0;d<n;d++)px(18+d,y+1,0xFE,5+d%6+1);
+        }
+        txt(2,22,"# => [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]",8);
+        dl(50000);
         if(kh()){kg();break;}
-        dl(24000);
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

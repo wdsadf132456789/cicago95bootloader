@@ -39,15 +39,28 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage54_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Collatz Conjecture (Stage 54)",10);
-    uint32_t v=388;
-    for(int i=0;i<200;i++) {
-        pn(5,5+i/18*2,i,10+2);
-        px(8,5+i/18*2,':',10+2);
-        pn(10,5+i/18*2,v,10);
-        if(v%2==0)v/=2;else v=v*3+1;
-        if(v==1){txt(30,12,"Reached 1!",10+4);break;}
-        dl(400600);
+    txt((COLS-20)/2,0,"Julia Demo (Stage 54)",10);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-20)/2,0,"Julia Demo (Stage 54)",10);
+        txt(2,2,"# Multiple dispatch + speed of C",10+2);
+        txt(2,4,"using LinearAlgebra",7);
+        txt(2,5,"A = [1 2; 3 4]",7);
+        txt(2,6,"b = [5, 6]",7);
+        txt(2,7,"x = A \\ b  # solves linear system",7);
+        for(int i=0;i<4;i++) {
+            int y=9+i;
+            int v=i*(f%10+1);
+            pn(4+i*6,y,v,10+(i%7));
+        }
+        txt(2,14,"f(x) = x^2 + 2x - 1",10+2);
+        txt(2,15,"@show f(10)",7);
+        int r=100+f%200;
+        txt(2,17,"f(10) = ",7);pn(9,17,r,10+4);
+        txt(2,19,"using Plots",7);
+        txt(2,20,"plot(A[:,1], A[:,2])",7);
+        txt(2,22,"# Julia: walks like Python, runs like C",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

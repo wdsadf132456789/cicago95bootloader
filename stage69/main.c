@@ -37,25 +37,19 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static int ip(int v) {
-    if(v<2)return 0;
-    for(int i=2;i*i<=v;i++)if(v%i==0)return 0;
-    return 1;
-}
-
 void stage69_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Prime Numbers (Stage 69)",10);
-    int cnt=0,v=2;
-    while(cnt<80) {
-        if(ip(v)) {
-            pn(5+(cnt%8)*9,3+(cnt/8)*2,v,10+(cnt%7));
-            cnt++;
-        }
-        v++;
-        if(cnt%5==0)dl(20000);
+    txt((COLS-25)/2,0,"Counting Demo (Stage 69)",10);
+    for(int i=1;i<=999;i++) {
+        int v=i;
+        for(int x=0;x<9;x++) px(36+x,12,' ',7);
+        int p=44;
+        if(v>=100){px(p-3,12,'0'+v/100,10);v%=100;}
+        if(i>=10){px(p-2,12,'0'+v/10,10);v%=10;}
+        px(p-1,12,'0'+v,10);
+        dl(2004000);
         if(kh()){kg();break;}
     }
-    txt((COLS-20)/2,23,"Press any key...",8);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

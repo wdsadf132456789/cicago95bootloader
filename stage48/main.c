@@ -37,25 +37,30 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t sr=2666640;
-static int srn(void){sr=sr*1103515245+12345;return(sr>>16)&0x7FFF;}
-
 void stage48_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Falling Snow (Stage 48)",7);
-    int sx[38],sy[38];
-    for(int i=0;i<38;i++){sx[i]=srn()%80;sy[i]=srn()%22+2;}
-
-    for(int f=0;f<300;f++) {
-        for(int i=0;i<38;i++) {
-            px(sx[i],sy[i],' ',0);
-            sy[i]++;if(sy[i]>=24){sy[i]=2;sx[i]=srn()%80;}
-            if(srn()%3==0)sx[i]+=(srn()%3)-1;
-            if(sx[i]<0)sx[i]=79;
-            if(sx[i]>=80)sx[i]=0;
-            px(sx[i],sy[i],'.',7);
+    txt((COLS-20)/2,0,"Dart Demo (Stage 48)",4);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-20)/2,0,"Dart Demo (Stage 48)",4);
+        txt(2,2,"// Async/await + named params",4+2);
+        txt(2,4,"Future<void> fetchData() async {",7);
+        txt(2,5,"  var response = await http.get(url);",7);
+        txt(2,6,"  print(response.body);",7);
+        txt(2,7,"}",7);
+        txt(2,9,"void main() {",4+4);
+        txt(2,10,"  var list = [1, 2, 3, 4, 5];",7);
+        txt(2,11,"  var mapped = list.map((e) => e * 2);",7);
+        for(int i=0;i<5;i++) {
+            int v=(i+1)*(f%8+1);
+            pn(6+i*6,13,v,4+(i%7));
         }
-        dl(15000);
+        txt(2,15,"  named({required int x, int y = 0})",4+2);
+        txt(2,17,"  var result = named(x: 42, y: 10);",7);
+        txt(2,19,"  runApp(MyApp());",7);
+        txt(2,20,"}",4+4);
+        txt(2,22,"class MyApp extends StatelessWidget {...}",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

@@ -37,17 +37,34 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
+static uint32_t rnd=975255;
+static int rn(void){rnd=rnd*1103515245+12345;return(rnd>>16)&0x7FFF;}
+
 void stage79_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Collatz Conjecture (Stage 79)",5);
-    uint32_t v=563;
-    for(int i=0;i<200;i++) {
-        pn(5,5+i/18*2,i,5+2);
-        px(8,5+i/18*2,':',5+2);
-        pn(10,5+i/18*2,v,5);
-        if(v%2==0)v/=2;else v=v*3+1;
-        if(v==1){txt(30,12,"Reached 1!",5+4);break;}
-        dl(400700);
+    txt((COLS-24)/2,0,"Maze Generator (Stage 79)",5);
+    uint8_t m[80*24];for(int i=0;i<80*24;i++)m[i]=1;
+    int sx=2,sy=2;m[sy*80+sx]=0;
+    int dx[]={1,-1,0,0},dy[]={0,0,1,-1};
+    for(int c=0;c<500;c++) {
+        int d=rn()%4;
+        int nx=sx+dx[d]*2,ny=sy+dy[d]*2;
+        if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]) {
+            m[(sy+dy[d])*80+sx+dx[d]]=0;
+            m[ny*80+nx]=0;
+            sx=nx;sy=ny;
+        } else {
+            int ok=0;
+            for(int t=0;t<20;t++) {
+                d=rn()%4;
+                nx=sx+dx[d]*2;ny=sy+dy[d]*2;
+                if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]){ok=1;break;}
+            }
+            if(!ok){sx=2+rn()%38*2;sy=2+rn()%10*2;}
+        }
+        for(int y=2;y<23;y++)for(int x=0;x<80;x++)
+            px(x,y,m[y*80+x]?0xDB:' ',(m[y*80+x]?5:0));
+        dl(5000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

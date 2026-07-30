@@ -37,18 +37,32 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t nr=5299947;
-static int nrn(void){nr=nr*1103515245+12345;return(nr>>16)&0x7FFF;}
-
 void stage53_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Perlin-ish Noise (Stage 53)",9);
-    for(int f=0;f<200;f++) {
-        for(int y=2;y<24;y++)for(int x=0;x<80;x++) {
-            int v=nrn()%(13);
-            px(x,y,v>2?0xDB:' ',v>2?(9+v%8):0);
+    txt((COLS-22)/2,0,"Fortran Demo (Stage 53)",9);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-22)/2,0,"Fortran Demo (Stage 53)",9);
+        txt(2,2,"! Scientific computing since 1957",9+2);
+        txt(2,4,"program main",7);
+        txt(2,5,"  implicit none",7);
+        txt(2,6,"  integer :: i, n = 10",7);
+        txt(2,7,"  real :: matrix(3,3)",7);
+        txt(2,8,"  matrix = reshape([1,2,3,4,5,6,7,8,9], [3,3])",7);
+        for(int r=0;r<3;r++) {
+            for(int c=0;c<3;c++) {
+                int v=(r+c+1)*(f%4+1);
+                pn(6+c*6,10+r,v,9+(r*3+c)%7+1);
+            }
         }
-        dl(15000);
+        txt(2,14,"  do i = 1, n",9+4);
+        txt(2,15,"    print *, 'i = ', i",7);
+        txt(2,16,"  end do",9+4);
+        int fn=1;for(int i=1;i<=f%8+1;i++)fn*=i;
+        txt(2,18,"  ! Factorial:",8);
+        pn(14,18,f%8+1,9+2);txt(2,18,"=",7);pn(17,18,fn,9+4);
+        txt(2,20,"end program main",7);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

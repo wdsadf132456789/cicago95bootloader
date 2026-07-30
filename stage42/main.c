@@ -39,17 +39,28 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage42_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Progress Bars (Stage 42)",13);
-    for(int p=0;p<=100;p++) {
-        for(int b=0;b<5;b++) {
-            int w=p*(60-(b*8))/100;
-            int y=5+b*3;
-            for(int x=0;x<60;x++)px(10+x,y,' ',7);
-            for(int x=0;x<w;x++)px(10+x,y,0xDB,13+b);
+    txt((COLS-16)/2,0,"C++ Demo (Stage 42)",13);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-16)/2,0,"C++ Demo (Stage 42)",13);
+        txt(2,2,"template<typename T>",13+2);
+        txt(2,3,"class Vector {",13+2);
+        txt(2,4,"  T* data; size_t len;",7);
+        txt(2,5,"public:",13+4);
+        txt(2,6,"  Vector() : data(nullptr), len(0) {}",7);
+        txt(2,7,"  void push_back(const T& val) {...}",7);
+        txt(2,8,"  T& operator[](size_t i) { return data[i]; }",7);
+        txt(2,9,"};",13+2);
+        txt(2,11,"Vector<int> v;",7);
+        txt(2,12,"v.push_back(42);",7);
+        for(int i=0;i<6;i++) {
+            int y=14+i;
+            txt(2,y,"v[",7);pn(4,y,i,13);txt(2,y+6,"]=",7);pn(9,y,(i+1)*(f%5+1),13+3);
         }
-        dl(150200);
+        txt(2,22,"auto result = v | views::filter(...)",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

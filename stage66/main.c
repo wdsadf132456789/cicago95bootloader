@@ -39,16 +39,41 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage66_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Sine Wave (Stage 66)",7);
-    for(int f=0;f<200;f++) {
-        for(int x=0;x<80;x++)px(x,12,' ',7);
-        for(int x=0;x<80;x++) {
-            int y=12+(7*(((x+2*f)%15)%(15)-7.5))/6;
-            if(y>=2&&y<=22) px(x,y,0xDB,7);
+    txt((COLS-24)/2,0,"Arch Linux Demo (Stage 66)",7);
+    for(int f=0;f<150;f++) {
+        clr(0);
+        txt((COLS-24)/2,0,"Arch Linux Demo (Stage 66)",7);
+        px(35,2,0x03,7+6);
+        px(36,2,'r',7+6);
+        px(37,2,'c',7+6);
+        px(38,2,'h',7+6);
+        txt(2,4,"$ sudo pacman -Syu",7+2);
+        txt(2,5,":: Synchronizing package databases...",7);
+        txt(2,6," core is up to date",7);
+        txt(2,7," extra is up to date",7);
+        txt(2,8," community is up to date",7);
+        txt(2,9,":: Starting full system upgrade...",7);
+        txt(2,10,":: Replace linux with linux-lts? [Y/n]",7);
+        int n=f%20;
+        for(int i=0;i<n;i++) {
+            if(i<5) {txt(2,12+i,"[✓] package-",7);pn(5,12+i,i,7);}
         }
-        dl(5000);
+        if(f<100) {
+            txt(2,14,"  downloading packages...",7+2);
+            for(int i=0;i<f/5;i++)px(4+i,15,0xDB,7+2);
+        } else {
+            txt(2,14,"$ sudo pacman -S base-devel",7+2);
+            txt(2,15,"  resolving dependencies...",7);
+            txt(2,16,"  looking for conflicting packages...",7);
+        }
+        txt(2,18,"$ yay -S opencode-git",7+4);
+        txt(2,19,"  :: Proceed with installation? [Y/n]",8);
+        txt(2,21,"$ neofetch",7+2);
+        txt(2,22,"  OS: Arch Linux x86_64",7+f%7+1);
+        txt(2,23,"  Kernel: 6.14.1-arch1-1",7+f%5+1);
+        dl(50000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

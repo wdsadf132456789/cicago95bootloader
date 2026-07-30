@@ -37,29 +37,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
+static int ip(int v) {
+    if(v<2)return 0;
+    for(int i=2;i*i<=v;i++)if(v%i==0)return 0;
+    return 1;
+}
+
 void stage77_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Binary Clock (Stage 77)",3);
-    for(int f=0;f<200;f++) {
-        int b[]={f/3600%24,(f/60)%60,f%60};
-        for(int i=0;i<3;i++) {
-            for(int y=0;y<6;y++) {
-                int bit=(b[i]>>(5-y))&1;
-                for(int x=0;x<3;x++)
-                    px(10+i*25+x,5+y,bit?0xDB:' ',bit?(3+i*4):0);
-            }
+    txt((COLS-22)/2,0,"Prime Numbers (Stage 77)",3);
+    int cnt=0,v=2;
+    while(cnt<80) {
+        if(ip(v)) {
+            pn(5+(cnt%8)*9,3+(cnt/8)*2,v,3+(cnt%7));
+            cnt++;
         }
-        for(int i=0;i<3;i++) {
-            txt(10+i*25,12,":",3);
-            int v=b[i];
-            px(16+i*25,12,'0'+(v/10)%10,3);
-            px(19+i*25,12,'0'+v%10,3);
-            txt(10+i*25,13,"-----",3);
-        }
-        txt(10,14,"H",3);txt(35,14,"M",3);txt(60,14,"S",3);
-        dl(50000);
+        v++;
+        if(cnt%5==0)dl(20000);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    txt((COLS-20)/2,23,"Press any key...",8);
     wa();
 }

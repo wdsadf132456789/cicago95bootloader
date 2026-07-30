@@ -39,18 +39,10 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage68_entry(void) {
     kf(); clr(0);
-    txt((COLS-26)/2,0,"Fibonacci Sequence (Stage 68)",9);
-    uint32_t a=0,b=1;
-    for(int i=0;i<60;i++) {
-        pn(10,5+i/10*2,i,9+2);
-        px(13,5+i/10*2,':',9);
-        pn(15,5+i/10*2,a,9);
-        uint32_t nxt=a+b;
-        if(nxt<a){txt(10,22,"Overflow!",4);break;}
-        a=b;b=nxt;
-        dl(400400);
-        if(kh()){kg();break;}
-    }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    txt((COLS-30)/2,0,"Color Test Pattern (Stage 68)",0x0F);
+    for(int y=0;y<20;y++)
+        for(int x=0;x<80;x++)
+            px(x,y+2,0xDB,(x/5)+(y*4)%16);
+    txt((COLS-20)/2,23,"Press any key...",8);
     wa();
 }

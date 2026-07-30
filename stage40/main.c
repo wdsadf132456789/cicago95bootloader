@@ -39,20 +39,37 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage40_entry(void) {
     kf(); clr(0);
-    txt((COLS-28)/2,0,"Border Animation (Stage 40)",11);
-    for(int f=0;f<100;f++) {
-        int o=f%80;
-        for(int x=0;x<80;x++) { px(x,1,' ',0); px(x,23,' ',0); }
-        for(int y=2;y<23;y++) { px(0,y,' ',0); px(79,y,' ',0); }
-        px(o,1,'*',11);
-        px(79-o,23,'*',11);
-        px(o,23,'*',11);
-        px(79-o,1,'*',11);
-        px(0,2+o%21,'*',11);
-        px(79,2+(o+10)%21,'*',11);
-        dl(150000);
+    txt((COLS-24)/2,0,"Brainfuck Demo (Stage 40)",11);
+    char tape[16];for(int i=0;i<16;i++)tape[i]=0;
+    int ptr=0;
+    const char *prog="+++++[>+++++<-]>+++++.";
+    for(int f=0;f<200;f++) {
+        clr(0);
+        txt((COLS-24)/2,0,"Brainfuck Demo (Stage 40)",11);
+        txt(2,2,"Program:",11+2);
+        txt(2,3,prog,7);
+        txt(2,5,"Tape:",11+2);
+        for(int i=0;i<16;i++) {
+            int hi=(i==ptr);
+            txt(3+i*4,6,"[",hi?11+4:7);
+            pn(4+i*4,6,(int)tape[i],hi?11+6:7);
+            txt(3+i*4+8,6,"]",hi?11+4:7);
+        }
+        txt(2,8,"Ptr:",7);pn(7,8,ptr,11+2);
+        if(f%5==0&&f<160) {
+            int step=f/5;
+            int pc=step%17;
+            if(pc<14&&tape[ptr]<255)tape[ptr]+=(pc<5?1:0);
+            if(pc>=5&&pc<10&&ptr<15)ptr++;
+            if(pc==10&&ptr>0)ptr--;
+        }
+        txt(2,10,"Accumulator:",7);pn(14,10,(int)tape[ptr],11+4);
+        int n=f%24;
+        for(int i=0;i<n;i++)px(30+(i%20),12+(i/20),0xB0,11+i%7+1);
+        txt(2,14,"BF commands: + - > < [ ] , .",8);
+        dl(40000);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

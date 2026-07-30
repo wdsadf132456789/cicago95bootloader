@@ -39,27 +39,28 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage82_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"JavaScript Demo (Stage 82)",8);
-    int boxes[6][4];
-    for(int i=0;i<6;i++){boxes[i][0]=5+i*12;boxes[i][1]=4+i%3*6;boxes[i][2]=8;boxes[i][3]=4;}
-    for(int f=0;f<200;f++) {
-        clr(0);
-        txt((COLS-24)/2,0,"JavaScript Demo (Stage 82)",8);
-        txt(2,2,"// DOM-like animation",8+2);
-        for(int i=0;i<6;i++) {
-            int idx=(f+i)%6;
-            boxes[idx][0]+=(i%3-1);
-            boxes[idx][1]+=(i%2?1:-1);
-            int bx=boxes[idx][0],by=boxes[idx][1];
-            if(bx<1||bx>72)boxes[idx][0]=bx<1?5:69;
-            if(by<2||by>21)boxes[idx][1]=by<2?4:20;
-            bx=boxes[idx][0];by=boxes[idx][1];
-            for(int dy=0;dy<boxes[idx][3];dy++)
-                for(int dx=0;dx<boxes[idx][2];dx++)
-                    px(bx+dx,by+dy,0xDB,(8+idx)%15+1);
+    txt((COLS-18)/2,0,"Fire Effect (Stage 82)",6);
+    uint8_t fv[80*24];for(int i=0;i<80*24;i++)fv[i]=0;
+    for(int t=0;t<300;t++) {
+        for(int x=0;x<80;x++)fv[(23)*80+x]=(t%2)?(32):(0);
+        for(int y=2;y<23;y++)for(int x=1;x<79;x++) {
+            int v=fv[(y+1)*80+x];
+            if(v>(4))v-=(4);
+            else v=0;
+            if(x>0){int av=fv[(y+1)*80+x-1];if(av>v)v=av;}
+            if(x<79){int av=fv[(y+1)*80+x+1];if(av>v)v=av;}
+            if(v>0)v-=(2);
+            if(v<0)v=0;
+            fv[y*80+x]=v;
+            uint8_t cc=0;
+            if(v>17)cc=6*16+6;
+            else if(v>12)cc=6*16+((6+8)&0xF);
+            else if(v>9)cc=((6+6)&0xF)*16+((6+6)&0xF);
+            else if(v>2)cc=0x80+0x08;
+            else cc=0;
+            if(cc)px(x,y,0xDB,cc);else px(x,y,' ',0);
         }
-        txt(2,24,"for box of boxes { box.x+=vx; box.y+=vy; }",8);
-        dl(30000);
+        dl(10000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

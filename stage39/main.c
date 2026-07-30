@@ -39,22 +39,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage39_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Star Field (Stage 39)",10);
-    uint32_t r=488244;
-    for(int f=0;f<200;f++) {
-        for(int i=0;i<5;i++) {
-            r=r*1103515245+12345;
-            int x=(r>>16)%80,y=((r>>8)%22)+1;
-            px(x,y,0xDB,0x08);
+    txt((COLS-20)/2,0,"Haskell Demo (Stage 39)",10);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-20)/2,0,"Haskell Demo (Stage 39)",10);
+        txt(2,2,"-- Pure functional programming",10+2);
+        txt(2,4,"fibs = 0 : 1 : zipWith (+) fibs (tail fibs)",7);
+        txt(2,6,"fmap (+1) (Just 5)  -- Just 6",7);
+        txt(2,8,"pure (*2) <*> [1,2,3] -- [2,4,6]",7);
+        for(int i=0;i<6;i++) {
+            int y=10+i*2;
+            int a=i;
+            txt(2,y,"let x = ",7);pn(9,y,a,10+2);
+            txt(2,y+1,"let y = fmap (*",7);pn(9,y+1,f%5+1,10+3);txt(2,y+1+8,") x",7);
         }
-        {{if(kh()){kg();break;}}}
-        dl(200900);
-        for(int i=0;i<3;i++) {
-            r=r*1103515245+12345;
-            int x=(r>>16)%80,y=((r>>8)%22)+1;
-            px(x,y,' ',0);
-        }
+        txt(2,23,"main = putStrLn \"Hello, Haskell!\"",8);
+        txt(2,24,"-- Result: ",8);pn(12,24,f%10,10+4);
+        dl(60000);
+        if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

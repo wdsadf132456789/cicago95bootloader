@@ -39,19 +39,22 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage72_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Spiral Pattern (Stage 72)",13);
-    for(int f=0;f<300;f++) {
-        for(int x=0;x<80;x++)for(int y=2;y<24;y++)px(x,y,' ',0);
-        for(int i=0;i<f;i++) {
-            float a=i*0.2f;
-            int r=i/12+1;
-            int x=40+(1*r+(int)(a*2))%(1)-5;
-            int y=13+(2*r/2+(int)(a*3))%(2)-1;
-            if(x>=0&&x<80&&y>=2&&y<24)px(x,y,0xDB,13+(i%7));
+    txt((COLS-20)/2,0,"Star Field (Stage 72)",13);
+    uint32_t r=895629;
+    for(int f=0;f<200;f++) {
+        for(int i=0;i<5;i++) {
+            r=r*1103515245+12345;
+            int x=(r>>16)%80,y=((r>>8)%22)+1;
+            px(x,y,0xDB,0x08);
         }
-        dl(8000);
-        if(kh()){kg();break;}
+        {{if(kh()){kg();break;}}}
+        dl(200200);
+        for(int i=0;i<3;i++) {
+            r=r*1103515245+12345;
+            int x=(r>>16)%80,y=((r>>8)%22)+1;
+            px(x,y,' ',0);
+        }
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

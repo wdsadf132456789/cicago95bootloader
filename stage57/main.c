@@ -39,27 +39,28 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage57_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"JavaScript Demo (Stage 57)",13);
-    int boxes[6][4];
-    for(int i=0;i<6;i++){boxes[i][0]=5+i*12;boxes[i][1]=4+i%3*6;boxes[i][2]=8;boxes[i][3]=4;}
-    for(int f=0;f<200;f++) {
+    txt((COLS-20)/2,0,"Erlang Demo (Stage 57)",13);
+    for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-24)/2,0,"JavaScript Demo (Stage 57)",13);
-        txt(2,2,"// DOM-like animation",13+2);
-        for(int i=0;i<6;i++) {
-            int idx=(f+i)%6;
-            boxes[idx][0]+=(i%3-1);
-            boxes[idx][1]+=(i%2?1:-1);
-            int bx=boxes[idx][0],by=boxes[idx][1];
-            if(bx<1||bx>72)boxes[idx][0]=bx<1?5:69;
-            if(by<2||by>21)boxes[idx][1]=by<2?4:20;
-            bx=boxes[idx][0];by=boxes[idx][1];
-            for(int dy=0;dy<boxes[idx][3];dy++)
-                for(int dx=0;dx<boxes[idx][2];dx++)
-                    px(bx+dx,by+dy,0xDB,(13+idx)%15+1);
+        txt((COLS-20)/2,0,"Erlang Demo (Stage 57)",13);
+        txt(2,2,"%% Actor model concurrency",13+2);
+        txt(2,4,"-module(hello).",7);
+        txt(2,5,"-export([start/0, loop/0]).",7);
+        txt(2,7,"start() ->",13+4);
+        txt(2,8,"    Pid = spawn(fun loop/0),",7);
+        txt(2,9,"    Pid ! {hello, world}.",7);
+        txt(2,11,"loop() ->",13+4);
+        txt(2,12,"    receive",7);
+        txt(2,13,"        {hello, Msg} -> io:format(\"~s~n\", [Msg])",7);
+        txt(2,14,"    end,",7);
+        txt(2,15,"    loop().",13+4);
+        for(int i=0;i<5;i++) {
+            int y=17+i;
+            int n=i*(f%4+1);
+            txt(2,y,"Pid ! {data, ",7);pn(14,y,n,13+2);txt(2,y+4,"}",7);
         }
-        txt(2,24,"for box of boxes { box.x+=vx; box.y+=vy; }",8);
-        dl(30000);
+        txt(2,23,"%% \"Let it crash\" philosophy",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

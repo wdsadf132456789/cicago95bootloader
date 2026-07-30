@@ -39,30 +39,28 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage56_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"PHP Demo (Stage 56)",12);
-    const char *rows[]={"$row[0]='Alice'; $row[1]=25; $row[2]='NYC';",
-                          "$row[0]='Bob';   $row[1]=31; $row[2]='SF';",
-                          "$row[0]='Carol'; $row[1]=22; $row[2]='LA';",
-                          "$row[0]='Dave';  $row[1]=38; $row[2]='CHI';",
-                          "$row[0]='Eve';   $row[1]=29; $row[2]='SEA';"};
+    txt((COLS-16)/2,0,"APL Demo (Stage 56)",12);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-16)/2,0,"PHP Demo (Stage 56)",12);
-        txt(2,2,"<?php",12+2);
-        txt(2,4,"$data = [",7);
-        for(int i=0;i<5;i++) {
-            int y=6+i*2;
-            txt(4,y,rows[i],f%2?7:12+4);
-            if(i==f%5){txt(4,y,rows[i],12+6);}
+        txt((COLS-16)/2,0,"APL Demo (Stage 56)",12);
+        txt(2,2,"â One line = an entire program",12+2);
+        txt(2,4,"âxââ·10         â numbers 1 to 10",7);
+        txt(2,5,"âxÃ2             â doubled",7);
+        txt(2,6,"â+/x              â sum of vector",7);
+        txt(2,7,"ââ©3 3ââ¬9        â 3x3 matrix",7);
+        txt(2,9,"ââ¬âÂ¨ x          â square root each",7);
+        for(int i=0;i<8;i++) {
+            int y=11+i;
+            int v=(i+1)*(f%6+1);
+            txt(2,y,"ââ¬[",7);
+            px(6,y,0xFE,12+(i%7));
+            txt(2,y+2,"]",7);
+            pn(9,y,v,12+2);
         }
-        txt(2,17,"];",7);
-        txt(2,19,"echo '<table>'",7);
-        txt(2,21,"foreach($data as $r):",7);
-        txt(2,22,"  echo '<tr>...</tr>';",7);
-        txt(2,23,"endforeach;",7);
-        int stage=f%6;
-        txt(2,19+(stage>2),stage<3?"/* BUILDING TABLE */":"/* RENDERING HTML */",12+2);
-        dl(50000);
+        txt(2,21,"â (â£Ã·Ã·)  â¨rÃ·r  âÂ² ",8);
+        txt(2,22,"â (iota rho iota) â nonsense",8);
+        txt(2,24,"â APL: write once, read never",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

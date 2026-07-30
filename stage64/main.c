@@ -39,22 +39,28 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage64_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Star Field (Stage 64)",5);
-    uint32_t r=796869;
-    for(int f=0;f<200;f++) {
-        for(int i=0;i<5;i++) {
-            r=r*1103515245+12345;
-            int x=(r>>16)%80,y=((r>>8)%22)+1;
-            px(x,y,0xDB,0x08);
+    txt((COLS-24)/2,0,"Smalltalk Demo (Stage 64)",5);
+    for(int f=0;f<120;f++) {
+        clr(0);
+        txt((COLS-24)/2,0,"Smalltalk Demo (Stage 64)",5);
+        txt(2,2,"\" Everything is an object \"",5+2);
+        txt(2,4,"| numbers |",7);
+        txt(2,5,"numbers := OrderedCollection new.",7);
+        txt(2,6,"numbers add: 42.",7);
+        txt(2,7,"numbers add: 99.",7);
+        txt(2,8,"numbers do: [ :n | Transcript show: n printString ]",7);
+        for(int i=0;i<6;i++) {
+            int y=10+i;
+            int v=(i+1)*(f%5+1);
+            txt(2,y,"n := ",7);pn(6,y,v,5+2);
         }
-        {{if(kh()){kg();break;}}}
-        dl(200400);
-        for(int i=0;i<3;i++) {
-            r=r*1103515245+12345;
-            int x=(r>>16)%80,y=((r>>8)%22)+1;
-            px(x,y,' ',0);
-        }
+        txt(2,17,"3 timesRepeat: [ Transcript show: 'Hello' ]",5+4);
+        txt(2,19,"a := 5 factorial.",7);
+        txt(2,20,"b := #(1 2 3) collect: [ :e | e * 2 ].",7);
+        txt(2,22,"\" Smalltalk inspired OOP & MVC \"",8);
+        dl(60000);
+        if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }
