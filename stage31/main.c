@@ -29,13 +29,27 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
 
 void stage31_entry(void) {
     kf(); clr(0);
-    txt((COLS-30)/2,0,"Color Test Pattern (Stage 31)",0x0F);
-    for(int y=0;y<20;y++)
-        for(int x=0;x<80;x++)
-            px(x,y+2,0xDB,(x/5)+(y*4)%16);
-    txt((COLS-20)/2,23,"Press any key...",8);
+    txt((COLS-30)/2,0,"Bouncing Ball Demo (Stage 31)",4);
+    int x=1,y=1,dx=1,dy=1;
+    for(int i=0;i<500;i++) {
+        px(x,y,' ',0);
+        x+=dx;y+=dy;
+        if(x<=0||x>=COLS-1)dx=-dx;
+        if(y<=0||y>=23)dy=-dy;
+        px(x,y,'@',4);
+        if(kh()){kg();break;}
+        dl(21000);
+    }
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

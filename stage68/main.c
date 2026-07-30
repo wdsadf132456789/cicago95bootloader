@@ -29,30 +29,38 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
 
-static uint32_t lr=5288836;
-static int lrn(void){lr=lr*1103515245+12345;return(lr>>16)&0x7FFF;}
 
 void stage68_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Game of Life (Stage 68)",10);
-    uint8_t g[82*26]={0};
-    for(int i=0;i<400;i++)g[(2+(lrn()%21))*82+1+(lrn()%78)]=1;
-
-    for(int gen=0;gen<100;gen++) {
-        uint8_t ng[82*26]={0};
-        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
-            int n=g[(y-1)*82+(x-1)]+g[(y-1)*82+x]+g[(y-1)*82+(x+1)]
-                 +g[y*82+(x-1)]+g[y*82+(x+1)]
-                 +g[(y+1)*82+(x-1)]+g[(y+1)*82+x]+g[(y+1)*82+(x+1)];
-            if(g[y*82+x])ng[y*82+x]=(n==2||n==3)?1:0;
-            else ng[y*82+x]=(n==3)?1:0;
+    txt((COLS-18)/2,0,"Fire Effect (Stage 68)",8);
+    uint8_t fv[80*24];for(int i=0;i<80*24;i++)fv[i]=0;
+    for(int t=0;t<300;t++) {
+        for(int x=0;x<80;x++)fv[(23)*80+x]=(t%2)?(38):(0);
+        for(int y=2;y<23;y++)for(int x=1;x<79;x++) {
+            int v=fv[(y+1)*80+x];
+            if(v>(2))v-=(2);
+            else v=0;
+            if(x>0){int av=fv[(y+1)*80+x-1];if(av>v)v=av;}
+            if(x<79){int av=fv[(y+1)*80+x+1];if(av>v)v=av;}
+            if(v>0)v-=(3);
+            if(v<0)v=0;
+            fv[y*80+x]=v;
+            uint8_t cc=0;
+            if(v>23)cc=8*16+8;
+            else if(v>14)cc=8*16+((8+8)&0xF);
+            else if(v>7)cc=((8+6)&0xF)*16+((8+6)&0xF);
+            else if(v>2)cc=0x80+0x08;
+            else cc=0;
+            if(cc)px(x,y,0xDB,cc);else px(x,y,' ',0);
         }
-        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
-            g[y*82+x]=ng[y*82+x];
-            px(x,y,g[y*82+x]?0xDB:' ',g[y*82+x]?(10):0);
-        }
-        dl(20000);
+        dl(10000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

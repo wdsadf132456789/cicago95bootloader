@@ -29,21 +29,33 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
+
+static void bp(uint32_t f,uint32_t ms) {
+    uint32_t d=1193182/f;
+    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)0xB6),"d"((uint16_t)0x43));
+    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)(d&0xFF)),"d"((uint16_t)0x42));
+    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)(d>>8)),"d"((uint16_t)0x42));
+    uint8_t t; __asm__ volatile("inb %%dx,%0":"=a"(t):"d"((uint16_t)0x61));
+    __asm__ volatile("outb %%al,%%dx"::"a"(t|3),"d"((uint16_t)0x61));
+    dl(ms*8000);
+    __asm__ volatile("inb %%dx,%0":"=a"(t):"d"((uint16_t)0x61));
+    __asm__ volatile("outb %%al,%%dx"::"a"(t&0xFC),"d"((uint16_t)0x61));
+}
 
 void stage57_entry(void) {
     kf(); clr(0);
-    txt((COLS-28)/2,0,"Border Animation (Stage 57)",13);
-    for(int f=0;f<100;f++) {
-        int o=f%80;
-        for(int x=0;x<80;x++) { px(x,1,' ',0); px(x,23,' ',0); }
-        for(int y=2;y<23;y++) { px(0,y,' ',0); px(79,y,' ',0); }
-        px(o,1,'~',13);
-        px(79-o,23,'~',13);
-        px(o,23,'~',13);
-        px(79-o,1,'~',13);
-        px(0,2+o%21,'~',13);
-        px(79,2+(o+10)%21,'~',13);
-        dl(170000);
+    txt((COLS-28)/2,12,"PC Speaker Melody (Stage 57)",13);
+    uint16_t nm[]={523,659,784,1047,784,659,523,659,784,523,587,659,698,784,880,988,1047,784,523};
+    uint16_t nd[]={100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,200,200,200};
+    for(int i=0;i<19;i++) {
+        bp(nm[i],nd[i]);
         if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);

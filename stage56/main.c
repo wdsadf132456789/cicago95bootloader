@@ -29,24 +29,22 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
 
 void stage56_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Star Field (Stage 56)",12);
-    uint32_t r=698109;
-    for(int f=0;f<200;f++) {
-        for(int i=0;i<5;i++) {
-            r=r*1103515245+12345;
-            int x=(r>>16)%80,y=((r>>8)%22)+1;
-            px(x,y,0xDB,0x08);
-        }
-        {{if(kh()){kg();break;}}}
-        dl(200600);
-        for(int i=0;i<3;i++) {
-            r=r*1103515245+12345;
-            int x=(r>>16)%80,y=((r>>8)%22)+1;
-            px(x,y,' ',0);
-        }
+    for(int i=0;i<80+35;i++) {
+        for(int x=0;x<80;x++) px(x,12,' ',7);
+        for(int j=0;"Chicago-95: Where the past meets the future"[j]&&i+j<80;j++)
+            px(i+j,12,"Chicago-95: Where the past meets the future"[j],12);
+        dl(300600);
+        if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();

@@ -29,6 +29,13 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
 
 static void bp(uint32_t f,uint32_t ms) {
     uint32_t d=1193182/f;

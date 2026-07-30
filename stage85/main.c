@@ -29,22 +29,33 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
+
+static int ip(int v) {
+    if(v<2)return 0;
+    for(int i=2;i*i<=v;i++)if(v%i==0)return 0;
+    return 1;
+}
 
 void stage85_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Spiral Pattern (Stage 85)",11);
-    for(int f=0;f<300;f++) {
-        for(int x=0;x<80;x++)for(int y=2;y<24;y++)px(x,y,' ',0);
-        for(int i=0;i<f;i++) {
-            float a=i*0.2f;
-            int r=i/12+1;
-            int x=40+(2*r+(int)(a*3))%(11)-5;
-            int y=13+(3*r/2+(int)(a*1))%(4)-2;
-            if(x>=0&&x<80&&y>=2&&y<24)px(x,y,0xDB,11+(i%7));
+    txt((COLS-22)/2,0,"Prime Numbers (Stage 85)",11);
+    int cnt=0,v=2;
+    while(cnt<80) {
+        if(ip(v)) {
+            pn(5+(cnt%8)*9,3+(cnt/8)*2,v,11+(cnt%7));
+            cnt++;
         }
-        dl(8000);
+        v++;
+        if(cnt%5==0)dl(20000);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    txt((COLS-20)/2,23,"Press any key...",8);
     wa();
 }

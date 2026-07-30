@@ -29,19 +29,35 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
 
-static uint32_t nr=4899951;
-static int nrn(void){nr=nr*1103515245+12345;return(nr>>16)&0x7FFF;}
 
 void stage49_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Perlin-ish Noise (Stage 49)",5);
+    txt((COLS-18)/2,0,"Binary Clock (Stage 49)",5);
     for(int f=0;f<200;f++) {
-        for(int y=2;y<24;y++)for(int x=0;x<80;x++) {
-            int v=nrn()%(9);
-            px(x,y,v>2?0xDB:' ',v>2?(5+v%8):0);
+        int b[]={f/3600%24,(f/60)%60,f%60};
+        for(int i=0;i<3;i++) {
+            for(int y=0;y<6;y++) {
+                int bit=(b[i]>>(5-y))&1;
+                for(int x=0;x<3;x++)
+                    px(10+i*25+x,5+y,bit?0xDB:' ',bit?(5+i*4):0);
+            }
         }
-        dl(15000);
+        for(int i=0;i<3;i++) {
+            txt(10+i*25,12,":",5);
+            int v=b[i];
+            px(16+i*25,12,'0'+(v/10)%10,5);
+            px(19+i*25,12,'0'+v%10,5);
+            txt(10+i*25,13,"-----",5);
+        }
+        txt(10,14,"H",5);txt(35,14,"M",5);txt(60,14,"S",5);
+        dl(50000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

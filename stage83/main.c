@@ -29,26 +29,27 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
 
 void stage83_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"Solo Pong (Stage 83)",9);
-    int bx=40,by=12,bdx=1,bdy=1;
-    int py=12;
-    for(int f=0;f<500;f++) {
-        for(int i=0;i<80;i++){px(i,1,' ',0);px(i,24,' ',0);}
-        px(1,py,0xDB,9);px(1,py+1,0xDB,9);px(1,py+2,0xDB,9);
-        bx+=bdx;by+=bdy;
-        if(by<=2||by>=23)bdy=-bdy;
-        if(bx<=2){bdx=-bdx;if(by>=py-1&&by<=py+3){}else{txt(30,12,"GAME OVER",4);wa();clr(0);txt((COLS-20)/2,12,"Score: 0",7);goto scr;}}
-        if(bx>=78)bdx=-bdx;
-        px(bx,by,0xDB,9+3);
-        if(kh()){uint8_t k=kg();if(!(k&0x80)){if(k==0x48&&py>2)py--;if(k==0x50&&py<21)py++;}}
-        dl(19000);
+    txt((COLS-22)/2,0,"Progress Bars (Stage 83)",9);
+    for(int p=0;p<=100;p++) {
+        for(int b=0;b<5;b++) {
+            int w=p*(60-(b*8))/100;
+            int y=5+b*3;
+            for(int x=0;x<60;x++)px(10+x,y,' ',7);
+            for(int x=0;x<w;x++)px(10+x,y,0xDB,9+b);
+        }
+        dl(150300);
         if(kh()){kg();break;}
     }
-    clr(0);
-scr:
-    txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

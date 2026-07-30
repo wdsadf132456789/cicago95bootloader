@@ -29,13 +29,27 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
 
 void stage73_entry(void) {
     kf(); clr(0);
-    txt((COLS-30)/2,0,"Color Test Pattern (Stage 73)",0x0F);
-    for(int y=0;y<20;y++)
-        for(int x=0;x<80;x++)
-            px(x,y+2,0xDB,(x/5)+(y*4)%16);
-    txt((COLS-20)/2,23,"Press any key...",8);
+    txt((COLS-24)/2,0,"Collatz Conjecture (Stage 73)",14);
+    uint32_t v=521;
+    for(int i=0;i<200;i++) {
+        pn(5,5+i/18*2,i,14+2);
+        px(8,5+i/18*2,':',14+2);
+        pn(10,5+i/18*2,v,14);
+        if(v%2==0)v/=2;else v=v*3+1;
+        if(v==1){txt(30,12,"Reached 1!",14+4);break;}
+        dl(400100);
+        if(kh()){kg();break;}
+    }
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

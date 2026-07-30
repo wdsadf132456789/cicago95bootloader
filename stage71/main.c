@@ -29,25 +29,35 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
-
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
 static void pn(int x,int y,uint32_t v,uint8_t cl) {
-    char b[12];int i=11;b[i]=0;
-    if(v==0)b[--i]='0';
-    else while(v>0){b[--i]='0'+(v%10);v/=10;}
-    for(int j=0;b[i];i++,j++)px(x+j,y,b[i],cl);
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
 }
+
 
 void stage71_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Collatz Conjecture (Stage 71)",12);
-    uint32_t v=507;
-    for(int i=0;i<200;i++) {
-        pn(5,5+i/18*2,i,12+2);
-        px(8,5+i/18*2,':',12+2);
-        pn(10,5+i/18*2,v,12);
-        if(v%2==0)v/=2;else v=v*3+1;
-        if(v==1){txt(30,12,"Reached 1!",12+4);break;}
-        dl(400700);
+    txt((COLS-18)/2,0,"Binary Clock (Stage 71)",12);
+    for(int f=0;f<200;f++) {
+        int b[]={f/3600%24,(f/60)%60,f%60};
+        for(int i=0;i<3;i++) {
+            for(int y=0;y<6;y++) {
+                int bit=(b[i]>>(5-y))&1;
+                for(int x=0;x<3;x++)
+                    px(10+i*25+x,5+y,bit?0xDB:' ',bit?(12+i*4):0);
+            }
+        }
+        for(int i=0;i<3;i++) {
+            txt(10+i*25,12,":",12);
+            int v=b[i];
+            px(16+i*25,12,'0'+(v/10)%10,12);
+            px(19+i*25,12,'0'+v%10,12);
+            txt(10+i*25,13,"-----",12);
+        }
+        txt(10,14,"H",12);txt(35,14,"M",12);txt(60,14,"S",12);
+        dl(50000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

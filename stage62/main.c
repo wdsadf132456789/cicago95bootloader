@@ -29,26 +29,28 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
 
 void stage62_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"Solo Pong (Stage 62)",3);
-    int bx=40,by=12,bdx=1,bdy=1;
-    int py=12;
-    for(int f=0;f<500;f++) {
-        for(int i=0;i<80;i++){px(i,1,' ',0);px(i,24,' ',0);}
-        px(1,py,0xDB,3);px(1,py+1,0xDB,3);px(1,py+2,0xDB,3);
-        bx+=bdx;by+=bdy;
-        if(by<=2||by>=23)bdy=-bdy;
-        if(bx<=2){bdx=-bdx;if(by>=py-1&&by<=py+3){}else{txt(30,12,"GAME OVER",4);wa();clr(0);txt((COLS-20)/2,12,"Score: 0",7);goto scr;}}
-        if(bx>=78)bdx=-bdx;
-        px(bx,by,0xDB,3+3);
-        if(kh()){uint8_t k=kg();if(!(k&0x80)){if(k==0x48&&py>2)py--;if(k==0x50&&py<21)py++;}}
-        dl(10000);
+    txt((COLS-26)/2,0,"Fibonacci Sequence (Stage 62)",3);
+    uint32_t a=0,b=1;
+    for(int i=0;i<60;i++) {
+        pn(10,5+i/10*2,i,3+2);
+        px(13,5+i/10*2,':',3);
+        pn(15,5+i/10*2,a,3);
+        uint32_t nxt=a+b;
+        if(nxt<a){txt(10,22,"Overflow!",4);break;}
+        a=b;b=nxt;
+        dl(400600);
         if(kh()){kg();break;}
     }
-    clr(0);
-scr:
-    txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

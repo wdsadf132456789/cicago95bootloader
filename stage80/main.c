@@ -29,19 +29,31 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
 
 void stage80_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Progress Bars (Stage 80)",6);
-    for(int p=0;p<=100;p++) {
-        for(int b=0;b<5;b++) {
-            int w=p*(60-(b*8))/100;
-            int y=5+b*3;
-            for(int x=0;x<60;x++)px(10+x,y,' ',7);
-            for(int x=0;x<w;x++)px(10+x,y,0xDB,6+b);
+    txt((COLS-20)/2,0,"Star Field (Stage 80)",6);
+    uint32_t r=994389;
+    for(int f=0;f<200;f++) {
+        for(int i=0;i<5;i++) {
+            r=r*1103515245+12345;
+            int x=(r>>16)%80,y=((r>>8)%22)+1;
+            px(x,y,0xDB,0x08);
         }
-        dl(150000);
-        if(kh()){kg();break;}
+        {{if(kh()){kg();break;}}}
+        dl(200000);
+        for(int i=0;i<3;i++) {
+            r=r*1103515245+12345;
+            int x=(r>>16)%80,y=((r>>8)%22)+1;
+            px(x,y,' ',0);
+        }
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();

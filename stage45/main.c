@@ -29,31 +29,33 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
+
+static uint32_t sr=2499975;
+static int srn(void){sr=sr*1103515245+12345;return(sr>>16)&0x7FFF;}
 
 void stage45_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Fire Effect (Stage 45)",9);
-    uint8_t fv[80*24];for(int i=0;i<80*24;i++)fv[i]=0;
-    for(int t=0;t<300;t++) {
-        for(int x=0;x<80;x++)fv[(23)*80+x]=(t%2)?(35):(0);
-        for(int y=2;y<23;y++)for(int x=1;x<79;x++) {
-            int v=fv[(y+1)*80+x];
-            if(v>(3))v-=(3);
-            else v=0;
-            if(x>0){int av=fv[(y+1)*80+x-1];if(av>v)v=av;}
-            if(x<79){int av=fv[(y+1)*80+x+1];if(av>v)v=av;}
-            if(v>0)v-=(1);
-            if(v<0)v=0;
-            fv[y*80+x]=v;
-            uint8_t cc=0;
-            if(v>20)cc=9*16+9;
-            else if(v>15)cc=9*16+((9+8)&0xF);
-            else if(v>8)cc=((9+6)&0xF)*16+((9+6)&0xF);
-            else if(v>2)cc=0x80+0x08;
-            else cc=0;
-            if(cc)px(x,y,0xDB,cc);else px(x,y,' ',0);
+    txt((COLS-20)/2,0,"Falling Snow (Stage 45)",12);
+    int sx[35],sy[35];
+    for(int i=0;i<35;i++){sx[i]=srn()%80;sy[i]=srn()%22+2;}
+
+    for(int f=0;f<300;f++) {
+        for(int i=0;i<35;i++) {
+            px(sx[i],sy[i],' ',0);
+            sy[i]++;if(sy[i]>=24){sy[i]=2;sx[i]=srn()%80;}
+            if(srn()%3==0)sx[i]+=(srn()%3)-1;
+            if(sx[i]<0)sx[i]=79;
+            if(sx[i]>=80)sx[i]=0;
+            px(sx[i],sy[i],'.',12);
         }
-        dl(10000);
+        dl(15000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

@@ -29,15 +29,26 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
 
 void stage75_entry(void) {
     kf(); clr(0);
-    for(int i=0;i<80+35;i++) {
-        for(int x=0;x<80;x++) px(x,12,' ',7);
-        for(int j=0;"This is a scrolling text demo..."[j]&&i+j<80;j++)
-            px(i+j,12,"This is a scrolling text demo..."[j],1);
-        dl(300500);
+    txt((COLS-30)/2,0,"Bouncing Ball Demo (Stage 75)",6);
+    int x=1,y=1,dx=1,dy=1;
+    for(int i=0;i<500;i++) {
+        px(x,y,' ',0);
+        x+=dx;y+=dy;
+        if(x<=0||x>=COLS-1)dx=-dx;
+        if(y<=0||y>=23)dy=-dy;
+        px(x,y,'&',6);
         if(kh()){kg();break;}
+        dl(25000);
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();

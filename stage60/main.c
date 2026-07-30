@@ -29,26 +29,24 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
-
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
 static void pn(int x,int y,uint32_t v,uint8_t cl) {
-    char b[12];int i=11;b[i]=0;
-    if(v==0)b[--i]='0';
-    else while(v>0){b[--i]='0'+(v%10);v/=10;}
-    for(int j=0;b[i];i++,j++)px(x+j,y,b[i],cl);
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
 }
+
 
 void stage60_entry(void) {
     kf(); clr(0);
-    txt((COLS-26)/2,0,"Fibonacci Sequence (Stage 60)",1);
-    uint32_t a=0,b=1;
-    for(int i=0;i<60;i++) {
-        pn(10,5+i/10*2,i,1+2);
-        px(13,5+i/10*2,':',1);
-        pn(15,5+i/10*2,a,1);
-        uint32_t nxt=a+b;
-        if(nxt<a){txt(10,22,"Overflow!",4);break;}
-        a=b;b=nxt;
-        dl(400400);
+    txt((COLS-18)/2,0,"Sine Wave (Stage 60)",1);
+    for(int f=0;f<200;f++) {
+        for(int x=0;x<80;x++)px(x,12,' ',7);
+        for(int x=0;x<80;x++) {
+            int y=12+(9*(((x+2*f)%17)%(17)-8.5))/6;
+            if(y>=2&&y<=22) px(x,y,0xDB,1);
+        }
+        dl(5000);
         if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);

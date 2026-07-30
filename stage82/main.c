@@ -29,33 +29,26 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
-
-static int ip(int v) {
-    if(v<2)return 0;
-    for(int i=2;i*i<=v;i++)if(v%i==0)return 0;
-    return 1;
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
 }
 
-static void pn(int x,int y,int v,uint8_t cl) {
-    char b[12];int i=11;b[i]=0;
-    if(v==0)b[--i]='0';
-    else while(v>0){b[--i]='0'+(v%10);v/=10;}
-    for(int j=0;b[i];i++,j++)px(x+j,y,b[i],cl);
-}
 
 void stage82_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Prime Numbers (Stage 82)",8);
-    int cnt=0,v=2;
-    while(cnt<80) {
-        if(ip(v)) {
-            pn(5+(cnt%8)*9,3+(cnt/8)*2,v,8+(cnt%7));
-            cnt++;
+    txt((COLS-18)/2,0,"Sine Wave (Stage 82)",8);
+    for(int f=0;f<200;f++) {
+        for(int x=0;x<80;x++)px(x,12,' ',7);
+        for(int x=0;x<80;x++) {
+            int y=12+(7*(((x+6*f)%15)%(15)-7.5))/6;
+            if(y>=2&&y<=22) px(x,y,0xDB,8);
         }
-        v++;
-        if(cnt%5==0)dl(20000);
+        dl(5000);
         if(kh()){kg();break;}
     }
-    txt((COLS-20)/2,23,"Press any key...",8);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

@@ -37,6 +37,13 @@ static void txt(int x,int y,const char *s,uint8_t cl) {{
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }}
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {{
+    char b[12];int i=11;b[11]=0;
+    do{{b[--i]='0'+v%10;v/=10;}}while(v);
+    txt(x,y,b+i,cl);
+}}
+
 '''
 
 # --- Template implementations ---
@@ -295,13 +302,6 @@ def t_fib(n):
     msg = f"Fibonacci Sequence (Stage {n})"
     col = 1 + (n % 15)
     return HEADER.format() + f'''
-static void pn(int x,int y,uint32_t v,uint8_t cl) {{
-    char b[12];int i=11;b[i]=0;
-    if(v==0)b[--i]='0';
-    else while(v>0){{b[--i]='0'+(v%10);v/=10;}}
-    for(int j=0;b[i];i++,j++)px(x+j,y,b[i],cl);
-}}
-
 void stage{n}_entry(void) {{
     kf(); clr(0);
     txt((COLS-26)/2,0,"{msg}",{col});
@@ -331,13 +331,6 @@ static int ip(int v) {{
     if(v<2)return 0;
     for(int i=2;i*i<=v;i++)if(v%i==0)return 0;
     return 1;
-}}
-
-static void pn(int x,int y,int v,uint8_t cl) {{
-    char b[12];int i=11;b[i]=0;
-    if(v==0)b[--i]='0';
-    else while(v>0){{b[--i]='0'+(v%10);v/=10;}}
-    for(int j=0;b[i];i++,j++)px(x+j,y,b[i],cl);
 }}
 
 void stage{n}_entry(void) {{
@@ -660,13 +653,6 @@ def t_collatz(n):
     msg = f"Collatz Conjecture (Stage {n})"
     col = 1 + (n % 15)
     return HEADER.format() + f'''
-static void pn(int x,int y,uint32_t v,uint8_t cl) {{
-    char b[12];int i=11;b[i]=0;
-    if(v==0)b[--i]='0';
-    else while(v>0){{b[--i]='0'+(v%10);v/=10;}}
-    for(int j=0;b[i];i++,j++)px(x+j,y,b[i],cl);
-}}
-
 void stage{n}_entry(void) {{
     kf(); clr(0);
     txt((COLS-24)/2,0,"{msg}",{col});
@@ -686,6 +672,55 @@ void stage{n}_entry(void) {{
 '''
 
 TEMPLATES.append(t_collatz)
+
+def t_awk(n):
+    msg = f"AWK Demo (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+#define NR 5
+struct rec {{const char *n;const char *c;int a;}};
+static struct rec tab[NR]={{{{.n="Alice",.c="NYC",.a=25}},{{.n="Bob",.c="SF",.a=31}},{{.n="Carol",.c="LA",.a=22}},{{.n="Dave",.c="CHI",.a=38}},{{.n="Eve",.c="SEA",.a=29}}}};
+
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-18)/2,0,"{msg}",{col});
+    for(int p=0;p<6;p++) {{
+        clr(0);
+        txt((COLS-18)/2,0,"{msg}",{col});
+        txt(2,2,"Awk program: ",7);
+        const char *progs[]={{"{{print $0}}",              "{{print $1, $3}}",
+                             "/[ou]/",                     "$3 > 30",
+                             "{{sum+=$3}} {{print sum}}",  "{{print $2}}"}};
+        txt(16,2,progs[p],{col}+2);
+        int sum=0;
+        for(int i=0;i<NR;i++) {{
+            int y=6+i*2;
+            txt(4,y,"$0:",7);txt(8,y,tab[i].n,7);txt(16,y,tab[i].c,7);pn(26,y,tab[i].a,7);
+            int hi=0;
+            if(p==0){{}}/* print all */
+            else if(p==1){{}}/* print $1 $3 */
+            else if(p==2){{int m=0;for(int j=0;tab[i].n[j];j++)if(tab[i].n[j]=='o'||tab[i].n[j]=='u')m=1;hi=m;}}
+            else if(p==3){{hi=(tab[i].a>30);}}
+            else if(p==4){{sum+=tab[i].a;}}
+            else if(p==5){{}}/* print $2 */
+            if(hi){{txt(8,y,tab[i].n,{col}+4);txt(16,y,tab[i].c,{col}+4);pn(26,y,tab[i].a,{col}+4);}}
+            if(p==1){{txt(4,y,"$1 $3:",7);txt(8,y,tab[i].n,{col}+2);pn(26,y,tab[i].a,{col}+2);}}
+            if(p==5){{txt(4,y,"$2:",7);txt(16,y,tab[i].c,{col}+2);}}
+        }}
+        if(p==4){{txt(4,16,"Sum age:",7);pn(15,16,sum,{col}+2);}}
+        if(p==1){{txt(4,18,"(print name + age only)",8);}}
+        if(p==2){{txt(4,18,"(pattern /[ou]/ in name)",8);}}
+        if(p==3){{txt(4,18,"(filter: age > 30)",8);}}
+        if(p==5){{txt(4,18,"(print cities only)",8);}}
+        dl(800000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_awk)
 
 # Assign templates to stages 9-100
 def assign_templates():

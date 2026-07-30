@@ -29,26 +29,28 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
-
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
 static void pn(int x,int y,uint32_t v,uint8_t cl) {
-    char b[12];int i=11;b[i]=0;
-    if(v==0)b[--i]='0';
-    else while(v>0){b[--i]='0'+(v%10);v/=10;}
-    for(int j=0;b[i];i++,j++)px(x+j,y,b[i],cl);
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
 }
+
 
 void stage81_entry(void) {
     kf(); clr(0);
-    txt((COLS-26)/2,0,"Fibonacci Sequence (Stage 81)",7);
-    uint32_t a=0,b=1;
-    for(int i=0;i<60;i++) {
-        pn(10,5+i/10*2,i,7+2);
-        px(13,5+i/10*2,':',7);
-        pn(15,5+i/10*2,a,7);
-        uint32_t nxt=a+b;
-        if(nxt<a){txt(10,22,"Overflow!",4);break;}
-        a=b;b=nxt;
-        dl(400100);
+    txt((COLS-28)/2,0,"Border Animation (Stage 81)",7);
+    for(int f=0;f<100;f++) {
+        int o=f%80;
+        for(int x=0;x<80;x++) { px(x,1,' ',0); px(x,23,' ',0); }
+        for(int y=2;y<23;y++) { px(0,y,' ',0); px(79,y,' ',0); }
+        px(o,1,'#',7);
+        px(79-o,23,'#',7);
+        px(o,23,'#',7);
+        px(79-o,1,'#',7);
+        px(0,2+o%21,'#',7);
+        px(79,2+(o+10)%21,'#',7);
+        dl(110000);
         if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);

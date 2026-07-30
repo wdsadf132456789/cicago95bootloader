@@ -29,13 +29,13 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
-
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
 static void pn(int x,int y,uint32_t v,uint8_t cl) {
-    char b[12];int i=11;b[i]=0;
-    if(v==0)b[--i]='0';
-    else while(v>0){b[--i]='0'+(v%10);v/=10;}
-    for(int j=0;b[i];i++,j++)px(x+j,y,b[i],cl);
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
 }
+
 
 void stage29_entry(void) {
     kf(); clr(0);

@@ -29,20 +29,27 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
 
 void stage95_entry(void) {
     kf(); clr(0);
-    txt((COLS-25)/2,0,"Counting Demo (Stage 95)",6);
-    for(int i=1;i<=999;i++) {
-        int v=i;
-        for(int x=0;x<9;x++) px(36+x,12,' ',7);
-        int p=44;
-        if(v>=100){px(p-3,12,'0'+v/100,6);v%=100;}
-        if(i>=10){px(p-2,12,'0'+v/10,6);v%=10;}
-        px(p-1,12,'0'+v,6);
-        dl(2000000);
+    txt((COLS-24)/2,0,"Collatz Conjecture (Stage 95)",6);
+    uint32_t v=675;
+    for(int i=0;i<200;i++) {
+        pn(5,5+i/18*2,i,6+2);
+        px(8,5+i/18*2,':',6+2);
+        pn(10,5+i/18*2,v,6);
+        if(v%2==0)v/=2;else v=v*3+1;
+        if(v==1){txt(30,12,"Reached 1!",6+4);break;}
+        dl(400700);
         if(kh()){kg();break;}
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

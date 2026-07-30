@@ -29,28 +29,34 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
+
+static uint32_t mr=2299977;
+static int mrn(void){mr=mr*1103515245+12345;return(mr>>16)&0x7FFF;}
 
 void stage69_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Binary Clock (Stage 69)",10);
+    txt((COLS-20)/2,0,"Digital Rain (Stage 69)",14);
+    int pos[80],spd[80],len[80];
+    for(int i=0;i<80;i++){pos[i]=mrn()%24;spd[i]=1+(mrn()%4);len[i]=3+(mrn()%10);}
+    const char ch[]={0x41,0x4B,0x51,0x30,0x39,0x7C,0x24,0x25,0x23,0x40};
+
     for(int f=0;f<200;f++) {
-        int b[]={f/3600%24,(f/60)%60,f%60};
-        for(int i=0;i<3;i++) {
-            for(int y=0;y<6;y++) {
-                int bit=(b[i]>>(5-y))&1;
-                for(int x=0;x<3;x++)
-                    px(10+i*25+x,5+y,bit?0xDB:' ',bit?(10+i*4):0);
+        for(int x=0;x<80;x++) {
+            if(f%spd[x]==0) {
+                if(pos[x]>0&&pos[x]<=24)px(x,pos[x]-1,' ',0);
+                if(pos[x]>=0&&pos[x]<24)px(x,pos[x],ch[mrn()%10],14);
+                pos[x]++;
+                if(pos[x]>=24+len[x]){pos[x]=0;spd[x]=1+(mrn()%4);len[x]=3+(mrn()%10);}
             }
         }
-        for(int i=0;i<3;i++) {
-            txt(10+i*25,12,":",10);
-            int v=b[i];
-            px(16+i*25,12,'0'+(v/10)%10,10);
-            px(19+i*25,12,'0'+v%10,10);
-            txt(10+i*25,13,"-----",10);
-        }
-        txt(10,14,"H",10);txt(35,14,"M",10);txt(60,14,"S",10);
-        dl(50000);
+        dl(8000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

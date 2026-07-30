@@ -29,22 +29,33 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
 
 void stage64_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Spiral Pattern (Stage 64)",5);
-    for(int f=0;f<300;f++) {
-        for(int x=0;x<80;x++)for(int y=2;y<24;y++)px(x,y,' ',0);
-        for(int i=0;i<f;i++) {
-            float a=i*0.2f;
-            int r=i/12+1;
-            int x=40+(1*r+(int)(a*3))%(11)-5;
-            int y=13+(2*r/2+(int)(a*1))%(2)-1;
-            if(x>=0&&x<80&&y>=2&&y<24)px(x,y,0xDB,5+(i%7));
-        }
-        dl(8000);
+    txt((COLS-16)/2,0,"Solo Pong (Stage 64)",5);
+    int bx=40,by=12,bdx=1,bdy=1;
+    int py=12;
+    for(int f=0;f<500;f++) {
+        for(int i=0;i<80;i++){px(i,1,' ',0);px(i,24,' ',0);}
+        px(1,py,0xDB,5);px(1,py+1,0xDB,5);px(1,py+2,0xDB,5);
+        bx+=bdx;by+=bdy;
+        if(by<=2||by>=23)bdy=-bdy;
+        if(bx<=2){bdx=-bdx;if(by>=py-1&&by<=py+3){}else{txt(30,12,"GAME OVER",4);wa();clr(0);txt((COLS-20)/2,12,"Score: 0",7);goto scr;}}
+        if(bx>=78)bdx=-bdx;
+        px(bx,by,0xDB,5+3);
+        if(kh()){uint8_t k=kg();if(!(k&0x80)){if(k==0x48&&py>2)py--;if(k==0x50&&py<21)py++;}}
+        dl(12000);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);
+scr:
+    txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

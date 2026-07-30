@@ -29,14 +29,25 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
+
 
 void stage33_entry(void) {
     kf(); clr(0);
-    for(int i=0;i<80+35;i++) {
-        for(int x=0;x<80;x++) px(x,12,' ',7);
-        for(int j=0;"The quick brown fox jumps over the lazy dog"[j]&&i+j<80;j++)
-            px(i+j,12,"The quick brown fox jumps over the lazy dog"[j],4);
-        dl(300300);
+    txt((COLS-25)/2,0,"Counting Demo (Stage 33)",4);
+    for(int i=1;i<=999;i++) {
+        int v=i;
+        for(int x=0;x<9;x++) px(36+x,12,' ',7);
+        int p=44;
+        if(v>=100){px(p-3,12,'0'+v/100,4);v%=100;}
+        if(i>=10){px(p-2,12,'0'+v/10,4);v%=10;}
+        px(p-1,12,'0'+v,4);
+        dl(2003000);
         if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);

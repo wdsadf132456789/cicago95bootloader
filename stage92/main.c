@@ -29,25 +29,37 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
-
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
 static void pn(int x,int y,uint32_t v,uint8_t cl) {
-    char b[12];int i=11;b[i]=0;
-    if(v==0)b[--i]='0';
-    else while(v>0){b[--i]='0'+(v%10);v/=10;}
-    for(int j=0;b[i];i++,j++)px(x+j,y,b[i],cl);
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
 }
+
+
+static uint32_t lr=7155484;
+static int lrn(void){lr=lr*1103515245+12345;return(lr>>16)&0x7FFF;}
 
 void stage92_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Collatz Conjecture (Stage 92)",3);
-    uint32_t v=654;
-    for(int i=0;i<200;i++) {
-        pn(5,5+i/18*2,i,3+2);
-        px(8,5+i/18*2,':',3+2);
-        pn(10,5+i/18*2,v,3);
-        if(v%2==0)v/=2;else v=v*3+1;
-        if(v==1){txt(30,12,"Reached 1!",3+4);break;}
-        dl(400400);
+    txt((COLS-20)/2,0,"Game of Life (Stage 92)",10);
+    uint8_t g[82*26]={0};
+    for(int i=0;i<400;i++)g[(2+(lrn()%21))*82+1+(lrn()%78)]=1;
+
+    for(int gen=0;gen<100;gen++) {
+        uint8_t ng[82*26]={0};
+        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
+            int n=g[(y-1)*82+(x-1)]+g[(y-1)*82+x]+g[(y-1)*82+(x+1)]
+                 +g[y*82+(x-1)]+g[y*82+(x+1)]
+                 +g[(y+1)*82+(x-1)]+g[(y+1)*82+x]+g[(y+1)*82+(x+1)];
+            if(g[y*82+x])ng[y*82+x]=(n==2||n==3)?1:0;
+            else ng[y*82+x]=(n==3)?1:0;
+        }
+        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
+            g[y*82+x]=ng[y*82+x];
+            px(x,y,g[y*82+x]?0xDB:' ',g[y*82+x]?(10):0);
+        }
+        dl(20000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

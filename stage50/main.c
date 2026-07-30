@@ -29,25 +29,26 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
-
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
 static void pn(int x,int y,uint32_t v,uint8_t cl) {
-    char b[12];int i=11;b[i]=0;
-    if(v==0)b[--i]='0';
-    else while(v>0){b[--i]='0'+(v%10);v/=10;}
-    for(int j=0;b[i];i++,j++)px(x+j,y,b[i],cl);
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
 }
+
+
+static uint32_t nr=4999950;
+static int nrn(void){nr=nr*1103515245+12345;return(nr>>16)&0x7FFF;}
 
 void stage50_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Collatz Conjecture (Stage 50)",6);
-    uint32_t v=360;
-    for(int i=0;i<200;i++) {
-        pn(5,5+i/18*2,i,6+2);
-        px(8,5+i/18*2,':',6+2);
-        pn(10,5+i/18*2,v,6);
-        if(v%2==0)v/=2;else v=v*3+1;
-        if(v==1){txt(30,12,"Reached 1!",6+4);break;}
-        dl(400200);
+    txt((COLS-24)/2,0,"Perlin-ish Noise (Stage 50)",6);
+    for(int f=0;f<200;f++) {
+        for(int y=2;y<24;y++)for(int x=0;x<80;x++) {
+            int v=nrn()%(10);
+            px(x,y,v>2?0xDB:' ',v>2?(6+v%8):0);
+        }
+        dl(15000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

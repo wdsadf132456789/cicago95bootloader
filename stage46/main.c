@@ -29,27 +29,38 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
 
-static uint32_t mr=1533318;
-static int mrn(void){mr=mr*1103515245+12345;return(mr>>16)&0x7FFF;}
 
 void stage46_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Digital Rain (Stage 46)",11);
-    int pos[80],spd[80],len[80];
-    for(int i=0;i<80;i++){pos[i]=mrn()%24;spd[i]=1+(mrn()%4);len[i]=3+(mrn()%10);}
-    const char ch[]={0x41,0x4B,0x51,0x30,0x39,0x7C,0x24,0x25,0x23,0x40};
-
-    for(int f=0;f<200;f++) {
-        for(int x=0;x<80;x++) {
-            if(f%spd[x]==0) {
-                if(pos[x]>0&&pos[x]<=24)px(x,pos[x]-1,' ',0);
-                if(pos[x]>=0&&pos[x]<24)px(x,pos[x],ch[mrn()%10],11);
-                pos[x]++;
-                if(pos[x]>=24+len[x]){pos[x]=0;spd[x]=1+(mrn()%4);len[x]=3+(mrn()%10);}
-            }
+    txt((COLS-18)/2,0,"Fire Effect (Stage 46)",10);
+    uint8_t fv[80*24];for(int i=0;i<80*24;i++)fv[i]=0;
+    for(int t=0;t<300;t++) {
+        for(int x=0;x<80;x++)fv[(23)*80+x]=(t%2)?(36):(0);
+        for(int y=2;y<23;y++)for(int x=1;x<79;x++) {
+            int v=fv[(y+1)*80+x];
+            if(v>(4))v-=(4);
+            else v=0;
+            if(x>0){int av=fv[(y+1)*80+x-1];if(av>v)v=av;}
+            if(x<79){int av=fv[(y+1)*80+x+1];if(av>v)v=av;}
+            if(v>0)v-=(2);
+            if(v<0)v=0;
+            fv[y*80+x]=v;
+            uint8_t cc=0;
+            if(v>21)cc=10*16+10;
+            else if(v>16)cc=10*16+((10+8)&0xF);
+            else if(v>9)cc=((10+6)&0xF)*16+((10+6)&0xF);
+            else if(v>2)cc=0x80+0x08;
+            else cc=0;
+            if(cc)px(x,y,0xDB,cc);else px(x,y,' ',0);
         }
-        dl(8000);
+        dl(10000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

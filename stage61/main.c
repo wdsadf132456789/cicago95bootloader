@@ -29,33 +29,27 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
-
-static int ip(int v) {
-    if(v<2)return 0;
-    for(int i=2;i*i<=v;i++)if(v%i==0)return 0;
-    return 1;
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
 }
 
-static void pn(int x,int y,int v,uint8_t cl) {
-    char b[12];int i=11;b[i]=0;
-    if(v==0)b[--i]='0';
-    else while(v>0){b[--i]='0'+(v%10);v/=10;}
-    for(int j=0;b[i];i++,j++)px(x+j,y,b[i],cl);
-}
 
 void stage61_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Prime Numbers (Stage 61)",2);
-    int cnt=0,v=2;
-    while(cnt<80) {
-        if(ip(v)) {
-            pn(5+(cnt%8)*9,3+(cnt/8)*2,v,2+(cnt%7));
-            cnt++;
+    txt((COLS-22)/2,0,"Progress Bars (Stage 61)",2);
+    for(int p=0;p<=100;p++) {
+        for(int b=0;b<5;b++) {
+            int w=p*(60-(b*8))/100;
+            int y=5+b*3;
+            for(int x=0;x<60;x++)px(10+x,y,' ',7);
+            for(int x=0;x<w;x++)px(10+x,y,0xDB,2+b);
         }
-        v++;
-        if(cnt%5==0)dl(20000);
+        dl(150100);
         if(kh()){kg();break;}
     }
-    txt((COLS-20)/2,23,"Press any key...",8);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

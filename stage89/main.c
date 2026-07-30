@@ -29,30 +29,33 @@ static void txt(int x,int y,const char *s,uint8_t cl) {
     for(int i=0;s[i];i++) px(x+i,y,s[i],cl);
 }
 
+static void pn(int x,int y,uint32_t v,uint8_t cl) __attribute__((unused));
+static void pn(int x,int y,uint32_t v,uint8_t cl) {
+    char b[12];int i=11;b[11]=0;
+    do{b[--i]='0'+v%10;v/=10;}while(v);
+    txt(x,y,b+i,cl);
+}
 
-static uint32_t lr=6922153;
-static int lrn(void){lr=lr*1103515245+12345;return(lr>>16)&0x7FFF;}
+
+static uint32_t sr=4944395;
+static int srn(void){sr=sr*1103515245+12345;return(sr>>16)&0x7FFF;}
 
 void stage89_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Game of Life (Stage 89)",7);
-    uint8_t g[82*26]={0};
-    for(int i=0;i<400;i++)g[(2+(lrn()%21))*82+1+(lrn()%78)]=1;
+    txt((COLS-20)/2,0,"Falling Snow (Stage 89)",8);
+    int sx[39],sy[39];
+    for(int i=0;i<39;i++){sx[i]=srn()%80;sy[i]=srn()%22+2;}
 
-    for(int gen=0;gen<100;gen++) {
-        uint8_t ng[82*26]={0};
-        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
-            int n=g[(y-1)*82+(x-1)]+g[(y-1)*82+x]+g[(y-1)*82+(x+1)]
-                 +g[y*82+(x-1)]+g[y*82+(x+1)]
-                 +g[(y+1)*82+(x-1)]+g[(y+1)*82+x]+g[(y+1)*82+(x+1)];
-            if(g[y*82+x])ng[y*82+x]=(n==2||n==3)?1:0;
-            else ng[y*82+x]=(n==3)?1:0;
+    for(int f=0;f<300;f++) {
+        for(int i=0;i<39;i++) {
+            px(sx[i],sy[i],' ',0);
+            sy[i]++;if(sy[i]>=24){sy[i]=2;sx[i]=srn()%80;}
+            if(srn()%3==0)sx[i]+=(srn()%3)-1;
+            if(sx[i]<0)sx[i]=79;
+            if(sx[i]>=80)sx[i]=0;
+            px(sx[i],sy[i],'.',8);
         }
-        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
-            g[y*82+x]=ng[y*82+x];
-            px(x,y,g[y*82+x]?0xDB:' ',g[y*82+x]?(7):0);
-        }
-        dl(20000);
+        dl(15000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);
