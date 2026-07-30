@@ -39,32 +39,29 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage61_entry(void) {
     kf(); clr(0);
-    txt((COLS-10)/2,0,"R Demo (Stage 61)",2);
+    txt((COLS-18)/2,0,"VHDL Demo (Stage 61)",2);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-10)/2,0,"R Demo (Stage 61)",2);
-        txt(2,2,"# Statistical computing",2+2);
-        txt(2,4,"data <- c(1, 4, 6, 8, 10, 15, 21)",7);
-        txt(2,5,"mean(data)",7);
-        txt(2,6,"sd(data)",7);
-        txt(2,7,"summary(data)",7);
-        for(int i=0;i<7;i++) {
-            int v=(i+1)*(f%6+1);
-            pn(4+i*5,9,v,2+(i%7));
-        }
-        int m=0;for(int i=0;i<7;i++)m+=(i+1)*(f%6+1);
-        m/=7;
-        txt(2,11,"mean = ",7);pn(8,11,m,2+4);
-        txt(2,13,"lm(y ~ x, data=df)",2+2);
-        txt(2,14,"t.test(group1, group2)",7);
-        txt(2,16,"library(ggplot2)",7);
-        txt(2,17,"ggplot(df, aes(x, y)) + geom_point()",7);
-        for(int i=0;i<5;i++) {
-            int y=19+i;
-            txt(2,y,"|",7);
-            for(int d=0;d<(i+1)*(f%3+1);d++)px(3+d,y,0xDB,2+(d%6));
-        }
-        txt(2,24,"# R: data science since '93",8);
+        txt((COLS-18)/2,0,"VHDL Demo (Stage 61)",2);
+        txt(2,2,"-- Hardware Description Language",2+2);
+        txt(2,4,"entity counter is",7);
+        txt(2,5,"  port (clk, rst : in std_logic;",7);
+        txt(2,6,"        count : out std_logic_vector(7 downto 0));",7);
+        txt(2,7,"end counter;",7);
+        txt(2,9,"architecture arch of counter is",2+4);
+        txt(2,10,"  signal tmp : unsigned(7 downto 0);",7);
+        txt(2,11,"begin",7);
+        txt(2,12,"  process(clk)",7);
+        txt(2,13,"  begin",7);
+        txt(2,14,"    if rising_edge(clk) then",7);
+        txt(2,15,"      tmp <= tmp + 1;",7);
+        txt(2,16,"    end if;",7);
+        txt(2,17,"  end process;",7);
+        txt(2,18,"  count <= std_logic_vector(tmp);",7);
+        txt(2,19,"end arch;",2+4);
+        int n=f%256;
+        txt(2,21,"Count:",7);pn(8,21,n,2+4);
+        txt(2,23,"-- Synthesizable VHDL",8);
         dl(60000);
         if(kh()){kg();break;}
     }

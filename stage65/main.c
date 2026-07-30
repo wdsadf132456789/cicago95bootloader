@@ -39,29 +39,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage65_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Assembly Demo (Stage 65)",6);
+    txt((COLS-24)/2,0,"Smalltalk Demo (Stage 65)",6);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-24)/2,0,"Assembly Demo (Stage 65)",6);
-        txt(2,2,"; x86-64 assembly",6+2);
-        txt(2,4,"section .text",7);
-        txt(2,5,"global _start",7);
-        txt(2,6,"_start:",7);
-        txt(2,7,"    mov rax, 1        ; sys_write",7);
-        txt(2,8,"    mov rdi, 1        ; stdout",7);
-        txt(2,9,"    mov rsi, msg",7);
-        txt(2,10,"    mov rdx, len",7);
-        txt(2,11,"    syscall",7);
-        txt(2,12,"    mov rax, 60       ; sys_exit",7);
-        txt(2,13,"    xor rdi, rdi",7);
-        txt(2,14,"    syscall",7);
-        txt(2,16,"section .data",6+4);
-        txt(2,17,"msg: db \"Hello, World!\", 10",7);
-        int n=f%24;
-        for(int i=0;i<n;i++)px(2+i,19,0xDB,6+(i%7));
-        txt(2,21,"REGISTERS:",6+2);
-        txt(2,22,"RAX=",7);pn(6,22,f%65536,6+4);
-        txt(2,23,"RBX=",7);pn(6,23,f/256,6+3);
+        txt((COLS-24)/2,0,"Smalltalk Demo (Stage 65)",6);
+        txt(2,2,"\" Everything is an object \"",6+2);
+        txt(2,4,"| numbers |",7);
+        txt(2,5,"numbers := OrderedCollection new.",7);
+        txt(2,6,"numbers add: 42.",7);
+        txt(2,7,"numbers add: 99.",7);
+        txt(2,8,"numbers do: [ :n | Transcript show: n printString ]",7);
+        for(int i=0;i<6;i++) {
+            int y=10+i;
+            int v=(i+1)*(f%5+1);
+            txt(2,y,"n := ",7);pn(6,y,v,6+2);
+        }
+        txt(2,17,"3 timesRepeat: [ Transcript show: 'Hello' ]",6+4);
+        txt(2,19,"a := 5 factorial.",7);
+        txt(2,20,"b := #(1 2 3) collect: [ :e | e * 2 ].",7);
+        txt(2,22,"\" Smalltalk inspired OOP & MVC \"",8);
         dl(60000);
         if(kh()){kg();break;}
     }

@@ -39,26 +39,55 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage100_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"C++ Demo (Stage 100)",11);
-    for(int f=0;f<120;f++) {
+    txt((COLS-20)/2,0,"Brainfuck 2 (Stage 100)",11);
+    const char *progs[]={">+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++."
+                          ">>++++++++[<++++++>-]<.------------.>+++++++++[<-------->-]<+."
+                          ">+++++++[<++++>-]<.>++++++++++[<--------->-]<-.>+++++[<+++++>-]<+.",
+                          "++++[>++++<-]>[>+++++>+++++<<-]>>.>+>+>+<<<[->[->+>+<<]>>[-<<+>>]<<<]>>>.",
+                          "+++++++++[>++++++++<-]>."};
+    const char *pnames[]={"\"Hi!\"", "Squares", "ASCII N"};
+    int pidx=(100/2)%3;
+    const char *prog=progs[pidx];
+    const char *pname=pnames[pidx];
+    char tape[16];for(int i=0;i<16;i++)tape[i]=0;
+    int ptr=0,pc=0,outc=0,wait=0,phase=0;
+    char outbuf[32];for(int i=0;i<32;i++)outbuf[i]=0;
+    for(int f=0;f<250;f++) {
         clr(0);
-        txt((COLS-16)/2,0,"C++ Demo (Stage 100)",11);
-        txt(2,2,"template<typename T>",11+2);
-        txt(2,3,"class Vector {",11+2);
-        txt(2,4,"  T* data; size_t len;",7);
-        txt(2,5,"public:",11+4);
-        txt(2,6,"  Vector() : data(nullptr), len(0) {}",7);
-        txt(2,7,"  void push_back(const T& val) {...}",7);
-        txt(2,8,"  T& operator[](size_t i) { return data[i]; }",7);
-        txt(2,9,"};",11+2);
-        txt(2,11,"Vector<int> v;",7);
-        txt(2,12,"v.push_back(42);",7);
-        for(int i=0;i<6;i++) {
-            int y=14+i;
-            txt(2,y,"v[",7);pn(4,y,i,11);txt(2,y+6,"]=",7);pn(9,y,(i+1)*(f%5+1),11+3);
+        txt((COLS-20)/2,0,"Brainfuck 2 (Stage 100)",11);
+        txt(2,2,"BF Program:",11+2);txt(13,2,pname,11+4);
+        txt(2,3,prog,7);
+        txt(2,5,"[",11+1);
+        for(int i=0;i<16;i++) {
+            int val=(int)tape[i];
+            uint8_t c=(val>=32&&val<127)?(uint8_t)val:'.';
+            uint8_t clr=i==ptr?11+6:((val>0)?11+2:7);
+            px(3+i,5,c,clr);
         }
-        txt(2,22,"auto result = v | views::filter(...)",8);
-        dl(60000);
+        txt(2+16+1,5,"]",11+1);
+        txt(2,7,"Output:",11+2);
+        for(int i=0;i<outc&&i<30;i++) px(2+i,8,outbuf[i]?outbuf[i]:' ',11+3);
+        if(wait==0) {
+            char cmd=prog[pc];
+            if(cmd=='+') tape[ptr]++;
+            else if(cmd=='-') tape[ptr]--;
+            else if(cmd=='>'&&ptr<15) ptr++;
+            else if(cmd=='<'&&ptr>0) ptr--;
+            else if(cmd=='.'&&outc<31) {outbuf[outc]=tape[ptr];outc++;}
+            else if(cmd=='['&&tape[ptr]==0) {int d=1;while(d){pc++;if(prog[pc]=='[')d++;if(prog[pc]==']')d--;}}
+            else if(cmd==']'&&tape[ptr]!=0) {int d=1;while(d){pc--;if(prog[pc]==']')d++;if(prog[pc]=='[')d--;}}
+            pc++;if(!prog[pc]){pc=0;phase++;if(phase>2)break;}
+            wait=3;
+        } else wait--;
+        txt(2,10,"ASCII map:",11+2);
+        for(int i=0;i<16;i++) {
+            int v=(int)tape[i];
+            if(v>0&&v<16) {px(2+i*3,12,0xB0,11+v);}
+            else if(v>=16) {px(2+i*3,12,0xDB,11+5);}
+        }
+        txt(2,14,"ptr={ptr}",11+2);pn(9,14,ptr,11+4);
+        txt(2,16,"Commands: + - > < [ ] , .",8);
+        dl(20000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

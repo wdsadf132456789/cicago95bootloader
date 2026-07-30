@@ -39,26 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage51_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Prolog Demo (Stage 51)",7);
+    txt((COLS-18)/2,0,"Forth Demo (Stage 51)",7);
+    int stack[8];int sp=0;
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-20)/2,0,"Prolog Demo (Stage 51)",7);
-        txt(2,2,"%% Logic / declarative programming",7+2);
-        txt(2,4,"parent(alice, bob).",7);
-        txt(2,5,"parent(bob, carol).",7);
-        txt(2,6,"grandparent(X, Z) :- parent(X, Y), parent(Y, Z).",7);
-        for(int i=0;i<4;i++) {
-            int y=8+i*2;
-            txt(2,y,"?- ancestor(",7);
-            pn(14,y,i+1,7+(i%3)+2);
-            txt(2,y+4,", X).",7);
+        txt((COLS-18)/2,0,"Forth Demo (Stage 51)",7);
+        txt(2,2,"\\ Stack-based, minimal, beautiful",7+2);
+        txt(2,4,": square  dup * ;",7);
+        txt(2,5,": fib     dup 1 > if 1- dup fib swap 1- fib + then ;",7);
+        txt(2,7,"5 3 + 2 * .  \\ prints 16",7);
+        if(f%3==0&&sp<8){stack[sp]=f%32;sp++;}
+        if(f%5==0&&sp>0)sp--;
+        txt(2,9,"Stack:",7+4);
+        for(int i=0;i<sp;i++) {
+            pn(8+i*5,10,stack[i],7+(i%6)+1);
         }
-        txt(2,17,"%% Query results:",7+4);
-        txt(2,18,"X = alice ;",7+(f%3));
-        txt(2,19,"X = bob ;",7+((f+1)%3));
-        txt(2,20,"X = carol ;",7+((f+2)%3));
-        txt(2,21,"false.",8);
-        txt(2,23,"%% Backtracking finds all solutions!",8);
+        txt(2,12,": stars ( n -- ) 0 do 42 emit loop ;",7);
+        int ns=f%16;
+        txt(2,14,"10 stars => ",7);
+        for(int i=0;i<ns;i++)px(14+i,14,0x2A,7+(i%7));
+        txt(2,16,": count  10 0 do i . cr loop ;",7);
+        txt(2,18,"( The stack is the way )",8);
         dl(60000);
         if(kh()){kg();break;}
     }

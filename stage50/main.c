@@ -39,27 +39,26 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage50_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Forth Demo (Stage 50)",6);
-    int stack[8];int sp=0;
+    txt((COLS-16)/2,0,"C# Demo (Stage 50)",6);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-18)/2,0,"Forth Demo (Stage 50)",6);
-        txt(2,2,"\\ Stack-based, minimal, beautiful",6+2);
-        txt(2,4,": square  dup * ;",7);
-        txt(2,5,": fib     dup 1 > if 1- dup fib swap 1- fib + then ;",7);
-        txt(2,7,"5 3 + 2 * .  \\ prints 16",7);
-        if(f%3==0&&sp<8){stack[sp]=f%32;sp++;}
-        if(f%5==0&&sp>0)sp--;
-        txt(2,9,"Stack:",6+4);
-        for(int i=0;i<sp;i++) {
-            pn(8+i*5,10,stack[i],6+(i%6)+1);
+        txt((COLS-16)/2,0,"C# Demo (Stage 50)",6);
+        txt(2,2,"using System.Linq;",6+2);
+        txt(2,4,"class Program {",7);
+        txt(2,5,"  static void Main() {",7);
+        txt(2,6,"    var nums = new[] {1,2,3,4,5};",7);
+        txt(2,7,"    var evens = nums.Where(n => n % 2 == 0);",7);
+        txt(2,8,"    var squared = nums.Select(n => n * n);",7);
+        for(int i=0;i<5;i++) {
+            int v=(i+1)*(i+1);
+            int y=10+i*2;
+            pn(6,y,v,6+(i%7));
+            px(12,y,'=',7);
+            pn(14,y,i+1,6+2);txt(2,y+6,"^2",7);
         }
-        txt(2,12,": stars ( n -- ) 0 do 42 emit loop ;",7);
-        int ns=f%16;
-        txt(2,14,"10 stars => ",7);
-        for(int i=0;i<ns;i++)px(14+i,14,0x2A,6+(i%7));
-        txt(2,16,": count  10 0 do i . cr loop ;",7);
-        txt(2,18,"( The stack is the way )",8);
+        txt(2,21,"    Console.WriteLine(evens.Count());",7);
+        txt(2,22,"  }",7);
+        txt(2,23,"}",6+2);
         dl(60000);
         if(kh()){kg();break;}
     }

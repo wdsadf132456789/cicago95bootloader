@@ -39,11 +39,15 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage70_entry(void) {
     kf(); clr(0);
-    for(int i=0;i<80+35;i++) {
-        for(int x=0;x<80;x++) px(x,12,' ',7);
-        for(int j=0;"Welcome to Chicago-95 BrainFS!"[j]&&i+j<80;j++)
-            px(i+j,12,"Welcome to Chicago-95 BrainFS!"[j],11);
-        dl(300000);
+    txt((COLS-25)/2,0,"Counting Demo (Stage 70)",11);
+    for(int i=1;i<=999;i++) {
+        int v=i;
+        for(int x=0;x<9;x++) px(36+x,12,' ',7);
+        int p=44;
+        if(v>=100){px(p-3,12,'0'+v/100,11);v%=100;}
+        if(i>=10){px(p-2,12,'0'+v/10,11);v%=10;}
+        px(p-1,12,'0'+v,11);
+        dl(2000000);
         if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);

@@ -39,27 +39,29 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage44_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"Perl Demo (Stage 44)",15);
-    for(int f=0;f<120;f++) {
+    txt((COLS-16)/2,0,"Bash Demo (Stage 44)",15);
+    for(int f=0;f<150;f++) {
         clr(0);
-        txt((COLS-16)/2,0,"Perl Demo (Stage 44)",15);
-        txt(2,2,"#!/usr/bin/perl -w",15+2);
-        txt(2,4,"my @array = (1..10);",7);
-        txt(2,5,"my %hash = (foo => 42, bar => 99);",7);
-        txt(2,6,"print map { $_ * 2 } @array;",7);
-        for(int i=0;i<8;i++) {
-            int v=(i+1)*(f%6+1);
-            pn(4+i*5,8,v,15+(i%7));
+        txt((COLS-16)/2,0,"Bash Demo (Stage 44)",15);
+        txt(2,2,"#!/bin/bash",15+2);
+        txt(2,4,"for file in *.txt; do",7);
+        txt(2,5,"  echo \"Processing $file...\"",7);
+        txt(2,6,"  grep 'error' \"$file\" | wc -l",7);
+        txt(2,7,"done",7);
+        txt(2,9,"ls -la | awk '{print $9, $5}'",7);
+        txt(2,11,"PIPELINE:",15+4);
+        const char *stages[]={"ls","grep","sort","uniq","wc"};
+        for(int i=0;i<5;i++) {
+            int c=i==(f/6)%5?15+6:8;
+            txt(4+i*13,13,stages[i],c);
+            if(i<4)txt(16+i*13,13,"|",7);
         }
-        txt(2,10,"s/foo/bar/g if /regex/",15+4);
-        txt(2,12,"sub greet {",7);
-        txt(2,13,"  my ($name) = @_;",7);
-        txt(2,14,"  return \"Hello, $name!\";",7);
-        txt(2,15,"}",7);
-        txt(2,17,"print greet('World');",15+2);
-        txt(2,19,"TMTOWTDI:",8);
-        txt(2,20,"There's More Than One Way To Do It",15+3);
-        dl(60000);
+        txt(2,15,"$ find /home -name \"*.conf\" 2>/dev/null",8);
+        txt(2,17,"$  ",7);pn(5,17,f%1000,15+2);txt(2,18," exit code",8);
+        for(int i=0;i<5;i++) {
+            pn(4+i*15,20,i*f%256,15+i+1);
+        }
+        dl(50000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

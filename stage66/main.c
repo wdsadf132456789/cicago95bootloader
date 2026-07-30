@@ -39,39 +39,30 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage66_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Arch Linux Demo (Stage 66)",7);
-    for(int f=0;f<150;f++) {
+    txt((COLS-24)/2,0,"Assembly Demo (Stage 66)",7);
+    for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-24)/2,0,"Arch Linux Demo (Stage 66)",7);
-        px(35,2,0x03,7+6);
-        px(36,2,'r',7+6);
-        px(37,2,'c',7+6);
-        px(38,2,'h',7+6);
-        txt(2,4,"$ sudo pacman -Syu",7+2);
-        txt(2,5,":: Synchronizing package databases...",7);
-        txt(2,6," core is up to date",7);
-        txt(2,7," extra is up to date",7);
-        txt(2,8," community is up to date",7);
-        txt(2,9,":: Starting full system upgrade...",7);
-        txt(2,10,":: Replace linux with linux-lts? [Y/n]",7);
-        int n=f%20;
-        for(int i=0;i<n;i++) {
-            if(i<5) {txt(2,12+i,"[✓] package-",7);pn(5,12+i,i,7);}
-        }
-        if(f<100) {
-            txt(2,14,"  downloading packages...",7+2);
-            for(int i=0;i<f/5;i++)px(4+i,15,0xDB,7+2);
-        } else {
-            txt(2,14,"$ sudo pacman -S base-devel",7+2);
-            txt(2,15,"  resolving dependencies...",7);
-            txt(2,16,"  looking for conflicting packages...",7);
-        }
-        txt(2,18,"$ yay -S opencode-git",7+4);
-        txt(2,19,"  :: Proceed with installation? [Y/n]",8);
-        txt(2,21,"$ neofetch",7+2);
-        txt(2,22,"  OS: Arch Linux x86_64",7+f%7+1);
-        txt(2,23,"  Kernel: 6.14.1-arch1-1",7+f%5+1);
-        dl(50000);
+        txt((COLS-24)/2,0,"Assembly Demo (Stage 66)",7);
+        txt(2,2,"; x86-64 assembly",7+2);
+        txt(2,4,"section .text",7);
+        txt(2,5,"global _start",7);
+        txt(2,6,"_start:",7);
+        txt(2,7,"    mov rax, 1        ; sys_write",7);
+        txt(2,8,"    mov rdi, 1        ; stdout",7);
+        txt(2,9,"    mov rsi, msg",7);
+        txt(2,10,"    mov rdx, len",7);
+        txt(2,11,"    syscall",7);
+        txt(2,12,"    mov rax, 60       ; sys_exit",7);
+        txt(2,13,"    xor rdi, rdi",7);
+        txt(2,14,"    syscall",7);
+        txt(2,16,"section .data",7+4);
+        txt(2,17,"msg: db \"Hello, World!\", 10",7);
+        int n=f%24;
+        for(int i=0;i<n;i++)px(2+i,19,0xDB,7+(i%7));
+        txt(2,21,"REGISTERS:",7+2);
+        txt(2,22,"RAX=",7);pn(6,22,f%65536,7+4);
+        txt(2,23,"RBX=",7);pn(6,23,f/256,7+3);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

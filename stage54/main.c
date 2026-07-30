@@ -39,27 +39,29 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage54_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Julia Demo (Stage 54)",10);
+    txt((COLS-22)/2,0,"Fortran Demo (Stage 54)",10);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-20)/2,0,"Julia Demo (Stage 54)",10);
-        txt(2,2,"# Multiple dispatch + speed of C",10+2);
-        txt(2,4,"using LinearAlgebra",7);
-        txt(2,5,"A = [1 2; 3 4]",7);
-        txt(2,6,"b = [5, 6]",7);
-        txt(2,7,"x = A \\ b  # solves linear system",7);
-        for(int i=0;i<4;i++) {
-            int y=9+i;
-            int v=i*(f%10+1);
-            pn(4+i*6,y,v,10+(i%7));
+        txt((COLS-22)/2,0,"Fortran Demo (Stage 54)",10);
+        txt(2,2,"! Scientific computing since 1957",10+2);
+        txt(2,4,"program main",7);
+        txt(2,5,"  implicit none",7);
+        txt(2,6,"  integer :: i, n = 10",7);
+        txt(2,7,"  real :: matrix(3,3)",7);
+        txt(2,8,"  matrix = reshape([1,2,3,4,5,6,7,8,9], [3,3])",7);
+        for(int r=0;r<3;r++) {
+            for(int c=0;c<3;c++) {
+                int v=(r+c+1)*(f%4+1);
+                pn(6+c*6,10+r,v,10+(r*3+c)%7+1);
+            }
         }
-        txt(2,14,"f(x) = x^2 + 2x - 1",10+2);
-        txt(2,15,"@show f(10)",7);
-        int r=100+f%200;
-        txt(2,17,"f(10) = ",7);pn(9,17,r,10+4);
-        txt(2,19,"using Plots",7);
-        txt(2,20,"plot(A[:,1], A[:,2])",7);
-        txt(2,22,"# Julia: walks like Python, runs like C",8);
+        txt(2,14,"  do i = 1, n",10+4);
+        txt(2,15,"    print *, 'i = ', i",7);
+        txt(2,16,"  end do",10+4);
+        int fn=1;for(int i=1;i<=f%8+1;i++)fn*=i;
+        txt(2,18,"  ! Factorial:",8);
+        pn(14,18,f%8+1,10+2);txt(2,18,"=",7);pn(17,18,fn,10+4);
+        txt(2,20,"end program main",7);
         dl(60000);
         if(kh()){kg();break;}
     }

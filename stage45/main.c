@@ -39,28 +39,26 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage45_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"TypeScript Demo (Stage 45)",1);
+    txt((COLS-16)/2,0,"Perl Demo (Stage 45)",1);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-24)/2,0,"TypeScript Demo (Stage 45)",1);
-        txt(2,2,"interface Person {",1+2);
-        txt(2,3,"  readonly name: string;",7);
-        txt(2,4,"  age: number;",7);
-        txt(2,5,"  city?: string;",7);
-        txt(2,6,"}",1+2);
-        txt(2,8,"const alice: Person = {",7);
-        txt(2,9,"  name: 'Alice',",7);
-        txt(2,10,"  age: 25,",7);
-        txt(2,11,"  city: 'NYC'",7);
-        txt(2,12,"};",7);
-        for(int i=0;i<4;i++) {
-            int y=14+i;
-            txt(2,y,"type Result<T> = T | null;",1+i+1);
+        txt((COLS-16)/2,0,"Perl Demo (Stage 45)",1);
+        txt(2,2,"#!/usr/bin/perl -w",1+2);
+        txt(2,4,"my @array = (1..10);",7);
+        txt(2,5,"my %hash = (foo => 42, bar => 99);",7);
+        txt(2,6,"print map { $_ * 2 } @array;",7);
+        for(int i=0;i<8;i++) {
+            int v=(i+1)*(f%6+1);
+            pn(4+i*5,8,v,1+(i%7));
         }
-        txt(2,19,"function identity<T>(arg: T): T {",1+4);
-        txt(2,20,"  return arg;",7);
-        txt(2,21,"}",1+4);
-        txt(2,23,"const num = identity<number>(42);",8);
+        txt(2,10,"s/foo/bar/g if /regex/",1+4);
+        txt(2,12,"sub greet {",7);
+        txt(2,13,"  my ($name) = @_;",7);
+        txt(2,14,"  return \"Hello, $name!\";",7);
+        txt(2,15,"}",7);
+        txt(2,17,"print greet('World');",1+2);
+        txt(2,19,"TMTOWTDI:",8);
+        txt(2,20,"There's More Than One Way To Do It",1+3);
         dl(60000);
         if(kh()){kg();break;}
     }

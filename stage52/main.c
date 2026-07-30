@@ -39,31 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage52_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"COBOL Demo (Stage 52)",8);
+    txt((COLS-20)/2,0,"Prolog Demo (Stage 52)",8);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-20)/2,0,"COBOL Demo (Stage 52)",8);
-        txt(2,2,"       IDENTIFICATION DIVISION.",8+2);
-        txt(2,3,"       PROGRAM-ID. HELLO.",8+2);
-        txt(2,4,"       DATA DIVISION.",7);
-        txt(2,5,"       WORKING-STORAGE SECTION.",7);
-        txt(2,6,"       01 WS-COUNT PIC 9(3) VALUE 0.",7);
-        txt(2,7,"       PROCEDURE DIVISION.",8+4);
-        txt(2,8,"           PERFORM VARYING WS-COUNT",7);
-        txt(2,9,"             FROM 1 BY 1 UNTIL WS-COUNT > 10",7);
-        txt(2,10,"             DISPLAY 'COUNT: ' WS-COUNT",7);
-        txt(2,11,"           END-PERFORM",7);
-        txt(2,12,"           STOP RUN.",8+4);
-        int n=f%10+1;
-        txt(2,14,"COUNT: ",8+2);pn(8,14,n,8+4);
-        txt(2,16,"01 WS-TABLE.",8+2);
-        txt(2,17,"   05 WS-ENTRY OCCURS 5 TIMES PIC X(3).",7);
-        for(int i=0;i<5;i++) {
-            int y=19+i;
-            txt(2,y,"WS-ENTRY(",7);pn(11,y,i+1,8);txt(2,y+6,")=",7);pn(15,y,(i+1)*(f%5+1),8+3);
+        txt((COLS-20)/2,0,"Prolog Demo (Stage 52)",8);
+        txt(2,2,"%% Logic / declarative programming",8+2);
+        txt(2,4,"parent(alice, bob).",7);
+        txt(2,5,"parent(bob, carol).",7);
+        txt(2,6,"grandparent(X, Z) :- parent(X, Y), parent(Y, Z).",7);
+        for(int i=0;i<4;i++) {
+            int y=8+i*2;
+            txt(2,y,"?- ancestor(",7);
+            pn(14,y,i+1,8+(i%3)+2);
+            txt(2,y+4,", X).",7);
         }
-        txt(2,24,"        (COBOL: still running the world)",8);
-        dl(70000);
+        txt(2,17,"%% Query results:",8+4);
+        txt(2,18,"X = alice ;",8+(f%3));
+        txt(2,19,"X = bob ;",8+((f+1)%3));
+        txt(2,20,"X = carol ;",8+((f+2)%3));
+        txt(2,21,"false.",8);
+        txt(2,23,"%% Backtracking finds all solutions!",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

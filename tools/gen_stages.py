@@ -1043,34 +1043,53 @@ def t_brainfuck(n):
 void stage{n}_entry(void) {{
     kf(); clr(0);
     txt((COLS-24)/2,0,"{msg}",{col});
-    char tape[16];for(int i=0;i<16;i++)tape[i]=0;
-    int ptr=0;
-    const char *prog="+++++[>+++++<-]>+++++.";
-    for(int f=0;f<200;f++) {{
+    const char *progs[]={{"+++++[>+++++<-]>+++++.",
+                          "+++[>+++++<-]>[>+++++>+++++<<-]>>.",
+                          "+++++++++[>++++++++>+++++++++++++>+++++<<<-]>-.>+.>..",
+                          ">+>+>+<<<[->[->+>+<<]>>[-<<+>>]<<<]>>>.",
+                          "+>+>[->>>+<<<]>>>[-<<<+<<<+>>>>]<<<[->+>+<<]>>[-<<+>>]>>>."}};
+    const char *pnames[]={{"5×5=25", "3×5=15", "ASCII ABC", "Fibonacci", "Addition"}};
+    int pidx=({n}/2)%5;
+    const char *prog=progs[pidx];
+    const char *pname=pnames[pidx];
+    char tape[24];for(int i=0;i<24;i++)tape[i]=0;
+    int ptr=12,pc=0,outc=0,wait=0;
+    char output[20];for(int i=0;i<20;i++)output[i]=0;
+    for(int f=0;f<300;f++) {{
         clr(0);
         txt((COLS-24)/2,0,"{msg}",{col});
-        txt(2,2,"Program:",{col}+2);
-        txt(2,3,prog,7);
+        txt(2,2,"Program:",{col}+2);txt(10,2,pname,{col}+4);
+        for(int i=0;prog[i];i++) {{
+            char c[2]={{prog[i],0}};
+            txt(2+i,3,c,i==pc?{col}+6:7);
+        }}
         txt(2,5,"Tape:",{col}+2);
-        for(int i=0;i<16;i++) {{
+        for(int i=0;i<20;i++) {{
             int hi=(i==ptr);
-            txt(3+i*4,6,"[",hi?{col}+4:7);
-            pn(4+i*4,6,(int)tape[i],hi?{col}+6:7);
-            txt(3+i*4+8,6,"]",hi?{col}+4:7);
+            px(2+i*3,6,hi?'[':' ',hi?{col}+4:0);
+            pn(3+i*3,6,(int)tape[i],hi?{col}+6:7);
+            px(2+i*3+7,6,hi?']':' ',hi?{col}+4:0);
         }}
-        txt(2,8,"Ptr:",7);pn(7,8,ptr,{col}+2);
-        if(f%5==0&&f<160) {{
-            int step=f/5;
-            int pc=step%17;
-            if(pc<14&&tape[ptr]<255)tape[ptr]+=(pc<5?1:0);
-            if(pc>=5&&pc<10&&ptr<15)ptr++;
-            if(pc==10&&ptr>0)ptr--;
-        }}
-        txt(2,10,"Accumulator:",7);pn(14,10,(int)tape[ptr],{col}+4);
-        int n=f%24;
-        for(int i=0;i<n;i++)px(30+(i%20),12+(i/20),0xB0,{col}+i%7+1);
-        txt(2,14,"BF commands: + - > < [ ] , .",8);
-        dl(40000);
+        txt(2,8,"Output:",{col}+2);
+        for(int i=0;i<outc&&i<15;i++) px(2+i,9,output[i]?output[i]:' ',{col}+3);
+        if(wait==0) {{
+            char cmd=prog[pc];
+            if(cmd=='+') tape[ptr]++;
+            else if(cmd=='-') tape[ptr]--;
+            else if(cmd=='>'&&ptr<23) ptr++;
+            else if(cmd=='<'&&ptr>0) ptr--;
+            else if(cmd=='.'&&outc<19) {{output[outc]=tape[ptr];outc++;}}
+            else if(cmd=='['&&tape[ptr]==0) {{int d=1;while(d){{pc++;if(prog[pc]=='[')d++;if(prog[pc]==']')d--;}}}}
+            else if(cmd==']'&&tape[ptr]!=0) {{int d=1;while(d){{pc--;if(prog[pc]==']')d++;if(prog[pc]=='[')d--;}}}}
+            pc++;if(!prog[pc])pc=0;
+            wait=2;
+        }} else wait--;
+        txt(2,11,"PC:",7);pn(6,11,pc,{col}+2);
+        txt(2,11,"Cell:",7);pn(12,11,(int)tape[ptr],{col}+4);
+        txt(2,13,"Instr:",7);
+        if(prog[pc]){{char ci[2]={{prog[pc],0}};px(9,13,ci[0],{col}+6);}}
+        txt(2,15,"Cells: 24 | Programs: 5 | Speed: 2fps",8);
+        for(int i=0;i<f%40;i++)px(2+i,17,0xDB,{col}+(i%7));
         if(kh()){{kg();break;}}
     }}
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);
@@ -1079,6 +1098,70 @@ void stage{n}_entry(void) {{
 '''
 
 TEMPLATES.append(t_brainfuck)
+
+def t_brainfuck2(n):
+    msg = f"Brainfuck 2 (Stage {n})"
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    txt((COLS-20)/2,0,"{msg}",{col});
+    const char *progs[]={{">+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++."
+                          ">>++++++++[<++++++>-]<.------------.>+++++++++[<-------->-]<+."
+                          ">+++++++[<++++>-]<.>++++++++++[<--------->-]<-.>+++++[<+++++>-]<+.",
+                          "++++[>++++<-]>[>+++++>+++++<<-]>>.>+>+>+<<<[->[->+>+<<]>>[-<<+>>]<<<]>>>.",
+                          "+++++++++[>++++++++<-]>."}};
+    const char *pnames[]={{"\\"Hi!\\"", "Squares", "ASCII N"}};
+    int pidx=({n}/2)%3;
+    const char *prog=progs[pidx];
+    const char *pname=pnames[pidx];
+    char tape[16];for(int i=0;i<16;i++)tape[i]=0;
+    int ptr=0,pc=0,outc=0,wait=0,phase=0;
+    char outbuf[32];for(int i=0;i<32;i++)outbuf[i]=0;
+    for(int f=0;f<250;f++) {{
+        clr(0);
+        txt((COLS-20)/2,0,"{msg}",{col});
+        txt(2,2,"BF Program:",{col}+2);txt(13,2,pname,{col}+4);
+        txt(2,3,prog,7);
+        txt(2,5,"[",{col}+1);
+        for(int i=0;i<16;i++) {{
+            int val=(int)tape[i];
+            uint8_t c=(val>=32&&val<127)?(uint8_t)val:'.';
+            uint8_t clr=i==ptr?{col}+6:((val>0)?{col}+2:7);
+            px(3+i,5,c,clr);
+        }}
+        txt(2+16+1,5,"]",{col}+1);
+        txt(2,7,"Output:",{col}+2);
+        for(int i=0;i<outc&&i<30;i++) px(2+i,8,outbuf[i]?outbuf[i]:' ',{col}+3);
+        if(wait==0) {{
+            char cmd=prog[pc];
+            if(cmd=='+') tape[ptr]++;
+            else if(cmd=='-') tape[ptr]--;
+            else if(cmd=='>'&&ptr<15) ptr++;
+            else if(cmd=='<'&&ptr>0) ptr--;
+            else if(cmd=='.'&&outc<31) {{outbuf[outc]=tape[ptr];outc++;}}
+            else if(cmd=='['&&tape[ptr]==0) {{int d=1;while(d){{pc++;if(prog[pc]=='[')d++;if(prog[pc]==']')d--;}}}}
+            else if(cmd==']'&&tape[ptr]!=0) {{int d=1;while(d){{pc--;if(prog[pc]==']')d++;if(prog[pc]=='[')d--;}}}}
+            pc++;if(!prog[pc]){{pc=0;phase++;if(phase>2)break;}}
+            wait=3;
+        }} else wait--;
+        txt(2,10,"ASCII map:",{col}+2);
+        for(int i=0;i<16;i++) {{
+            int v=(int)tape[i];
+            if(v>0&&v<16) {{px(2+i*3,12,0xB0,{col}+v);}}
+            else if(v>=16) {{px(2+i*3,12,0xDB,{col}+5);}}
+        }}
+        txt(2,14,"ptr={{ptr}}",{col}+2);pn(9,14,ptr,{col}+4);
+        txt(2,16,"Commands: + - > < [ ] , .",8);
+        dl(20000);
+        if(kh()){{kg();break;}}
+    }}
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_brainfuck2)
 
 def t_lua(n):
     msg = f"Lua Demo (Stage {n})"

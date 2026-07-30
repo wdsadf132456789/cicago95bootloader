@@ -39,25 +39,24 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage42_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"C++ Demo (Stage 42)",13);
+    txt((COLS-14)/2,0,"Lua Demo (Stage 42)",13);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-16)/2,0,"C++ Demo (Stage 42)",13);
-        txt(2,2,"template<typename T>",13+2);
-        txt(2,3,"class Vector {",13+2);
-        txt(2,4,"  T* data; size_t len;",7);
-        txt(2,5,"public:",13+4);
-        txt(2,6,"  Vector() : data(nullptr), len(0) {}",7);
-        txt(2,7,"  void push_back(const T& val) {...}",7);
-        txt(2,8,"  T& operator[](size_t i) { return data[i]; }",7);
-        txt(2,9,"};",13+2);
-        txt(2,11,"Vector<int> v;",7);
-        txt(2,12,"v.push_back(42);",7);
+        txt((COLS-14)/2,0,"Lua Demo (Stage 42)",13);
+        txt(2,2,"-- Tables are everything!",13+2);
+        txt(2,4,"local t = {name=\"Alice\", age=25}",7);
+        txt(2,5,"t.city = \"NYC\"",7);
+        txt(2,6,"print(t.name, t.age)",7);
+        txt(2,8,"local function fib(n)",13+4);
+        txt(2,9,"  if n <= 1 then return n end",7);
+        txt(2,10,"  return fib(n-1) + fib(n-2)",7);
+        txt(2,11,"end",13+4);
         for(int i=0;i<6;i++) {
-            int y=14+i;
-            txt(2,y,"v[",7);pn(4,y,i,13);txt(2,y+6,"]=",7);pn(9,y,(i+1)*(f%5+1),13+3);
+            int y=13+i;
+            int v=i*f%10;
+            txt(2,y,"fib(",7);pn(6,y,i,13+2);txt(2,y+8,")=",7);pn(11,y,v,13+4);
         }
-        txt(2,22,"auto result = v | views::filter(...)",8);
+        txt(2,21,"for k,v in pairs(t) do print(k,v) end",8);
         dl(60000);
         if(kh()){kg();break;}
     }

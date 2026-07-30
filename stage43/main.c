@@ -39,29 +39,26 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage43_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"Bash Demo (Stage 43)",14);
-    for(int f=0;f<150;f++) {
+    txt((COLS-16)/2,0,"C++ Demo (Stage 43)",14);
+    for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-16)/2,0,"Bash Demo (Stage 43)",14);
-        txt(2,2,"#!/bin/bash",14+2);
-        txt(2,4,"for file in *.txt; do",7);
-        txt(2,5,"  echo \"Processing $file...\"",7);
-        txt(2,6,"  grep 'error' \"$file\" | wc -l",7);
-        txt(2,7,"done",7);
-        txt(2,9,"ls -la | awk '{print $9, $5}'",7);
-        txt(2,11,"PIPELINE:",14+4);
-        const char *stages[]={"ls","grep","sort","uniq","wc"};
-        for(int i=0;i<5;i++) {
-            int c=i==(f/6)%5?14+6:8;
-            txt(4+i*13,13,stages[i],c);
-            if(i<4)txt(16+i*13,13,"|",7);
+        txt((COLS-16)/2,0,"C++ Demo (Stage 43)",14);
+        txt(2,2,"template<typename T>",14+2);
+        txt(2,3,"class Vector {",14+2);
+        txt(2,4,"  T* data; size_t len;",7);
+        txt(2,5,"public:",14+4);
+        txt(2,6,"  Vector() : data(nullptr), len(0) {}",7);
+        txt(2,7,"  void push_back(const T& val) {...}",7);
+        txt(2,8,"  T& operator[](size_t i) { return data[i]; }",7);
+        txt(2,9,"};",14+2);
+        txt(2,11,"Vector<int> v;",7);
+        txt(2,12,"v.push_back(42);",7);
+        for(int i=0;i<6;i++) {
+            int y=14+i;
+            txt(2,y,"v[",7);pn(4,y,i,14);txt(2,y+6,"]=",7);pn(9,y,(i+1)*(f%5+1),14+3);
         }
-        txt(2,15,"$ find /home -name \"*.conf\" 2>/dev/null",8);
-        txt(2,17,"$  ",7);pn(5,17,f%1000,14+2);txt(2,18," exit code",8);
-        for(int i=0;i<5;i++) {
-            pn(4+i*15,20,i*f%256,14+i+1);
-        }
-        dl(50000);
+        txt(2,22,"auto result = v | views::filter(...)",8);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

@@ -39,26 +39,29 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage59_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Clojure Demo (Stage 59)",15);
+    txt((COLS-20)/2,0,"Elixir Demo (Stage 59)",15);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-22)/2,0,"Clojure Demo (Stage 59)",15);
-        txt(2,2,";; Lisp on the JVM",15+2);
-        txt(2,4,"(ns demo.core)",7);
-        txt(2,5,"(:require [clojure.string :as str])",7);
-        txt(2,7,"(defn fib [n]",15+4);
-        txt(2,8,"  (loop [a 0 b 1 n n]",7);
-        txt(2,9,"    (if (zero? n) a",7);
-        txt(2,10,"        (recur b (+ a b) (dec n)))))",7);
-        for(int i=0;i<6;i++) {
-            int y=12+i;
-            txt(2,y,"(->> (range 10)",15+(i%3)+1);
-            int n=i*f%10;
-            pn(8,y+1,n,15+4);
+        txt((COLS-20)/2,0,"Elixir Demo (Stage 59)",15);
+        txt(2,2,"# Elixir: Erlang VM with Ruby syntax",15+2);
+        txt(2,4,"defmodule Math do",7);
+        txt(2,5,"  def fib(0), do: 0",7);
+        txt(2,6,"  def fib(1), do: 1",7);
+        txt(2,7,"  def fib(n), do: fib(n-1) + fib(n-2)",7);
+        txt(2,8,"end",7);
+        txt(2,10,"[1,2,3,4,5]",15+4);
+        txt(2,11,"|> Enum.map(&(&1 * 2))",7);
+        txt(2,12,"|> Enum.filter(&(&1 > 4))",7);
+        txt(2,13,"|> IO.inspect()",7);
+        for(int i=0;i<5;i++) {
+            int v=(i+1)*(f%6+1);
+            pn(6+i*5,15,v,15+(i%7));
         }
-        txt(2,19,"(map #(* % 2) [1 2 3 4 5])",7);
-        txt(2,21,"(filter even? (range 20))",7);
-        txt(2,23,";; Persistent data structures",8);
+        txt(2,17,"case result do",7);
+        txt(2,18,"  {:ok, val} -> IO.puts(val)",7);
+        txt(2,19,"  {:error, _} -> IO.puts(\"error\")",7);
+        txt(2,20,"end",7);
+        txt(2,22,"# Pipe operator |> is magical",8);
         dl(60000);
         if(kh()){kg();break;}
     }

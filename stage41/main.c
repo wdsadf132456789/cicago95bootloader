@@ -39,25 +39,55 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage41_entry(void) {
     kf(); clr(0);
-    txt((COLS-14)/2,0,"Lua Demo (Stage 41)",12);
-    for(int f=0;f<120;f++) {
+    txt((COLS-20)/2,0,"Brainfuck 2 (Stage 41)",12);
+    const char *progs[]={">+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++."
+                          ">>++++++++[<++++++>-]<.------------.>+++++++++[<-------->-]<+."
+                          ">+++++++[<++++>-]<.>++++++++++[<--------->-]<-.>+++++[<+++++>-]<+.",
+                          "++++[>++++<-]>[>+++++>+++++<<-]>>.>+>+>+<<<[->[->+>+<<]>>[-<<+>>]<<<]>>>.",
+                          "+++++++++[>++++++++<-]>."};
+    const char *pnames[]={"\"Hi!\"", "Squares", "ASCII N"};
+    int pidx=(41/2)%3;
+    const char *prog=progs[pidx];
+    const char *pname=pnames[pidx];
+    char tape[16];for(int i=0;i<16;i++)tape[i]=0;
+    int ptr=0,pc=0,outc=0,wait=0,phase=0;
+    char outbuf[32];for(int i=0;i<32;i++)outbuf[i]=0;
+    for(int f=0;f<250;f++) {
         clr(0);
-        txt((COLS-14)/2,0,"Lua Demo (Stage 41)",12);
-        txt(2,2,"-- Tables are everything!",12+2);
-        txt(2,4,"local t = {name=\"Alice\", age=25}",7);
-        txt(2,5,"t.city = \"NYC\"",7);
-        txt(2,6,"print(t.name, t.age)",7);
-        txt(2,8,"local function fib(n)",12+4);
-        txt(2,9,"  if n <= 1 then return n end",7);
-        txt(2,10,"  return fib(n-1) + fib(n-2)",7);
-        txt(2,11,"end",12+4);
-        for(int i=0;i<6;i++) {
-            int y=13+i;
-            int v=i*f%10;
-            txt(2,y,"fib(",7);pn(6,y,i,12+2);txt(2,y+8,")=",7);pn(11,y,v,12+4);
+        txt((COLS-20)/2,0,"Brainfuck 2 (Stage 41)",12);
+        txt(2,2,"BF Program:",12+2);txt(13,2,pname,12+4);
+        txt(2,3,prog,7);
+        txt(2,5,"[",12+1);
+        for(int i=0;i<16;i++) {
+            int val=(int)tape[i];
+            uint8_t c=(val>=32&&val<127)?(uint8_t)val:'.';
+            uint8_t clr=i==ptr?12+6:((val>0)?12+2:7);
+            px(3+i,5,c,clr);
         }
-        txt(2,21,"for k,v in pairs(t) do print(k,v) end",8);
-        dl(60000);
+        txt(2+16+1,5,"]",12+1);
+        txt(2,7,"Output:",12+2);
+        for(int i=0;i<outc&&i<30;i++) px(2+i,8,outbuf[i]?outbuf[i]:' ',12+3);
+        if(wait==0) {
+            char cmd=prog[pc];
+            if(cmd=='+') tape[ptr]++;
+            else if(cmd=='-') tape[ptr]--;
+            else if(cmd=='>'&&ptr<15) ptr++;
+            else if(cmd=='<'&&ptr>0) ptr--;
+            else if(cmd=='.'&&outc<31) {outbuf[outc]=tape[ptr];outc++;}
+            else if(cmd=='['&&tape[ptr]==0) {int d=1;while(d){pc++;if(prog[pc]=='[')d++;if(prog[pc]==']')d--;}}
+            else if(cmd==']'&&tape[ptr]!=0) {int d=1;while(d){pc--;if(prog[pc]==']')d++;if(prog[pc]=='[')d--;}}
+            pc++;if(!prog[pc]){pc=0;phase++;if(phase>2)break;}
+            wait=3;
+        } else wait--;
+        txt(2,10,"ASCII map:",12+2);
+        for(int i=0;i<16;i++) {
+            int v=(int)tape[i];
+            if(v>0&&v<16) {px(2+i*3,12,0xB0,12+v);}
+            else if(v>=16) {px(2+i*3,12,0xDB,12+5);}
+        }
+        txt(2,14,"ptr={ptr}",12+2);pn(9,14,ptr,12+4);
+        txt(2,16,"Commands: + - > < [ ] , .",8);
+        dl(20000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

@@ -39,35 +39,23 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage98_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Brainfuck Demo (Stage 98)",9);
-    char tape[16];for(int i=0;i<16;i++)tape[i]=0;
-    int ptr=0;
-    const char *prog="+++++[>+++++<-]>+++++.";
-    for(int f=0;f<200;f++) {
+    txt((COLS-20)/2,0,"Haskell Demo (Stage 98)",9);
+    for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-24)/2,0,"Brainfuck Demo (Stage 98)",9);
-        txt(2,2,"Program:",9+2);
-        txt(2,3,prog,7);
-        txt(2,5,"Tape:",9+2);
-        for(int i=0;i<16;i++) {
-            int hi=(i==ptr);
-            txt(3+i*4,6,"[",hi?9+4:7);
-            pn(4+i*4,6,(int)tape[i],hi?9+6:7);
-            txt(3+i*4+8,6,"]",hi?9+4:7);
+        txt((COLS-20)/2,0,"Haskell Demo (Stage 98)",9);
+        txt(2,2,"-- Pure functional programming",9+2);
+        txt(2,4,"fibs = 0 : 1 : zipWith (+) fibs (tail fibs)",7);
+        txt(2,6,"fmap (+1) (Just 5)  -- Just 6",7);
+        txt(2,8,"pure (*2) <*> [1,2,3] -- [2,4,6]",7);
+        for(int i=0;i<6;i++) {
+            int y=10+i*2;
+            int a=i;
+            txt(2,y,"let x = ",7);pn(9,y,a,9+2);
+            txt(2,y+1,"let y = fmap (*",7);pn(9,y+1,f%5+1,9+3);txt(2,y+1+8,") x",7);
         }
-        txt(2,8,"Ptr:",7);pn(7,8,ptr,9+2);
-        if(f%5==0&&f<160) {
-            int step=f/5;
-            int pc=step%17;
-            if(pc<14&&tape[ptr]<255)tape[ptr]+=(pc<5?1:0);
-            if(pc>=5&&pc<10&&ptr<15)ptr++;
-            if(pc==10&&ptr>0)ptr--;
-        }
-        txt(2,10,"Accumulator:",7);pn(14,10,(int)tape[ptr],9+4);
-        int n=f%24;
-        for(int i=0;i<n;i++)px(30+(i%20),12+(i/20),0xB0,9+i%7+1);
-        txt(2,14,"BF commands: + - > < [ ] , .",8);
-        dl(40000);
+        txt(2,23,"main = putStrLn \"Hello, Haskell!\"",8);
+        txt(2,24,"-- Result: ",8);pn(12,24,f%10,9+4);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

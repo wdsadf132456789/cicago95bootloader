@@ -39,30 +39,32 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage62_entry(void) {
     kf(); clr(0);
-    txt((COLS-14)/2,0,"Ada Demo (Stage 62)",3);
+    txt((COLS-10)/2,0,"R Demo (Stage 62)",3);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-14)/2,0,"Ada Demo (Stage 62)",3);
-        txt(2,2,"-- Strongly typed, safe, and readable",3+2);
-        txt(2,4,"with Ada.Text_IO; use Ada.Text_IO;",7);
-        txt(2,5,"procedure Main is",7);
-        txt(2,6,"   type Weekday is (Mon, Tue, Wed, Thu, Fri);",7);
-        txt(2,7,"   subtype Workday is Weekday range Mon..Fri;",7);
-        txt(2,8,"   Count : Integer := 0;",7);
-        txt(2,9,"begin",7);
-        txt(2,10,"   for I in 1 .. 10 loop",7);
-        txt(2,11,"      Count := Count + I;",7);
-        txt(2,12,"   end loop;",7);
-        txt(2,13,"   Put_Line(Integer'Image(Count));",7);
-        txt(2,14,"end Main;",7);
-        int n=0;for(int i=1;i<=f%10+1;i++)n+=i;
-        txt(2,16,"Sum 1..",7);pn(9,16,f%10+1,3+2);txt(13+8,16,"=",7);pn(15+8,16,n,3+4);
-        txt(2,18,"pragma Assert (Count > 0);",3+4);
-        txt(2,20,"-- Ada: used in avionics & railways",8);
-        for(int i=0;i<4;i++) {
-            int y=22+i;
-            txt(2,y,"type Arr is array(1..",7);pn(8,y,i+2,3);txt(2,y+6,") of Integer;",7);
+        txt((COLS-10)/2,0,"R Demo (Stage 62)",3);
+        txt(2,2,"# Statistical computing",3+2);
+        txt(2,4,"data <- c(1, 4, 6, 8, 10, 15, 21)",7);
+        txt(2,5,"mean(data)",7);
+        txt(2,6,"sd(data)",7);
+        txt(2,7,"summary(data)",7);
+        for(int i=0;i<7;i++) {
+            int v=(i+1)*(f%6+1);
+            pn(4+i*5,9,v,3+(i%7));
         }
+        int m=0;for(int i=0;i<7;i++)m+=(i+1)*(f%6+1);
+        m/=7;
+        txt(2,11,"mean = ",7);pn(8,11,m,3+4);
+        txt(2,13,"lm(y ~ x, data=df)",3+2);
+        txt(2,14,"t.test(group1, group2)",7);
+        txt(2,16,"library(ggplot2)",7);
+        txt(2,17,"ggplot(df, aes(x, y)) + geom_point()",7);
+        for(int i=0;i<5;i++) {
+            int y=19+i;
+            txt(2,y,"|",7);
+            for(int d=0;d<(i+1)*(f%3+1);d++)px(3+d,y,0xDB,3+(d%6));
+        }
+        txt(2,24,"# R: data science since '93",8);
         dl(60000);
         if(kh()){kg();break;}
     }

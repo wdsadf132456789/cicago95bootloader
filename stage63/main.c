@@ -39,30 +39,31 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage63_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Logo Demo (Stage 63)",4);
-    for(int f=0;f<150;f++) {
+    txt((COLS-14)/2,0,"Ada Demo (Stage 63)",4);
+    for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-18)/2,0,"Logo Demo (Stage 63)",4);
-        txt(2,2,"; Turtle graphics for children",4+2);
-        txt(2,4,"TO SQUARE :SIZE",7);
-        txt(2,5,"  REPEAT 4 [FD :SIZE RT 90]",7);
-        txt(2,6,"END",7);
-        txt(2,8,"TO SPIRAL :SIZE",4+4);
-        txt(2,9,"  IF :SIZE > 100 [STOP]",7);
-        txt(2,10,"  FD :SIZE RT 90",7);
-        txt(2,11,"  SPIRAL :SIZE + 5",7);
-        txt(2,12,"END",4+4);
-        txt(2,14,"SPIRAL 10",7);
-        int cx=35,cy=12;
-        int x=cx,y=cy,size=5+f%4;
-        for(int i=0;i<f%20+3;i++) {
-            px(x/2,y,0x2A,4+(i%7));
-            x+=size;y+=(i%2?size:-size);
-            px(x/2,y,0x2A,4+(i%7));
+        txt((COLS-14)/2,0,"Ada Demo (Stage 63)",4);
+        txt(2,2,"-- Strongly typed, safe, and readable",4+2);
+        txt(2,4,"with Ada.Text_IO; use Ada.Text_IO;",7);
+        txt(2,5,"procedure Main is",7);
+        txt(2,6,"   type Weekday is (Mon, Tue, Wed, Thu, Fri);",7);
+        txt(2,7,"   subtype Workday is Weekday range Mon..Fri;",7);
+        txt(2,8,"   Count : Integer := 0;",7);
+        txt(2,9,"begin",7);
+        txt(2,10,"   for I in 1 .. 10 loop",7);
+        txt(2,11,"      Count := Count + I;",7);
+        txt(2,12,"   end loop;",7);
+        txt(2,13,"   Put_Line(Integer'Image(Count));",7);
+        txt(2,14,"end Main;",7);
+        int n=0;for(int i=1;i<=f%10+1;i++)n+=i;
+        txt(2,16,"Sum 1..",7);pn(9,16,f%10+1,4+2);txt(13+8,16,"=",7);pn(15+8,16,n,4+4);
+        txt(2,18,"pragma Assert (Count > 0);",4+4);
+        txt(2,20,"-- Ada: used in avionics & railways",8);
+        for(int i=0;i<4;i++) {
+            int y=22+i;
+            txt(2,y,"type Arr is array(1..",7);pn(8,y,i+2,4);txt(2,y+6,") of Integer;",7);
         }
-        txt(2,22,"; The first educational language",8);
-        txt(2,23,"; Seymour Papert, MIT 1967",8);
-        dl(50000);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

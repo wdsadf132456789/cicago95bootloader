@@ -39,30 +39,31 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage53_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Fortran Demo (Stage 53)",9);
+    txt((COLS-20)/2,0,"COBOL Demo (Stage 53)",9);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-22)/2,0,"Fortran Demo (Stage 53)",9);
-        txt(2,2,"! Scientific computing since 1957",9+2);
-        txt(2,4,"program main",7);
-        txt(2,5,"  implicit none",7);
-        txt(2,6,"  integer :: i, n = 10",7);
-        txt(2,7,"  real :: matrix(3,3)",7);
-        txt(2,8,"  matrix = reshape([1,2,3,4,5,6,7,8,9], [3,3])",7);
-        for(int r=0;r<3;r++) {
-            for(int c=0;c<3;c++) {
-                int v=(r+c+1)*(f%4+1);
-                pn(6+c*6,10+r,v,9+(r*3+c)%7+1);
-            }
+        txt((COLS-20)/2,0,"COBOL Demo (Stage 53)",9);
+        txt(2,2,"       IDENTIFICATION DIVISION.",9+2);
+        txt(2,3,"       PROGRAM-ID. HELLO.",9+2);
+        txt(2,4,"       DATA DIVISION.",7);
+        txt(2,5,"       WORKING-STORAGE SECTION.",7);
+        txt(2,6,"       01 WS-COUNT PIC 9(3) VALUE 0.",7);
+        txt(2,7,"       PROCEDURE DIVISION.",9+4);
+        txt(2,8,"           PERFORM VARYING WS-COUNT",7);
+        txt(2,9,"             FROM 1 BY 1 UNTIL WS-COUNT > 10",7);
+        txt(2,10,"             DISPLAY 'COUNT: ' WS-COUNT",7);
+        txt(2,11,"           END-PERFORM",7);
+        txt(2,12,"           STOP RUN.",9+4);
+        int n=f%10+1;
+        txt(2,14,"COUNT: ",9+2);pn(8,14,n,9+4);
+        txt(2,16,"01 WS-TABLE.",9+2);
+        txt(2,17,"   05 WS-ENTRY OCCURS 5 TIMES PIC X(3).",7);
+        for(int i=0;i<5;i++) {
+            int y=19+i;
+            txt(2,y,"WS-ENTRY(",7);pn(11,y,i+1,9);txt(2,y+6,")=",7);pn(15,y,(i+1)*(f%5+1),9+3);
         }
-        txt(2,14,"  do i = 1, n",9+4);
-        txt(2,15,"    print *, 'i = ', i",7);
-        txt(2,16,"  end do",9+4);
-        int fn=1;for(int i=1;i<=f%8+1;i++)fn*=i;
-        txt(2,18,"  ! Factorial:",8);
-        pn(14,18,f%8+1,9+2);txt(2,18,"=",7);pn(17,18,fn,9+4);
-        txt(2,20,"end program main",7);
-        dl(60000);
+        txt(2,24,"        (COBOL: still running the world)",8);
+        dl(70000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

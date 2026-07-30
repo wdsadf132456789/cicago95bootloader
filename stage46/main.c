@@ -39,25 +39,28 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage46_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Kotlin Demo (Stage 46)",2);
+    txt((COLS-24)/2,0,"TypeScript Demo (Stage 46)",2);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-20)/2,0,"Kotlin Demo (Stage 46)",2);
-        txt(2,2,"// Null safety + lambdas",2+2);
-        txt(2,4,"val numbers = listOf(1, 2, 3, 4, 5)",7);
-        txt(2,5,"val doubled = numbers.map { it * 2 }",7);
-        txt(2,6,"val even = numbers.filter { it % 2 == 0 }",7);
-        for(int i=0;i<5;i++) {
-            int v=(i+1)*(f%6+2);
-            pn(6+i*5,8,v,2+(i%7));
+        txt((COLS-24)/2,0,"TypeScript Demo (Stage 46)",2);
+        txt(2,2,"interface Person {",2+2);
+        txt(2,3,"  readonly name: string;",7);
+        txt(2,4,"  age: number;",7);
+        txt(2,5,"  city?: string;",7);
+        txt(2,6,"}",2+2);
+        txt(2,8,"const alice: Person = {",7);
+        txt(2,9,"  name: 'Alice',",7);
+        txt(2,10,"  age: 25,",7);
+        txt(2,11,"  city: 'NYC'",7);
+        txt(2,12,"};",7);
+        for(int i=0;i<4;i++) {
+            int y=14+i;
+            txt(2,y,"type Result<T> = T | null;",2+i+1);
         }
-        txt(2,10,"data class Person(val name: String, val age: Int)",2+4);
-        txt(2,12,"val alice = Person(\"Alice\", 25)",7);
-        txt(2,13,"val (name, age) = alice  // destructuring",7);
-        txt(2,15,"val result: String? = null",2+2);
-        txt(2,16,"println(result ?: \"default\")  // elvis op",7);
-        txt(2,18,"fun Int.isEven() = this % 2 == 0  // extension",2+3);
-        txt(2,20,"println(42.isEven())  // true",7);
+        txt(2,19,"function identity<T>(arg: T): T {",2+4);
+        txt(2,20,"  return arg;",7);
+        txt(2,21,"}",2+4);
+        txt(2,23,"const num = identity<number>(42);",8);
         dl(60000);
         if(kh()){kg();break;}
     }

@@ -37,36 +37,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t rnd=975255;
-static int rn(void){rnd=rnd*1103515245+12345;return(rnd>>16)&0x7FFF;}
-
 void stage79_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Maze Generator (Stage 79)",5);
-    uint8_t m[80*24];for(int i=0;i<80*24;i++)m[i]=1;
-    int sx=2,sy=2;m[sy*80+sx]=0;
-    int dx[]={1,-1,0,0},dy[]={0,0,1,-1};
-    for(int c=0;c<500;c++) {
-        int d=rn()%4;
-        int nx=sx+dx[d]*2,ny=sy+dy[d]*2;
-        if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]) {
-            m[(sy+dy[d])*80+sx+dx[d]]=0;
-            m[ny*80+nx]=0;
-            sx=nx;sy=ny;
-        } else {
-            int ok=0;
-            for(int t=0;t<20;t++) {
-                d=rn()%4;
-                nx=sx+dx[d]*2;ny=sy+dy[d]*2;
-                if(nx>0&&nx<79&&ny>1&&ny<23&&m[ny*80+nx]){ok=1;break;}
-            }
-            if(!ok){sx=2+rn()%38*2;sy=2+rn()%10*2;}
-        }
-        for(int y=2;y<23;y++)for(int x=0;x<80;x++)
-            px(x,y,m[y*80+x]?0xDB:' ',(m[y*80+x]?5:0));
-        dl(5000);
+    txt((COLS-16)/2,0,"Solo Pong (Stage 79)",5);
+    int bx=40,by=12,bdx=1,bdy=1;
+    int py=12;
+    for(int f=0;f<500;f++) {
+        for(int i=0;i<80;i++){px(i,1,' ',0);px(i,24,' ',0);}
+        px(1,py,0xDB,5);px(1,py+1,0xDB,5);px(1,py+2,0xDB,5);
+        bx+=bdx;by+=bdy;
+        if(by<=2||by>=23)bdy=-bdy;
+        if(bx<=2){bdx=-bdx;if(by>=py-1&&by<=py+3){}else{txt(30,12,"GAME OVER",4);wa();clr(0);txt((COLS-20)/2,12,"Score: 0",7);goto scr;}}
+        if(bx>=78)bdx=-bdx;
+        px(bx,by,0xDB,5+3);
+        if(kh()){uint8_t k=kg();if(!(k&0x80)){if(k==0x48&&py>2)py--;if(k==0x50&&py<21)py++;}}
+        dl(15000);
         if(kh()){kg();break;}
     }
-    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);
+scr:
+    txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

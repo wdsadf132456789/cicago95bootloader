@@ -39,27 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage57_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Erlang Demo (Stage 57)",13);
+    txt((COLS-16)/2,0,"APL Demo (Stage 57)",13);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-20)/2,0,"Erlang Demo (Stage 57)",13);
-        txt(2,2,"%% Actor model concurrency",13+2);
-        txt(2,4,"-module(hello).",7);
-        txt(2,5,"-export([start/0, loop/0]).",7);
-        txt(2,7,"start() ->",13+4);
-        txt(2,8,"    Pid = spawn(fun loop/0),",7);
-        txt(2,9,"    Pid ! {hello, world}.",7);
-        txt(2,11,"loop() ->",13+4);
-        txt(2,12,"    receive",7);
-        txt(2,13,"        {hello, Msg} -> io:format(\"~s~n\", [Msg])",7);
-        txt(2,14,"    end,",7);
-        txt(2,15,"    loop().",13+4);
-        for(int i=0;i<5;i++) {
-            int y=17+i;
-            int n=i*(f%4+1);
-            txt(2,y,"Pid ! {data, ",7);pn(14,y,n,13+2);txt(2,y+4,"}",7);
+        txt((COLS-16)/2,0,"APL Demo (Stage 57)",13);
+        txt(2,2,"â One line = an entire program",13+2);
+        txt(2,4,"âxââ·10         â numbers 1 to 10",7);
+        txt(2,5,"âxÃ2             â doubled",7);
+        txt(2,6,"â+/x              â sum of vector",7);
+        txt(2,7,"ââ©3 3ââ¬9        â 3x3 matrix",7);
+        txt(2,9,"ââ¬âÂ¨ x          â square root each",7);
+        for(int i=0;i<8;i++) {
+            int y=11+i;
+            int v=(i+1)*(f%6+1);
+            txt(2,y,"ââ¬[",7);
+            px(6,y,0xFE,13+(i%7));
+            txt(2,y+2,"]",7);
+            pn(9,y,v,13+2);
         }
-        txt(2,23,"%% \"Let it crash\" philosophy",8);
+        txt(2,21,"â (â£Ã·Ã·)  â¨rÃ·r  âÂ² ",8);
+        txt(2,22,"â (iota rho iota) â nonsense",8);
+        txt(2,24,"â APL: write once, read never",8);
         dl(60000);
         if(kh()){kg();break;}
     }

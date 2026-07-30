@@ -39,25 +39,29 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage95_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"Lisp Demo (Stage 95)",6);
-    for(int f=0;f<120;f++) {
+    txt((COLS-14)/2,0,"Go Demo (Stage 95)",6);
+    for(int f=0;f<150;f++) {
         clr(0);
-        txt((COLS-16)/2,0,"Lisp Demo (Stage 95)",6);
-        txt(2,2,";; Parentheses: the final frontier",6+2);
-        txt(2,4,"(defun fib (n)",7);
-        txt(2,5,"  (if (<= n 1)",7);
-        txt(2,6,"      n",7);
-        txt(2,7,"      (+ (fib (- n 1))",7);
-        txt(2,8,"         (fib (- n 2)))))",7);
-        for(int i=0;i<6;i++) {
-            int y=10+i*2;
-            txt(2,y,"(mapcar (lambda (x) (* x 2))",6+(i%3)+1);
-            txt(2,y+1,"        '(",7);
-            for(int d=0;d<=i;d++){pn(12+d*4,y+1,(d+1)*2,6+d+1);if(d<i)px(15+d*4,y+1,' ',7);}
-            txt(2,y+1+8,"))",6+(i%3)+1);
+        txt((COLS-14)/2,0,"Go Demo (Stage 95)",6);
+        txt(2,2,"package main",6+2);
+        txt(2,4,"func main() {",7);
+        txt(2,5,"  ch := make(chan int)",7);
+        txt(2,6,"  go func() {",6+4);
+        txt(2,7,"    for i := 0; i < 5; i++ {",7);
+        txt(2,8,"      ch <- i * 2",7);
+        txt(2,9,"    }",7);
+        txt(2,10,"    close(ch)",7);
+        txt(2,11,"  }()",6+4);
+        for(int i=0;i<5;i++) {
+            int y=13+i;
+            int v=i*(2+f%4);
+            pn(6,y,v,6+(i%6)+1);
+            for(int d=0;d<v;d++)px(10+d,y,0xFE,6+(d%7));
         }
-        txt(2,24,";; (loop for x from 0 to 10 collect x)",8);
-        dl(70000);
+        txt(2,20,"  for v := range ch {",6+2);
+        txt(2,21,"    fmt.Println(v)",7);
+        txt(2,22,"  }",6+2);
+        dl(50000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

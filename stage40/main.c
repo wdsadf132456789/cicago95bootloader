@@ -40,34 +40,53 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 void stage40_entry(void) {
     kf(); clr(0);
     txt((COLS-24)/2,0,"Brainfuck Demo (Stage 40)",11);
-    char tape[16];for(int i=0;i<16;i++)tape[i]=0;
-    int ptr=0;
-    const char *prog="+++++[>+++++<-]>+++++.";
-    for(int f=0;f<200;f++) {
+    const char *progs[]={"+++++[>+++++<-]>+++++.",
+                          "+++[>+++++<-]>[>+++++>+++++<<-]>>.",
+                          "+++++++++[>++++++++>+++++++++++++>+++++<<<-]>-.>+.>..",
+                          ">+>+>+<<<[->[->+>+<<]>>[-<<+>>]<<<]>>>.",
+                          "+>+>[->>>+<<<]>>>[-<<<+<<<+>>>>]<<<[->+>+<<]>>[-<<+>>]>>>."};
+    const char *pnames[]={"5×5=25", "3×5=15", "ASCII ABC", "Fibonacci", "Addition"};
+    int pidx=(40/2)%5;
+    const char *prog=progs[pidx];
+    const char *pname=pnames[pidx];
+    char tape[24];for(int i=0;i<24;i++)tape[i]=0;
+    int ptr=12,pc=0,outc=0,wait=0;
+    char output[20];for(int i=0;i<20;i++)output[i]=0;
+    for(int f=0;f<300;f++) {
         clr(0);
         txt((COLS-24)/2,0,"Brainfuck Demo (Stage 40)",11);
-        txt(2,2,"Program:",11+2);
-        txt(2,3,prog,7);
+        txt(2,2,"Program:",11+2);txt(10,2,pname,11+4);
+        for(int i=0;prog[i];i++) {
+            char c[2]={prog[i],0};
+            txt(2+i,3,c,i==pc?11+6:7);
+        }
         txt(2,5,"Tape:",11+2);
-        for(int i=0;i<16;i++) {
+        for(int i=0;i<20;i++) {
             int hi=(i==ptr);
-            txt(3+i*4,6,"[",hi?11+4:7);
-            pn(4+i*4,6,(int)tape[i],hi?11+6:7);
-            txt(3+i*4+8,6,"]",hi?11+4:7);
+            px(2+i*3,6,hi?'[':' ',hi?11+4:0);
+            pn(3+i*3,6,(int)tape[i],hi?11+6:7);
+            px(2+i*3+7,6,hi?']':' ',hi?11+4:0);
         }
-        txt(2,8,"Ptr:",7);pn(7,8,ptr,11+2);
-        if(f%5==0&&f<160) {
-            int step=f/5;
-            int pc=step%17;
-            if(pc<14&&tape[ptr]<255)tape[ptr]+=(pc<5?1:0);
-            if(pc>=5&&pc<10&&ptr<15)ptr++;
-            if(pc==10&&ptr>0)ptr--;
-        }
-        txt(2,10,"Accumulator:",7);pn(14,10,(int)tape[ptr],11+4);
-        int n=f%24;
-        for(int i=0;i<n;i++)px(30+(i%20),12+(i/20),0xB0,11+i%7+1);
-        txt(2,14,"BF commands: + - > < [ ] , .",8);
-        dl(40000);
+        txt(2,8,"Output:",11+2);
+        for(int i=0;i<outc&&i<15;i++) px(2+i,9,output[i]?output[i]:' ',11+3);
+        if(wait==0) {
+            char cmd=prog[pc];
+            if(cmd=='+') tape[ptr]++;
+            else if(cmd=='-') tape[ptr]--;
+            else if(cmd=='>'&&ptr<23) ptr++;
+            else if(cmd=='<'&&ptr>0) ptr--;
+            else if(cmd=='.'&&outc<19) {output[outc]=tape[ptr];outc++;}
+            else if(cmd=='['&&tape[ptr]==0) {int d=1;while(d){pc++;if(prog[pc]=='[')d++;if(prog[pc]==']')d--;}}
+            else if(cmd==']'&&tape[ptr]!=0) {int d=1;while(d){pc--;if(prog[pc]==']')d++;if(prog[pc]=='[')d--;}}
+            pc++;if(!prog[pc])pc=0;
+            wait=2;
+        } else wait--;
+        txt(2,11,"PC:",7);pn(6,11,pc,11+2);
+        txt(2,11,"Cell:",7);pn(12,11,(int)tape[ptr],11+4);
+        txt(2,13,"Instr:",7);
+        if(prog[pc]){char ci[2]={prog[pc],0};px(9,13,ci[0],11+6);}
+        txt(2,15,"Cells: 24 | Programs: 5 | Speed: 2fps",8);
+        for(int i=0;i<f%40;i++)px(2+i,17,0xDB,11+(i%7));
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

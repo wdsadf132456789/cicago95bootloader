@@ -39,19 +39,21 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage73_entry(void) {
     kf(); clr(0);
-    txt((COLS-28)/2,0,"Border Animation (Stage 73)",14);
-    for(int f=0;f<100;f++) {
-        int o=f%80;
-        for(int x=0;x<80;x++) { px(x,1,' ',0); px(x,23,' ',0); }
-        for(int y=2;y<23;y++) { px(0,y,' ',0); px(79,y,' ',0); }
-        px(o,1,'&',14);
-        px(79-o,23,'&',14);
-        px(o,23,'&',14);
-        px(79-o,1,'&',14);
-        px(0,2+o%21,'&',14);
-        px(79,2+(o+10)%21,'&',14);
-        dl(180000);
-        if(kh()){kg();break;}
+    txt((COLS-20)/2,0,"Star Field (Stage 73)",14);
+    uint32_t r=907974;
+    for(int f=0;f<200;f++) {
+        for(int i=0;i<5;i++) {
+            r=r*1103515245+12345;
+            int x=(r>>16)%80,y=((r>>8)%22)+1;
+            px(x,y,0xDB,0x08);
+        }
+        {{if(kh()){kg();break;}}}
+        dl(200300);
+        for(int i=0;i<3;i++) {
+            r=r*1103515245+12345;
+            int x=(r>>16)%80,y=((r>>8)%22)+1;
+            px(x,y,' ',0);
+        }
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();

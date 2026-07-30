@@ -39,27 +39,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage47_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Swift Demo (Stage 47)",3);
+    txt((COLS-20)/2,0,"Kotlin Demo (Stage 47)",3);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-20)/2,0,"Swift Demo (Stage 47)",3);
-        txt(2,2,"// Protocol-oriented programming",3+2);
-        txt(2,4,"protocol Greetable {",7);
-        txt(2,5,"  var name: String { get }",7);
-        txt(2,6,"  func greet() -> String",7);
-        txt(2,7,"}",7);
-        txt(2,9,"struct Person: Greetable {",3+4);
-        txt(2,10,"  let name: String",7);
-        txt(2,11,"  func greet() -> String {",7);
-        txt(2,12,"    return \"Hi, \(name)!\"",7);
-        txt(2,13,"  }",7);
-        txt(2,14,"}",3+4);
+        txt((COLS-20)/2,0,"Kotlin Demo (Stage 47)",3);
+        txt(2,2,"// Null safety + lambdas",3+2);
+        txt(2,4,"val numbers = listOf(1, 2, 3, 4, 5)",7);
+        txt(2,5,"val doubled = numbers.map { it * 2 }",7);
+        txt(2,6,"val even = numbers.filter { it % 2 == 0 }",7);
         for(int i=0;i<5;i++) {
-            int y=16+i;
-            txt(2,y,"let x = Optional(",7);pn(8,y,i*2,3+2);txt(2,y+8,")",7);
+            int v=(i+1)*(f%6+2);
+            pn(6+i*5,8,v,3+(i%7));
         }
-        txt(2,22,"let alice = Person(name: \"Alice\")",8);
-        txt(2,23,"print(alice.greet())  // Hi, Alice!",8);
+        txt(2,10,"data class Person(val name: String, val age: Int)",3+4);
+        txt(2,12,"val alice = Person(\"Alice\", 25)",7);
+        txt(2,13,"val (name, age) = alice  // destructuring",7);
+        txt(2,15,"val result: String? = null",3+2);
+        txt(2,16,"println(result ?: \"default\")  // elvis op",7);
+        txt(2,18,"fun Int.isEven() = this % 2 == 0  // extension",3+3);
+        txt(2,20,"println(42.isEven())  // true",7);
         dl(60000);
         if(kh()){kg();break;}
     }

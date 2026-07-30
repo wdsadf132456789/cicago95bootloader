@@ -39,29 +39,26 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage60_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"VHDL Demo (Stage 60)",1);
+    txt((COLS-22)/2,0,"Clojure Demo (Stage 60)",1);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-18)/2,0,"VHDL Demo (Stage 60)",1);
-        txt(2,2,"-- Hardware Description Language",1+2);
-        txt(2,4,"entity counter is",7);
-        txt(2,5,"  port (clk, rst : in std_logic;",7);
-        txt(2,6,"        count : out std_logic_vector(7 downto 0));",7);
-        txt(2,7,"end counter;",7);
-        txt(2,9,"architecture arch of counter is",1+4);
-        txt(2,10,"  signal tmp : unsigned(7 downto 0);",7);
-        txt(2,11,"begin",7);
-        txt(2,12,"  process(clk)",7);
-        txt(2,13,"  begin",7);
-        txt(2,14,"    if rising_edge(clk) then",7);
-        txt(2,15,"      tmp <= tmp + 1;",7);
-        txt(2,16,"    end if;",7);
-        txt(2,17,"  end process;",7);
-        txt(2,18,"  count <= std_logic_vector(tmp);",7);
-        txt(2,19,"end arch;",1+4);
-        int n=f%256;
-        txt(2,21,"Count:",7);pn(8,21,n,1+4);
-        txt(2,23,"-- Synthesizable VHDL",8);
+        txt((COLS-22)/2,0,"Clojure Demo (Stage 60)",1);
+        txt(2,2,";; Lisp on the JVM",1+2);
+        txt(2,4,"(ns demo.core)",7);
+        txt(2,5,"(:require [clojure.string :as str])",7);
+        txt(2,7,"(defn fib [n]",1+4);
+        txt(2,8,"  (loop [a 0 b 1 n n]",7);
+        txt(2,9,"    (if (zero? n) a",7);
+        txt(2,10,"        (recur b (+ a b) (dec n)))))",7);
+        for(int i=0;i<6;i++) {
+            int y=12+i;
+            txt(2,y,"(->> (range 10)",1+(i%3)+1);
+            int n=i*f%10;
+            pn(8,y+1,n,1+4);
+        }
+        txt(2,19,"(map #(* % 2) [1 2 3 4 5])",7);
+        txt(2,21,"(filter even? (range 20))",7);
+        txt(2,23,";; Persistent data structures",8);
         dl(60000);
         if(kh()){kg();break;}
     }

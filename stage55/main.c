@@ -39,26 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage55_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"Zig Demo (Stage 55)",11);
+    txt((COLS-20)/2,0,"Julia Demo (Stage 55)",11);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-16)/2,0,"Zig Demo (Stage 55)",11);
-        txt(2,2,"// comptime metaprogramming",11+2);
-        txt(2,4,"const std = @import(\"std\");",7);
-        txt(2,5,"fn max(comptime T: type, a: T, b: T) T {",7);
-        txt(2,6,"    return if (a > b) a else b;",7);
-        txt(2,7,"}",7);
-        txt(2,9,"const result = max(u8, 42, 100);",11+4);
-        txt(2,10,"// comptime eval at compile time",8);
-        for(int i=0;i<6;i++) {
-            int y=12+i;
-            int a=i*7,b=(i+1)*(f%5+2);
-            pn(4,y,a,11);txt(2,y+6,",",7);pn(9,y,b,11+2);
-            txt(2,y+4,"max=",7);pn(5,y+13,a>b?a:b,11+4);
+        txt((COLS-20)/2,0,"Julia Demo (Stage 55)",11);
+        txt(2,2,"# Multiple dispatch + speed of C",11+2);
+        txt(2,4,"using LinearAlgebra",7);
+        txt(2,5,"A = [1 2; 3 4]",7);
+        txt(2,6,"b = [5, 6]",7);
+        txt(2,7,"x = A \\ b  # solves linear system",7);
+        for(int i=0;i<4;i++) {
+            int y=9+i;
+            int v=i*(f%10+1);
+            pn(4+i*6,y,v,11+(i%7));
         }
-        txt(2,20,"pub fn main() void {",11+2);
-        txt(2,21,"    std.debug.print(\"Hello, Zig!\n\", .{});",7);
-        txt(2,22,"}",11+2);
+        txt(2,14,"f(x) = x^2 + 2x - 1",11+2);
+        txt(2,15,"@show f(10)",7);
+        int r=100+f%200;
+        txt(2,17,"f(10) = ",7);pn(9,17,r,11+4);
+        txt(2,19,"using Plots",7);
+        txt(2,20,"plot(A[:,1], A[:,2])",7);
+        txt(2,22,"# Julia: walks like Python, runs like C",8);
         dl(60000);
         if(kh()){kg();break;}
     }

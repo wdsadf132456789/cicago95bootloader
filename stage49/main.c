@@ -39,26 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage49_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"C# Demo (Stage 49)",5);
+    txt((COLS-20)/2,0,"Dart Demo (Stage 49)",5);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-16)/2,0,"C# Demo (Stage 49)",5);
-        txt(2,2,"using System.Linq;",5+2);
-        txt(2,4,"class Program {",7);
-        txt(2,5,"  static void Main() {",7);
-        txt(2,6,"    var nums = new[] {1,2,3,4,5};",7);
-        txt(2,7,"    var evens = nums.Where(n => n % 2 == 0);",7);
-        txt(2,8,"    var squared = nums.Select(n => n * n);",7);
+        txt((COLS-20)/2,0,"Dart Demo (Stage 49)",5);
+        txt(2,2,"// Async/await + named params",5+2);
+        txt(2,4,"Future<void> fetchData() async {",7);
+        txt(2,5,"  var response = await http.get(url);",7);
+        txt(2,6,"  print(response.body);",7);
+        txt(2,7,"}",7);
+        txt(2,9,"void main() {",5+4);
+        txt(2,10,"  var list = [1, 2, 3, 4, 5];",7);
+        txt(2,11,"  var mapped = list.map((e) => e * 2);",7);
         for(int i=0;i<5;i++) {
-            int v=(i+1)*(i+1);
-            int y=10+i*2;
-            pn(6,y,v,5+(i%7));
-            px(12,y,'=',7);
-            pn(14,y,i+1,5+2);txt(2,y+6,"^2",7);
+            int v=(i+1)*(f%8+1);
+            pn(6+i*6,13,v,5+(i%7));
         }
-        txt(2,21,"    Console.WriteLine(evens.Count());",7);
-        txt(2,22,"  }",7);
-        txt(2,23,"}",5+2);
+        txt(2,15,"  named({required int x, int y = 0})",5+2);
+        txt(2,17,"  var result = named(x: 42, y: 10);",7);
+        txt(2,19,"  runApp(MyApp());",7);
+        txt(2,20,"}",5+4);
+        txt(2,22,"class MyApp extends StatelessWidget {...}",8);
         dl(60000);
         if(kh()){kg();break;}
     }

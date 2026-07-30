@@ -39,27 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage48_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Dart Demo (Stage 48)",4);
+    txt((COLS-20)/2,0,"Swift Demo (Stage 48)",4);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-20)/2,0,"Dart Demo (Stage 48)",4);
-        txt(2,2,"// Async/await + named params",4+2);
-        txt(2,4,"Future<void> fetchData() async {",7);
-        txt(2,5,"  var response = await http.get(url);",7);
-        txt(2,6,"  print(response.body);",7);
+        txt((COLS-20)/2,0,"Swift Demo (Stage 48)",4);
+        txt(2,2,"// Protocol-oriented programming",4+2);
+        txt(2,4,"protocol Greetable {",7);
+        txt(2,5,"  var name: String { get }",7);
+        txt(2,6,"  func greet() -> String",7);
         txt(2,7,"}",7);
-        txt(2,9,"void main() {",4+4);
-        txt(2,10,"  var list = [1, 2, 3, 4, 5];",7);
-        txt(2,11,"  var mapped = list.map((e) => e * 2);",7);
+        txt(2,9,"struct Person: Greetable {",4+4);
+        txt(2,10,"  let name: String",7);
+        txt(2,11,"  func greet() -> String {",7);
+        txt(2,12,"    return \"Hi, \(name)!\"",7);
+        txt(2,13,"  }",7);
+        txt(2,14,"}",4+4);
         for(int i=0;i<5;i++) {
-            int v=(i+1)*(f%8+1);
-            pn(6+i*6,13,v,4+(i%7));
+            int y=16+i;
+            txt(2,y,"let x = Optional(",7);pn(8,y,i*2,4+2);txt(2,y+8,")",7);
         }
-        txt(2,15,"  named({required int x, int y = 0})",4+2);
-        txt(2,17,"  var result = named(x: 42, y: 10);",7);
-        txt(2,19,"  runApp(MyApp());",7);
-        txt(2,20,"}",4+4);
-        txt(2,22,"class MyApp extends StatelessWidget {...}",8);
+        txt(2,22,"let alice = Person(name: \"Alice\")",8);
+        txt(2,23,"print(alice.greet())  // Hi, Alice!",8);
         dl(60000);
         if(kh()){kg();break;}
     }

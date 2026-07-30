@@ -39,26 +39,30 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage64_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Smalltalk Demo (Stage 64)",5);
-    for(int f=0;f<120;f++) {
+    txt((COLS-18)/2,0,"Logo Demo (Stage 64)",5);
+    for(int f=0;f<150;f++) {
         clr(0);
-        txt((COLS-24)/2,0,"Smalltalk Demo (Stage 64)",5);
-        txt(2,2,"\" Everything is an object \"",5+2);
-        txt(2,4,"| numbers |",7);
-        txt(2,5,"numbers := OrderedCollection new.",7);
-        txt(2,6,"numbers add: 42.",7);
-        txt(2,7,"numbers add: 99.",7);
-        txt(2,8,"numbers do: [ :n | Transcript show: n printString ]",7);
-        for(int i=0;i<6;i++) {
-            int y=10+i;
-            int v=(i+1)*(f%5+1);
-            txt(2,y,"n := ",7);pn(6,y,v,5+2);
+        txt((COLS-18)/2,0,"Logo Demo (Stage 64)",5);
+        txt(2,2,"; Turtle graphics for children",5+2);
+        txt(2,4,"TO SQUARE :SIZE",7);
+        txt(2,5,"  REPEAT 4 [FD :SIZE RT 90]",7);
+        txt(2,6,"END",7);
+        txt(2,8,"TO SPIRAL :SIZE",5+4);
+        txt(2,9,"  IF :SIZE > 100 [STOP]",7);
+        txt(2,10,"  FD :SIZE RT 90",7);
+        txt(2,11,"  SPIRAL :SIZE + 5",7);
+        txt(2,12,"END",5+4);
+        txt(2,14,"SPIRAL 10",7);
+        int cx=35,cy=12;
+        int x=cx,y=cy,size=5+f%4;
+        for(int i=0;i<f%20+3;i++) {
+            px(x/2,y,0x2A,5+(i%7));
+            x+=size;y+=(i%2?size:-size);
+            px(x/2,y,0x2A,5+(i%7));
         }
-        txt(2,17,"3 timesRepeat: [ Transcript show: 'Hello' ]",5+4);
-        txt(2,19,"a := 5 factorial.",7);
-        txt(2,20,"b := #(1 2 3) collect: [ :e | e * 2 ].",7);
-        txt(2,22,"\" Smalltalk inspired OOP & MVC \"",8);
-        dl(60000);
+        txt(2,22,"; The first educational language",8);
+        txt(2,23,"; Seymour Papert, MIT 1967",8);
+        dl(50000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

@@ -39,29 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage94_entry(void) {
     kf(); clr(0);
-    txt((COLS-14)/2,0,"Go Demo (Stage 94)",5);
-    for(int f=0;f<150;f++) {
+    txt((COLS-16)/2,0,"Rust Demo (Stage 94)",5);
+    for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-14)/2,0,"Go Demo (Stage 94)",5);
-        txt(2,2,"package main",5+2);
-        txt(2,4,"func main() {",7);
-        txt(2,5,"  ch := make(chan int)",7);
-        txt(2,6,"  go func() {",5+4);
-        txt(2,7,"    for i := 0; i < 5; i++ {",7);
-        txt(2,8,"      ch <- i * 2",7);
-        txt(2,9,"    }",7);
-        txt(2,10,"    close(ch)",7);
-        txt(2,11,"  }()",5+4);
+        txt((COLS-16)/2,0,"Rust Demo (Stage 94)",5);
+        txt(2,2,"let v = vec![1,2,3,4,5];",5+2);
+        txt(2,4,"let doubled: Vec<i32> =",7);
+        txt(2,5,"    v.iter().map(|x| x * 2).collect();",7);
         for(int i=0;i<5;i++) {
-            int y=13+i;
-            int v=i*(2+f%4);
-            pn(6,y,v,5+(i%6)+1);
-            for(int d=0;d<v;d++)px(10+d,y,0xFE,5+(d%7));
+            int val=(i+1)*(1+f%6);
+            pn(6+i*5,8,val,5+(i%7));
+            px(10+i*5,8,',',7);
         }
-        txt(2,20,"  for v := range ch {",5+2);
-        txt(2,21,"    fmt.Println(v)",7);
-        txt(2,22,"  }",5+2);
-        dl(50000);
+        txt(2,10,"let owned = v.clone(); // ownership",5+4);
+        txt(2,12,"match doubled[0] {",5+2);
+        txt(2,13,"  2 => println!(\"first is 2\"),",7);
+        txt(2,14,"  _ => (),",7);
+        txt(2,15,"}",5+2);
+        txt(2,17,"fn greet(name: &str) -> String {",5+3);
+        txt(2,18,"    format!(\"Hello {}\", name)",7);
+        txt(2,19,"}",5+3);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

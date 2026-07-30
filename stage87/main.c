@@ -37,17 +37,18 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
+static uint32_t nr=8699913;
+static int nrn(void){nr=nr*1103515245+12345;return(nr>>16)&0x7FFF;}
+
 void stage87_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Collatz Conjecture (Stage 87)",13);
-    uint32_t v=619;
-    for(int i=0;i<200;i++) {
-        pn(5,5+i/18*2,i,13+2);
-        px(8,5+i/18*2,':',13+2);
-        pn(10,5+i/18*2,v,13);
-        if(v%2==0)v/=2;else v=v*3+1;
-        if(v==1){txt(30,12,"Reached 1!",13+4);break;}
-        dl(400700);
+    txt((COLS-24)/2,0,"Perlin-ish Noise (Stage 87)",13);
+    for(int f=0;f<200;f++) {
+        for(int y=2;y<24;y++)for(int x=0;x<80;x++) {
+            int v=nrn()%(15);
+            px(x,y,v>2?0xDB:' ',v>2?(13+v%8):0);
+        }
+        dl(15000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

@@ -39,16 +39,15 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage76_entry(void) {
     kf(); clr(0);
-    txt((COLS-26)/2,0,"Fibonacci Sequence (Stage 76)",2);
-    uint32_t a=0,b=1;
-    for(int i=0;i<60;i++) {
-        pn(10,5+i/10*2,i,2+2);
-        px(13,5+i/10*2,':',2);
-        pn(15,5+i/10*2,a,2);
-        uint32_t nxt=a+b;
-        if(nxt<a){txt(10,22,"Overflow!",4);break;}
-        a=b;b=nxt;
-        dl(400400);
+    txt((COLS-22)/2,0,"Progress Bars (Stage 76)",2);
+    for(int p=0;p<=100;p++) {
+        for(int b=0;b<5;b++) {
+            int w=p*(60-(b*8))/100;
+            int y=5+b*3;
+            for(int x=0;x<60;x++)px(10+x,y,' ',7);
+            for(int x=0;x<w;x++)px(10+x,y,0xDB,2+b);
+        }
+        dl(150100);
         if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);

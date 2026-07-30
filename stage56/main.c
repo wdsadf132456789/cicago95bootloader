@@ -39,27 +39,26 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage56_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"APL Demo (Stage 56)",12);
+    txt((COLS-16)/2,0,"Zig Demo (Stage 56)",12);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-16)/2,0,"APL Demo (Stage 56)",12);
-        txt(2,2,"â One line = an entire program",12+2);
-        txt(2,4,"âxââ·10         â numbers 1 to 10",7);
-        txt(2,5,"âxÃ2             â doubled",7);
-        txt(2,6,"â+/x              â sum of vector",7);
-        txt(2,7,"ââ©3 3ââ¬9        â 3x3 matrix",7);
-        txt(2,9,"ââ¬âÂ¨ x          â square root each",7);
-        for(int i=0;i<8;i++) {
-            int y=11+i;
-            int v=(i+1)*(f%6+1);
-            txt(2,y,"ââ¬[",7);
-            px(6,y,0xFE,12+(i%7));
-            txt(2,y+2,"]",7);
-            pn(9,y,v,12+2);
+        txt((COLS-16)/2,0,"Zig Demo (Stage 56)",12);
+        txt(2,2,"// comptime metaprogramming",12+2);
+        txt(2,4,"const std = @import(\"std\");",7);
+        txt(2,5,"fn max(comptime T: type, a: T, b: T) T {",7);
+        txt(2,6,"    return if (a > b) a else b;",7);
+        txt(2,7,"}",7);
+        txt(2,9,"const result = max(u8, 42, 100);",12+4);
+        txt(2,10,"// comptime eval at compile time",8);
+        for(int i=0;i<6;i++) {
+            int y=12+i;
+            int a=i*7,b=(i+1)*(f%5+2);
+            pn(4,y,a,12);txt(2,y+6,",",7);pn(9,y,b,12+2);
+            txt(2,y+4,"max=",7);pn(5,y+13,a>b?a:b,12+4);
         }
-        txt(2,21,"â (â£Ã·Ã·)  â¨rÃ·r  âÂ² ",8);
-        txt(2,22,"â (iota rho iota) â nonsense",8);
-        txt(2,24,"â APL: write once, read never",8);
+        txt(2,20,"pub fn main() void {",12+2);
+        txt(2,21,"    std.debug.print(\"Hello, Zig!\n\", .{});",7);
+        txt(2,22,"}",12+2);
         dl(60000);
         if(kh()){kg();break;}
     }
