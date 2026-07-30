@@ -13,13 +13,19 @@ Target: x86_64 bare-metal, ring-0, no OS dependency
 Bootloader: 470KB | Kernel: 70KB
 
 What works:
-  Boot chain:
-    - Stage 1 MBR (512 bytes, relocates to 0x0600)
-    - Stage 2 (Real -> Protected -> Long mode, 55 security modules)
-    - Stage 3 ELF64 loader (higher-half aware, p_vaddr - KERNEL_BASE)
-    - Kernel entry at 0xFFFFFFFF80000000
+   Boot chain:
+     - Stage 1 MBR (512 bytes, relocates to 0x0600)
+     - Stage 2 (Real -> Protected -> Long mode, 55 security modules)
+     - Stage 3 ELF64 loader (higher-half aware, p_vaddr - KERNEL_BASE)
+     - Kernel entry at 0xFFFFFFFF80000000
+     - Stages 5-100: boot manager menu with 58 unique demo templates
+       (92 boot-time stages: VGA text-mode visual demos for Awk, PHP,
+       JavaScript, Ruby, Python, Rust, Go, Lisp, SQL, Haskell, Brainfuck,
+       Lua, C++, Bash, Perl, TypeScript, Kotlin, Swift, Dart, C#, Forth,
+       Prolog, COBOL, Fortran, Julia, Zig, APL, Erlang, Elixir, Clojure,
+       VHDL, R, Ada, Logo, Smalltalk, Assembly, Arch Linux + 22 classic)
 
-  Pre-init hardening (7 phases, runs before everything):
+   Pre-init hardening (7 phases, runs before everything):
     - PRE-01: CPU Fingerprint (CPUID leaves 0,1,2,7,0x80000002-6, XCR0/AVX)
     - PRE-02: Memory Fingerprint (E820 parse, overlap detection, CRC32 of table)
     - PRE-03: RNG Seed (256-bit: TSC jitter + I/O ports + RDRAND + RDSEED)
