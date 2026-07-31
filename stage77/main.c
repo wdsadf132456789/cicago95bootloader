@@ -39,15 +39,14 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage77_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Progress Bars (Stage 77)",3);
-    for(int p=0;p<=100;p++) {
-        for(int b=0;b<5;b++) {
-            int w=p*(60-(b*8))/100;
-            int y=5+b*3;
-            for(int x=0;x<60;x++)px(10+x,y,' ',7);
-            for(int x=0;x<w;x++)px(10+x,y,0xDB,3+b);
+    txt((COLS-18)/2,0,"Sine Wave (Stage 77)",3);
+    for(int f=0;f<200;f++) {
+        for(int x=0;x<80;x++)px(x,12,' ',7);
+        for(int x=0;x<80;x++) {
+            int y=12+(10*(((x+7*f)%18)%(18)-9.0))/6;
+            if(y>=2&&y<=22) px(x,y,0xDB,3);
         }
-        dl(150200);
+        dl(5000);
         if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);

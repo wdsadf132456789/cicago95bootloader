@@ -39,22 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage99_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Haskell Demo (Stage 99)",10);
+    txt((COLS-14)/2,0,"SQL Demo (Stage 99)",10);
+    const char *data[]={"1|Alice|25|NYC","2|Bob|31|SF","3|Carol|22|LA","4|Dave|38|CHI","5|Eve|29|SEA"};
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-20)/2,0,"Haskell Demo (Stage 99)",10);
-        txt(2,2,"-- Pure functional programming",10+2);
-        txt(2,4,"fibs = 0 : 1 : zipWith (+) fibs (tail fibs)",7);
-        txt(2,6,"fmap (+1) (Just 5)  -- Just 6",7);
-        txt(2,8,"pure (*2) <*> [1,2,3] -- [2,4,6]",7);
-        for(int i=0;i<6;i++) {
-            int y=10+i*2;
-            int a=i;
-            txt(2,y,"let x = ",7);pn(9,y,a,10+2);
-            txt(2,y+1,"let y = fmap (*",7);pn(9,y+1,f%5+1,10+3);txt(2,y+1+8,") x",7);
+        txt((COLS-14)/2,0,"SQL Demo (Stage 99)",10);
+        txt(2,2,"SELECT users.name, orders.total",10+2);
+        txt(2,3,"FROM users",10+2);
+        txt(2,4,"JOIN orders ON users.id = orders.user_id",10+4);
+        txt(2,5,"WHERE users.age > 25",7);
+        txt(2,6,"ORDER BY orders.total DESC;",7);
+        txt(2,8,"+----+-------+-----+-------+",10+1);
+        txt(2,9,"| id | name  | age | city  |",10+3);
+        txt(2,10,"+----+-------+-----+-------+",10+1);
+        for(int i=0;i<5;i++) {
+            int hi=(f%5)==i;
+            txt(2,11+i,data[i],hi?10+6:7);
         }
-        txt(2,23,"main = putStrLn \"Hello, Haskell!\"",8);
-        txt(2,24,"-- Result: ",8);pn(12,24,f%10,10+4);
+        txt(2,16,"+----+-------+-----+-------+",10+1);
+        int cnt=0;for(int i=0;i<5;i++)if(i*10+20<f)cnt++;
+        txt(2,18,"Rows returned:",7);
+        pn(14,18,cnt,10+2);
         dl(60000);
         if(kh()){kg();break;}
     }

@@ -18,12 +18,13 @@ What works:
      - Stage 2 (Real -> Protected -> Long mode, 55 security modules)
      - Stage 3 ELF64 loader (higher-half aware, p_vaddr - KERNEL_BASE)
      - Kernel entry at 0xFFFFFFFF80000000
-     - Stages 5-100: boot manager menu with 58 unique demo templates
-       (92 boot-time stages: VGA text-mode visual demos for Awk, PHP,
-       JavaScript, Ruby, Python, Rust, Go, Lisp, SQL, Haskell, Brainfuck,
-       Lua, C++, Bash, Perl, TypeScript, Kotlin, Swift, Dart, C#, Forth,
-       Prolog, COBOL, Fortran, Julia, Zig, APL, Erlang, Elixir, Clojure,
-       VHDL, R, Ada, Logo, Smalltalk, Assembly, Arch Linux + 22 classic)
+      - Stages 5-100: boot manager menu with 61 unique demo templates
+        (92 boot-time stages: VGA text-mode visual demos for Awk, PHP,
+        JavaScript, Ruby, Python, Rust, Go, Lisp, SQL, Haskell, Brainfuck,
+        Lua, C++, Bash, Perl, TypeScript, Kotlin, Swift, Dart, C#, Forth,
+        Prolog, COBOL, Fortran, Julia, Zig, APL, Erlang, Elixir, Clojure,
+        VHDL, R, Ada, Logo, Smalltalk, Assembly, Arch Linux + 22 classic
+        + boot logo + Winamp-style PC-speaker music player)
 
    Pre-init hardening (7 phases, runs before everything):
     - PRE-01: CPU Fingerprint (CPUID leaves 0,1,2,7,0x80000002-6, XCR0/AVX)

@@ -37,25 +37,19 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t sr=4611065;
-static int srn(void){sr=sr*1103515245+12345;return(sr>>16)&0x7FFF;}
-
 void stage83_entry(void) {
     kf(); clr(0);
-    txt((COLS-20)/2,0,"Falling Snow (Stage 83)",10);
-    int sx[33],sy[33];
-    for(int i=0;i<33;i++){sx[i]=srn()%80;sy[i]=srn()%22+2;}
-
+    txt((COLS-22)/2,0,"Spiral Pattern (Stage 83)",9);
     for(int f=0;f<300;f++) {
-        for(int i=0;i<33;i++) {
-            px(sx[i],sy[i],' ',0);
-            sy[i]++;if(sy[i]>=24){sy[i]=2;sx[i]=srn()%80;}
-            if(srn()%3==0)sx[i]+=(srn()%3)-1;
-            if(sx[i]<0)sx[i]=79;
-            if(sx[i]>=80)sx[i]=0;
-            px(sx[i],sy[i],'.',10);
+        for(int x=0;x<80;x++)for(int y=2;y<24;y++)px(x,y,' ',0);
+        for(int i=0;i<f;i++) {
+            float a=i*0.2f;
+            int r=i/12+1;
+            int x=40+(4*r+(int)(a*4))%(21)-5;
+            int y=13+(1*r/2+(int)(a*2))%(8)-4;
+            if(x>=0&&x<80&&y>=2&&y<24)px(x,y,0xDB,9+(i%7));
         }
-        dl(15000);
+        dl(8000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

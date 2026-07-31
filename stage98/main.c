@@ -39,28 +39,25 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage98_entry(void) {
     kf(); clr(0);
-    txt((COLS-14)/2,0,"SQL Demo (Stage 98)",9);
-    const char *data[]={"1|Alice|25|NYC","2|Bob|31|SF","3|Carol|22|LA","4|Dave|38|CHI","5|Eve|29|SEA"};
+    txt((COLS-16)/2,0,"Lisp Demo (Stage 98)",9);
     for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-14)/2,0,"SQL Demo (Stage 98)",9);
-        txt(2,2,"SELECT users.name, orders.total",9+2);
-        txt(2,3,"FROM users",9+2);
-        txt(2,4,"JOIN orders ON users.id = orders.user_id",9+4);
-        txt(2,5,"WHERE users.age > 25",7);
-        txt(2,6,"ORDER BY orders.total DESC;",7);
-        txt(2,8,"+----+-------+-----+-------+",9+1);
-        txt(2,9,"| id | name  | age | city  |",9+3);
-        txt(2,10,"+----+-------+-----+-------+",9+1);
-        for(int i=0;i<5;i++) {
-            int hi=(f%5)==i;
-            txt(2,11+i,data[i],hi?9+6:7);
+        txt((COLS-16)/2,0,"Lisp Demo (Stage 98)",9);
+        txt(2,2,";; Parentheses: the final frontier",9+2);
+        txt(2,4,"(defun fib (n)",7);
+        txt(2,5,"  (if (<= n 1)",7);
+        txt(2,6,"      n",7);
+        txt(2,7,"      (+ (fib (- n 1))",7);
+        txt(2,8,"         (fib (- n 2)))))",7);
+        for(int i=0;i<6;i++) {
+            int y=10+i*2;
+            txt(2,y,"(mapcar (lambda (x) (* x 2))",9+(i%3)+1);
+            txt(2,y+1,"        '(",7);
+            for(int d=0;d<=i;d++){pn(12+d*4,y+1,(d+1)*2,9+d+1);if(d<i)px(15+d*4,y+1,' ',7);}
+            txt(2,y+1+8,"))",9+(i%3)+1);
         }
-        txt(2,16,"+----+-------+-----+-------+",9+1);
-        int cnt=0;for(int i=0;i<5;i++)if(i*10+20<f)cnt++;
-        txt(2,18,"Rows returned:",7);
-        pn(14,18,cnt,9+2);
-        dl(60000);
+        txt(2,24,";; (loop for x from 0 to 10 collect x)",8);
+        dl(70000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

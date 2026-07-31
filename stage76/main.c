@@ -39,14 +39,18 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage76_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Sine Wave (Stage 76)",2);
-    for(int f=0;f<200;f++) {
-        for(int x=0;x<80;x++)px(x,12,' ',7);
-        for(int x=0;x<80;x++) {
-            int y=12+(9*(((x+6*f)%17)%(17)-8.5))/6;
-            if(y>=2&&y<=22) px(x,y,0xDB,2);
-        }
-        dl(5000);
+    txt((COLS-28)/2,0,"Border Animation (Stage 76)",2);
+    for(int f=0;f<100;f++) {
+        int o=f%80;
+        for(int x=0;x<80;x++) { px(x,1,' ',0); px(x,23,' ',0); }
+        for(int y=2;y<23;y++) { px(0,y,' ',0); px(79,y,' ',0); }
+        px(o,1,'!',2);
+        px(79-o,23,'!',2);
+        px(o,23,'!',2);
+        px(79-o,1,'!',2);
+        px(0,2+o%21,'!',2);
+        px(79,2+(o+10)%21,'!',2);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);

@@ -29,17 +29,18 @@ BIOS
              ├─ Stage 3: ELF64 loader (higher-half aware)
              ├─ Stage 4: Kernel at 0xFFFFFFFF80000000
              ├─ Stages 5–8: Not currently used
-             └─ Stages 9–100: 58 unique demo templates
+             └─ Stages 9–100: 61 unique demo templates
 ```
 
 ## Boot-Time Stages (9–100)
 
-92 boot-time stages generated from 58 unique templates, cycling every full rotation. Each stage runs as an independent 64-bit binary loaded from disk by the stage2 boot manager. Every stage has full VGA text-mode output (80×25 at 0xB8000), keyboard input, and a delay loop.
+92 boot-time stages generated from 61 unique templates, cycling every full rotation. Each stage runs as an independent 64-bit binary loaded from disk by the stage2 boot manager. Every stage has full VGA text-mode output (80×25 at 0xB8000), keyboard input, and a delay loop.
 
 | Category | Templates | Stages |
 |----------|-----------|--------|
 | **Classic** (22) | bounce, colors, count, scroll, beep, stars, border, wave, bars, fib, primes, pong, maze, spiral, snow, fire, matrix, life, clock, noise, collatz | 9–30, 67–88 |
 | **Language Demos** (36) | awk, php, js, ruby, python, rust, go, lisp, sql, haskell, brainfuck, lua, cpp, bash, perl, typescript, kotlin, swift, dart, csharp, forth, prolog, cobol, fortran, julia, zig, apl, erlang, elixir, clojure, vhdl, r, ada, logo, smalltalk, assembly, arch | 31–66, 89–100 |
+| **Player** (2) | bootlogo, mp3 | 68–69 |
 
 Each stage shows syntax, code patterns, and visual effects inspired by its language — from Brainfuck tape visualization to SQL table results to an Arch Linux `pacman -Syu` simulation.
 

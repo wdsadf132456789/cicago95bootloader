@@ -2204,6 +2204,126 @@ void stage{n}_entry(void) {{
 
 TEMPLATES.append(t_bootlogo)
 
+SEMI = {'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11}
+def fq(s):
+    n = s[:-1]; o = int(s[-1])
+    return int(440 * 2 ** ((SEMI[n] - 9 + (o - 4) * 12) / 12.0))
+
+MP3_SONGS = [
+    ("Fur Elise", "Ludwig van Beethoven", [
+        ("E5",160),("D#5",160),("E5",160),("D#5",160),("E5",160),("B4",160),("D5",160),("C5",160),("A4",320),
+        ("C4",160),("E4",160),("A4",160),("B4",320),("E4",160),("G#4",160),("B4",160),("C5",320)]),
+    ("Ode to Joy", "Ludwig van Beethoven", [
+        ("E5",180),("E5",180),("F5",180),("G5",180),("G5",180),("F5",180),("E5",180),("D5",180),
+        ("C5",180),("C5",180),("D5",180),("E5",180),("E5",360),("D5",360),
+        ("E5",180),("E5",180),("F5",180),("G5",180),("G5",180),("F5",180),("E5",180),("D5",180),
+        ("C5",180),("C5",180),("D5",180),("E5",180),("D5",360),("C5",360)]),
+    ("Happy Birthday", "The Hill Sisters", [
+        ("G4",180),("G4",180),("A4",360),("G4",360),("C5",360),("B4",540),
+        ("G4",180),("G4",180),("A4",360),("G4",360),("D5",360),("C5",540),
+        ("G4",180),("G4",180),("G5",360),("E5",360),("C5",360),("B4",360),("A4",540),
+        ("F5",180),("F5",180),("E5",360),("C5",360),("D5",360),("C5",540)]),
+]
+MP3_N = max(len(m) for _, _, m in MP3_SONGS)
+MP3_FREQ = ",".join("{%s}" % ",".join(str(fq(n)) if i < len(m) else "0" for i, (n, _) in enumerate(m)) for _, _, m in MP3_SONGS)
+MP3_DUR = ",".join("{%s}" % ",".join(str(d) if i < len(m) else "0" for i, (_, d) in enumerate(m)) for _, _, m in MP3_SONGS)
+MP3_TOT = ",".join(str(sum(d for _, d in m)) for _, _, m in MP3_SONGS)
+MP3_TIT = ",".join('"%s"' % t for t, _, _ in MP3_SONGS)
+MP3_ART = ",".join('"%s"' % a for _, a, _ in MP3_SONGS)
+
+def t_mp3(n):
+    col = 1 + (n % 15)
+    return HEADER.format() + f'''
+static void tset(uint32_t f) {{
+    uint32_t d=1193182/f;
+    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)0xB6),"d"((uint16_t)0x43));
+    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)(d&0xFF)),"d"((uint16_t)0x42));
+    __asm__ volatile("outb %%al,%%dx"::"a"((uint8_t)(d>>8)),"d"((uint16_t)0x42));
+}}
+static void ton(uint32_t f) {{ uint8_t t; tset(f);
+    __asm__ volatile("inb %%dx,%0":"=a"(t):"d"((uint16_t)0x61));
+    __asm__ volatile("outb %%al,%%dx"::"a"(t|3),"d"((uint16_t)0x61)); }}
+static void toff(void) {{ uint8_t t;
+    __asm__ volatile("inb %%dx,%0":"=a"(t):"d"((uint16_t)0x61));
+    __asm__ volatile("outb %%al,%%dx"::"a"(t&0xFC),"d"((uint16_t)0x61)); }}
+
+void stage{n}_entry(void) {{
+    kf(); clr(0);
+    static const uint16_t nm[3][{MP3_N}]={{{MP3_FREQ}}};
+    static const uint16_t nd[3][{MP3_N}]={{{MP3_DUR}}};
+    static const uint32_t tot[3]={{{MP3_TOT}}};
+    static const char *tt[3]={{{MP3_TIT}}};
+    static const char *at[3]={{{MP3_ART}}};
+    static const char *stm[]={{"Now playing","8-bit mono 22050 Hz","Buffering...","No skips detected","Repeat all on","Volume maxed"}};
+    int c0={col};
+    int song=0,note=0,on=0;
+    uint32_t nel=0,sel=0,rng=0xC0FFEE;
+    int eq[6]={{3,5,2,6,4,1}};
+    int bx=2,by=2,bw=76,bh=13;
+    for(int f=0;f<700;f++) {{
+        if(nd[song][note]>0&&nel>=nd[song][note]) {{
+            toff(); on=0; note++; sel=0; nel=0;
+            if(note>={MP3_N}||nd[song][note]==0){{note=0;song=(song+1)%3;}}
+        }}
+        if(!on&&nd[song][note]>0){{ton(nm[song][note]);on=1;}}
+        clr(0);
+        uint8_t fc0=c0+(f/8)%2;
+        px(bx,by,0xDA,fc0);
+        for(int i=1;i<bw-1;i++)px(bx+i,by,0xC4,fc0);
+        px(bx+bw-1,by,0xBF,fc0);
+        for(int r=1;r<bh-1;r++){{px(bx,by+r,0xB3,c0+((bh-2-r)%8)+1);px(bx+bw-1,by+r,0xB3,c0+((bh-2-r)%8)+1);}}
+        px(bx,by+bh-1,0xC0,fc0);
+        for(int i=1;i<bw-1;i++)px(bx+i,by+bh-1,0xC4,fc0);
+        px(bx+bw-1,by+bh-1,0xD9,fc0);
+        int ph=(f/10)%2;
+        txt(4,3,ph?"\\x10 NOW PLAYING":"\\x0E NOW PLAYING",c0+3);
+        int tx=bx+(bw-20)/2;
+        txt(tx,4,tt[song],0x0F);
+        txt(tx,5,at[song],0x07);
+        for(int a=0;a<5;a++)for(int b=0;b<12;b++){{
+            int cl=((c0+(b*2+a*3)+(f/6))%14)+1;
+            px(4+b,7+a,0xDB,cl);
+        }}
+        txt(20,7,"EQUALIZER",c0+2);
+        for(int i=0;i<6;i++){{
+            rng=rng*1103515245+12345;
+            eq[i]+=((rng>>13)%5)-2;
+            if(eq[i]<0)eq[i]=0;
+            if(eq[i]>8)eq[i]=8;
+        }}
+        for(int i=0;i<6;i++){{
+            for(int r=0;r<8;r++){{
+                char ch=(r<eq[i])?0xDB:' ';
+                uint8_t cl=(r<eq[i])?(c0+((r*f/2)%5)+1):0;
+                px(20+i*3,10-r,ch,cl);
+            }}
+        }}
+        for(int i=0;i<bw-8;i++)px(bx+4+i,11,i%2?0xDB:0xB2,c0+((f/5)%6)+1);
+        uint32_t pct=(sel*100)/(tot[song]?tot[song]:1);
+        int bar=(int)(pct*60/100);
+        for(int i=0;i<60;i++)px(4+i,13,i<bar?0xDB:' ',i<bar?c0+((f/4)%6)+1:0);
+        int el=sel/1000,to=tot[song]/1000;
+        pn(4,14,el/60,c0+2);px(6,14,':',c0+2);pn(7,14,el%60,c0+2);
+        pn(64,14,to/60,c0+2);px(66,14,':',c0+2);pn(67,14,to%60,c0+2);
+        txt(4,12,"VOL",c0+4);
+        int vq=10+((f/4)%4);
+        for(int i=0;i<12;i++)px(8+i,12,i<vq?0xDB:' ',i<vq?c0+((f/4)%6)+1:0);
+        txt(26,12,ph?"<<  ||  >>":"<<  |   >>",c0+2);
+        pn(66,12,song+1,c0+3);txt(68,12,"/3",c0+3);
+        int mi=(f/40)%6;
+        txt(bx+(bw-16)/2,15,stm[mi],c0+1);
+        dl(40*8000);
+        nel+=40;sel+=40;
+        if(kh()){{kg();toff();break;}}
+    }}
+    toff();
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
+    wa();
+}}
+'''
+
+TEMPLATES.append(t_mp3)
+
 # Assign templates to stages 9-100
 def assign_templates():
     assignments = {}
