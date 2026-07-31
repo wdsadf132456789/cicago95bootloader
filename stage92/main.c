@@ -39,23 +39,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage92_entry(void) {
     kf(); clr(0);
-    txt((COLS-16)/2,0,"Ruby Demo (Stage 92)",3);
-    for(int f=0;f<150;f++) {
+    txt((COLS-24)/2,0,"JavaScript Demo (Stage 92)",3);
+    int boxes[6][4];
+    for(int i=0;i<6;i++){boxes[i][0]=5+i*12;boxes[i][1]=4+i%3*6;boxes[i][2]=8;boxes[i][3]=4;}
+    for(int f=0;f<200;f++) {
         clr(0);
-        txt((COLS-16)/2,0,"Ruby Demo (Stage 92)",3);
-        txt(2,2,"5.times do |i|",3+2);
-        for(int i=0;i<5;i++) {
-            int y=5+i*3;
-            int n=i+1+(f%(5-i));
-            txt(2,y,"  puts",8);
-            for(int d=0;d<n;d++)px(10+d,y,0x2A,3+(i+d)%7+1);
-            pn(16+n,y,n,3+2);
-            txt(2,y+1,"  yield i*2",3+4);
-            pn(16,y+1,i*2,3+4);
+        txt((COLS-24)/2,0,"JavaScript Demo (Stage 92)",3);
+        txt(2,2,"// DOM-like animation",3+2);
+        for(int i=0;i<6;i++) {
+            int idx=(f+i)%6;
+            boxes[idx][0]+=(i%3-1);
+            boxes[idx][1]+=(i%2?1:-1);
+            int bx=boxes[idx][0],by=boxes[idx][1];
+            if(bx<1||bx>72)boxes[idx][0]=bx<1?5:69;
+            if(by<2||by>21)boxes[idx][1]=by<2?4:20;
+            bx=boxes[idx][0];by=boxes[idx][1];
+            for(int dy=0;dy<boxes[idx][3];dy++)
+                for(int dx=0;dx<boxes[idx][2];dx++)
+                    px(bx+dx,by+dy,0xDB,(3+idx)%15+1);
         }
-        txt(2,22,"end",3+2);
-        txt(2,23,"# => iterates 5 times with block",8);
-        dl(60000);
+        txt(2,24,"for box of boxes { box.x+=vx; box.y+=vy; }",8);
+        dl(30000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

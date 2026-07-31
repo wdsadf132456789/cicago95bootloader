@@ -37,27 +37,29 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
+static uint32_t lr=6688822;
+static int lrn(void){lr=lr*1103515245+12345;return(lr>>16)&0x7FFF;}
+
 void stage86_entry(void) {
     kf(); clr(0);
-    txt((COLS-18)/2,0,"Binary Clock (Stage 86)",12);
-    for(int f=0;f<200;f++) {
-        int b[]={f/3600%24,(f/60)%60,f%60};
-        for(int i=0;i<3;i++) {
-            for(int y=0;y<6;y++) {
-                int bit=(b[i]>>(5-y))&1;
-                for(int x=0;x<3;x++)
-                    px(10+i*25+x,5+y,bit?0xDB:' ',bit?(12+i*4):0);
-            }
+    txt((COLS-20)/2,0,"Game of Life (Stage 86)",4);
+    uint8_t g[82*26]={0};
+    for(int i=0;i<400;i++)g[(2+(lrn()%21))*82+1+(lrn()%78)]=1;
+
+    for(int gen=0;gen<100;gen++) {
+        uint8_t ng[82*26]={0};
+        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
+            int n=g[(y-1)*82+(x-1)]+g[(y-1)*82+x]+g[(y-1)*82+(x+1)]
+                 +g[y*82+(x-1)]+g[y*82+(x+1)]
+                 +g[(y+1)*82+(x-1)]+g[(y+1)*82+x]+g[(y+1)*82+(x+1)];
+            if(g[y*82+x])ng[y*82+x]=(n==2||n==3)?1:0;
+            else ng[y*82+x]=(n==3)?1:0;
         }
-        for(int i=0;i<3;i++) {
-            txt(10+i*25,12,":",12);
-            int v=b[i];
-            px(16+i*25,12,'0'+(v/10)%10,12);
-            px(19+i*25,12,'0'+v%10,12);
-            txt(10+i*25,13,"-----",12);
+        for(int y=2;y<24;y++)for(int x=1;x<80;x++) {
+            g[y*82+x]=ng[y*82+x];
+            px(x,y,g[y*82+x]?0xDB:' ',g[y*82+x]?(4):0);
         }
-        txt(10,14,"H",12);txt(35,14,"M",12);txt(60,14,"S",12);
-        dl(50000);
+        dl(20000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

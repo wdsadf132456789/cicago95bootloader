@@ -39,11 +39,15 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage71_entry(void) {
     kf(); clr(0);
-    for(int i=0;i<80+35;i++) {
-        for(int x=0;x<80;x++) px(x,12,' ',7);
-        for(int j=0;"64-bit Long Mode Bare Metal OS"[j]&&i+j<80;j++)
-            px(i+j,12,"64-bit Long Mode Bare Metal OS"[j],12);
-        dl(300100);
+    txt((COLS-25)/2,0,"Counting Demo (Stage 71)",12);
+    for(int i=1;i<=999;i++) {
+        int v=i;
+        for(int x=0;x<9;x++) px(36+x,12,' ',7);
+        int p=44;
+        if(v>=100){px(p-3,12,'0'+v/100,12);v%=100;}
+        if(i>=10){px(p-2,12,'0'+v/10,12);v%=10;}
+        px(p-1,12,'0'+v,12);
+        dl(2001000);
         if(kh()){kg();break;}
     }
     clr(0); txt((COLS-20)/2,12,"Press any key...",7);

@@ -39,27 +39,30 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage91_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"JavaScript Demo (Stage 91)",2);
-    int boxes[6][4];
-    for(int i=0;i<6;i++){boxes[i][0]=5+i*12;boxes[i][1]=4+i%3*6;boxes[i][2]=8;boxes[i][3]=4;}
-    for(int f=0;f<200;f++) {
+    txt((COLS-16)/2,0,"PHP Demo (Stage 91)",2);
+    const char *rows[]={"$row[0]='Alice'; $row[1]=25; $row[2]='NYC';",
+                          "$row[0]='Bob';   $row[1]=31; $row[2]='SF';",
+                          "$row[0]='Carol'; $row[1]=22; $row[2]='LA';",
+                          "$row[0]='Dave';  $row[1]=38; $row[2]='CHI';",
+                          "$row[0]='Eve';   $row[1]=29; $row[2]='SEA';"};
+    for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-24)/2,0,"JavaScript Demo (Stage 91)",2);
-        txt(2,2,"// DOM-like animation",2+2);
-        for(int i=0;i<6;i++) {
-            int idx=(f+i)%6;
-            boxes[idx][0]+=(i%3-1);
-            boxes[idx][1]+=(i%2?1:-1);
-            int bx=boxes[idx][0],by=boxes[idx][1];
-            if(bx<1||bx>72)boxes[idx][0]=bx<1?5:69;
-            if(by<2||by>21)boxes[idx][1]=by<2?4:20;
-            bx=boxes[idx][0];by=boxes[idx][1];
-            for(int dy=0;dy<boxes[idx][3];dy++)
-                for(int dx=0;dx<boxes[idx][2];dx++)
-                    px(bx+dx,by+dy,0xDB,(2+idx)%15+1);
+        txt((COLS-16)/2,0,"PHP Demo (Stage 91)",2);
+        txt(2,2,"<?php",2+2);
+        txt(2,4,"$data = [",7);
+        for(int i=0;i<5;i++) {
+            int y=6+i*2;
+            txt(4,y,rows[i],f%2?7:2+4);
+            if(i==f%5){txt(4,y,rows[i],2+6);}
         }
-        txt(2,24,"for box of boxes { box.x+=vx; box.y+=vy; }",8);
-        dl(30000);
+        txt(2,17,"];",7);
+        txt(2,19,"echo '<table>'",7);
+        txt(2,21,"foreach($data as $r):",7);
+        txt(2,22,"  echo '<tr>...</tr>';",7);
+        txt(2,23,"endforeach;",7);
+        int stage=f%6;
+        txt(2,19+(stage>2),stage<3?"/* BUILDING TABLE */":"/* RENDERING HTML */",2+2);
+        dl(50000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

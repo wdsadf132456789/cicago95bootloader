@@ -39,17 +39,32 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage68_entry(void) {
     kf(); clr(0);
-    txt((COLS-30)/2,0,"Bouncing Ball Demo (Stage 68)",13);
-    int x=1,y=1,dx=1,dy=1;
-    for(int i=0;i<500;i++) {
-        px(x,y,' ',0);
-        x+=dx;y+=dy;
-        if(x<=0||x>=COLS-1)dx=-dx;
-        if(y<=0||y>=23)dy=-dy;
-        px(x,y,'~',13);
+    const char *logo[]={",___________________________,",
+                        "|  C H I C A G O - 9 5  x64  |",
+                        "|   BrainFS Bare-Metal OS    |",
+                        "|  Boot Loader  v0.1.0-beta  |",
+                        "'---------------------------'"};
+    for(int f=0;f<120;f++) {
+        clr(0);
+        int cyc=(f/8)%7;
+        int base=9+cyc;
+        for(int r=0;r<5;r++) {
+            for(int c=0;logo[r][c];c++) {
+                int a=0;
+                if(r==1&&c>=2&&c<=19)a=1;
+                if(r==2&&c>=2&&c<=26)a=2;
+                if(r==3&&c>=2&&c<=26)a=2;
+                px(20+c,4+r,logo[r][c],a?base+r:(base)%7+1);
+            }
+        }
+        int bar=(f%80)*36/80;
+        txt(20,10,"[",7);
+        for(int i=0;i<36;i++)px(21+i,10,i<bar?0xDB:' ',i<bar?9+2:0);
+        txt(57,10,"]",7);
+        txt(28,12,"Press any key to skip",8);
+        dl(30000);
         if(kh()){kg();break;}
-        dl(18000);
     }
-    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
+    clr(0);txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }

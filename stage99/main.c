@@ -39,54 +39,23 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage99_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Brainfuck Demo (Stage 99)",10);
-    const char *progs[]={"+++++[>+++++<-]>+++++.",
-                          "+++[>+++++<-]>[>+++++>+++++<<-]>>.",
-                          "+++++++++[>++++++++>+++++++++++++>+++++<<<-]>-.>+.>..",
-                          ">+>+>+<<<[->[->+>+<<]>>[-<<+>>]<<<]>>>.",
-                          "+>+>[->>>+<<<]>>>[-<<<+<<<+>>>>]<<<[->+>+<<]>>[-<<+>>]>>>."};
-    const char *pnames[]={"5×5=25", "3×5=15", "ASCII ABC", "Fibonacci", "Addition"};
-    int pidx=(99/2)%5;
-    const char *prog=progs[pidx];
-    const char *pname=pnames[pidx];
-    char tape[24];for(int i=0;i<24;i++)tape[i]=0;
-    int ptr=12,pc=0,outc=0,wait=0;
-    char output[20];for(int i=0;i<20;i++)output[i]=0;
-    for(int f=0;f<300;f++) {
+    txt((COLS-20)/2,0,"Haskell Demo (Stage 99)",10);
+    for(int f=0;f<120;f++) {
         clr(0);
-        txt((COLS-24)/2,0,"Brainfuck Demo (Stage 99)",10);
-        txt(2,2,"Program:",10+2);txt(10,2,pname,10+4);
-        for(int i=0;prog[i];i++) {
-            char c[2]={prog[i],0};
-            txt(2+i,3,c,i==pc?10+6:7);
+        txt((COLS-20)/2,0,"Haskell Demo (Stage 99)",10);
+        txt(2,2,"-- Pure functional programming",10+2);
+        txt(2,4,"fibs = 0 : 1 : zipWith (+) fibs (tail fibs)",7);
+        txt(2,6,"fmap (+1) (Just 5)  -- Just 6",7);
+        txt(2,8,"pure (*2) <*> [1,2,3] -- [2,4,6]",7);
+        for(int i=0;i<6;i++) {
+            int y=10+i*2;
+            int a=i;
+            txt(2,y,"let x = ",7);pn(9,y,a,10+2);
+            txt(2,y+1,"let y = fmap (*",7);pn(9,y+1,f%5+1,10+3);txt(2,y+1+8,") x",7);
         }
-        txt(2,5,"Tape:",10+2);
-        for(int i=0;i<20;i++) {
-            int hi=(i==ptr);
-            px(2+i*3,6,hi?'[':' ',hi?10+4:0);
-            pn(3+i*3,6,(int)tape[i],hi?10+6:7);
-            px(2+i*3+7,6,hi?']':' ',hi?10+4:0);
-        }
-        txt(2,8,"Output:",10+2);
-        for(int i=0;i<outc&&i<15;i++) px(2+i,9,output[i]?output[i]:' ',10+3);
-        if(wait==0) {
-            char cmd=prog[pc];
-            if(cmd=='+') tape[ptr]++;
-            else if(cmd=='-') tape[ptr]--;
-            else if(cmd=='>'&&ptr<23) ptr++;
-            else if(cmd=='<'&&ptr>0) ptr--;
-            else if(cmd=='.'&&outc<19) {output[outc]=tape[ptr];outc++;}
-            else if(cmd=='['&&tape[ptr]==0) {int d=1;while(d){pc++;if(prog[pc]=='[')d++;if(prog[pc]==']')d--;}}
-            else if(cmd==']'&&tape[ptr]!=0) {int d=1;while(d){pc--;if(prog[pc]==']')d++;if(prog[pc]=='[')d--;}}
-            pc++;if(!prog[pc])pc=0;
-            wait=2;
-        } else wait--;
-        txt(2,11,"PC:",7);pn(6,11,pc,10+2);
-        txt(2,11,"Cell:",7);pn(12,11,(int)tape[ptr],10+4);
-        txt(2,13,"Instr:",7);
-        if(prog[pc]){char ci[2]={prog[pc],0};px(9,13,ci[0],10+6);}
-        txt(2,15,"Cells: 24 | Programs: 5 | Speed: 2fps",8);
-        for(int i=0;i<f%40;i++)px(2+i,17,0xDB,10+(i%7));
+        txt(2,23,"main = putStrLn \"Hello, Haskell!\"",8);
+        txt(2,24,"-- Result: ",8);pn(12,24,f%10,10+4);
+        dl(60000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

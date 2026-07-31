@@ -37,18 +37,27 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static uint32_t nr=8699913;
-static int nrn(void){nr=nr*1103515245+12345;return(nr>>16)&0x7FFF;}
-
 void stage87_entry(void) {
     kf(); clr(0);
-    txt((COLS-24)/2,0,"Perlin-ish Noise (Stage 87)",13);
+    txt((COLS-18)/2,0,"Binary Clock (Stage 87)",13);
     for(int f=0;f<200;f++) {
-        for(int y=2;y<24;y++)for(int x=0;x<80;x++) {
-            int v=nrn()%(15);
-            px(x,y,v>2?0xDB:' ',v>2?(13+v%8):0);
+        int b[]={f/3600%24,(f/60)%60,f%60};
+        for(int i=0;i<3;i++) {
+            for(int y=0;y<6;y++) {
+                int bit=(b[i]>>(5-y))&1;
+                for(int x=0;x<3;x++)
+                    px(10+i*25+x,5+y,bit?0xDB:' ',bit?(13+i*4):0);
+            }
         }
-        dl(15000);
+        for(int i=0;i<3;i++) {
+            txt(10+i*25,12,":",13);
+            int v=b[i];
+            px(16+i*25,12,'0'+(v/10)%10,13);
+            px(19+i*25,12,'0'+v%10,13);
+            txt(10+i*25,13,"-----",13);
+        }
+        txt(10,14,"H",13);txt(35,14,"M",13);txt(60,14,"S",13);
+        dl(50000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);

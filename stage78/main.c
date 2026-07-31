@@ -37,25 +37,20 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 }
 
 
-static int ip(int v) {
-    if(v<2)return 0;
-    for(int i=2;i*i<=v;i++)if(v%i==0)return 0;
-    return 1;
-}
-
 void stage78_entry(void) {
     kf(); clr(0);
-    txt((COLS-22)/2,0,"Prime Numbers (Stage 78)",4);
-    int cnt=0,v=2;
-    while(cnt<80) {
-        if(ip(v)) {
-            pn(5+(cnt%8)*9,3+(cnt/8)*2,v,4+(cnt%7));
-            cnt++;
-        }
-        v++;
-        if(cnt%5==0)dl(20000);
+    txt((COLS-26)/2,0,"Fibonacci Sequence (Stage 78)",4);
+    uint32_t a=0,b=1;
+    for(int i=0;i<60;i++) {
+        pn(10,5+i/10*2,i,4+2);
+        px(13,5+i/10*2,':',4);
+        pn(15,5+i/10*2,a,4);
+        uint32_t nxt=a+b;
+        if(nxt<a){txt(10,22,"Overflow!",4);break;}
+        a=b;b=nxt;
+        dl(400600);
         if(kh()){kg();break;}
     }
-    txt((COLS-20)/2,23,"Press any key...",8);
+    clr(0); txt((COLS-20)/2,12,"Press any key...",7);
     wa();
 }
