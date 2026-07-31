@@ -39,30 +39,50 @@ static void pn(int x,int y,uint32_t v,uint8_t cl) {
 
 void stage68_entry(void) {
     kf(); clr(0);
-    const char *logo[]={",___________________________,",
-                        "|  C H I C A G O - 9 5  x64  |",
-                        "|   BrainFS Bare-Metal OS    |",
-                        "|  Boot Loader  v0.1.0-beta  |",
-                        "'---------------------------'"};
-    for(int f=0;f<120;f++) {
+    const char *art[]={"\xDB\xDB\xDB\xDB\xDB  \xDB\xDB\xDB\xDB\xDB  \xDB\xDB\xDB\xDB\xDB",
+                        "\xDB      \xDB   \xDB  \xDB",
+                        "\xDB      \xDB   \xDB  \xDB\xDB\xDB\xDB\xDB",
+                        "\xDB      \xDB   \xDB      \xDB",
+                        "\xDB\xDB\xDB\xDB\xDB  \xDB\xDB\xDB\xDB\xDB  \xDB\xDB\xDB\xDB\xDB"};
+    const char *bootmsg[]={"Booting Chicago-95...",
+                            "Loading stage modules...",
+                            "Parsing E820 memory map...",
+                            "Initializing 55 security modules...",
+                            "Mounting BrainFS...",
+                            "Handing off to kernel...",
+                            "Welcome to Chicago-95"};
+    int bx=(COLS-40)/2,by=2,bw=40,bh=14;
+    int c0=9;
+    for(int f=0;f<160;f++) {
         clr(0);
-        int cyc=(f/8)%7;
-        int base=9+cyc;
-        for(int r=0;r<5;r++) {
-            for(int c=0;logo[r][c];c++) {
-                int a=0;
-                if(r==1&&c>=2&&c<=19)a=1;
-                if(r==2&&c>=2&&c<=26)a=2;
-                if(r==3&&c>=2&&c<=26)a=2;
-                px(20+c,4+r,logo[r][c],a?base+r:(base)%7+1);
-            }
+        uint8_t fc0=c0+(f/10)%2;
+        px(bx,by,0xDA,fc0);
+        for(int i=1;i<bw-1;i++)px(bx+i,by,0xC4,fc0);
+        px(bx+bw-1,by,0xBF,fc0);
+        for(int r=1;r<bh-1;r++) {
+            uint8_t side=c0+((bh-2-r)%8);
+            px(bx,by+r,0xB3,side);
+            px(bx+bw-1,by+r,0xB3,side);
         }
-        int bar=(f%80)*36/80;
-        txt(20,10,"[",7);
-        for(int i=0;i<36;i++)px(21+i,10,i<bar?0xDB:' ',i<bar?9+2:0);
-        txt(57,10,"]",7);
-        txt(28,12,"Press any key to skip",8);
-        dl(30000);
+        px(bx,by+bh-1,0xC0,fc0);
+        for(int i=1;i<bw-1;i++)px(bx+i,by+bh-1,0xC4,fc0);
+        px(bx+bw-1,by+bh-1,0xD9,fc0);
+        int ax=bx+(bw-18)/2;
+        for(int r=0;r<5;r++) {
+            uint8_t cl=(c0+r+((f/4)%2))%14+1;
+            for(int c=0;art[r][c];c++)px(ax+c,by+1+r,art[r][c],cl);
+        }
+        txt(ax+9,by+7,"CHICAGO-95 x86_64",c0+2);
+        txt(ax+9,by+8,"BrainFS Bootloader",c0+2);
+        for(int i=0;i<18;i++)px(ax+i,by+10,0xC4,9+1);
+        int pct=(f*100)/160;
+        int bar=pct*18/100;
+        for(int i=0;i<18;i++)px(ax+i,by+11,i<bar?0xDB:' ',i<bar?c0+((f/4)%6)+1:0);
+        pn(ax+18,by+11,pct,c0+4);px(ax+21,by+11,'%',c0+4);
+        int mi=(f/20)%7;
+        txt(ax,by+13,bootmsg[mi],c0+3);
+        txt(ax+20,by+13,"[skip]",8);
+        dl(25000);
         if(kh()){kg();break;}
     }
     clr(0);txt((COLS-20)/2,12,"Press any key...",7);
