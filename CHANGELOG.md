@@ -3,6 +3,22 @@
 All notable changes to the Chicago-95 / BrainFS Bootloader are tracked here.
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+- `exec` syscall now loads an ELF64 binary from the VFS into the calling
+  process's address space and redirects `sysret` into the new image (user
+  mode), replacing the previous always-fail stub.
+- Per-process current working directory: `chdir` validates the path resolves
+  to a directory and stores it; `getcwd` returns the stored path instead of
+  a hardcoded `/`.
+
+### Changed
+- `read`/`write` syscalls now track a per-file-descriptor offset (via
+  `vfs_fd_offset`), advancing it on successful I/O; `write` honors `O_APPEND`.
+- File cache: a dirty entry is now written back to disk on LRU eviction in
+  `fcache_get` (previously only on `fcache_invalidate`/`fcache_flush`).
+
 ## [0.1.1-beta] - 2026-08-01
 
 ### Added

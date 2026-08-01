@@ -2,6 +2,12 @@
 #define PROCESS_H
 
 #include <stdint.h>
+#include "vfs.h"
+
+/* Page-table entry flag bits */
+#define PML4_PRESENT  0x01
+#define PML4_RW       0x02
+#define PML4_USER     0x04
 
 #define MAX_PROCESSES       64
 #define PROCESS_NAME_LEN    32
@@ -56,6 +62,9 @@ typedef struct {
     /* Open files (simple) */
     int      fd_table[16];
     int      fd_count;
+
+    /* Current working directory */
+    char     cwd[VFS_PATH_LEN];
 } process_t;
 
 /* Page table management */

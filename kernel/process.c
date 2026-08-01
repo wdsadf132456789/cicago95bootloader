@@ -35,10 +35,6 @@ static void process_trampoline(void) {
 
 /* ---- Page table management (kernel-side VMM) ---- */
 
-#define PML4_PRESENT  0x01
-#define PML4_RW       0x02
-#define PML4_USER     0x04
-
 static inline void invlpg_addr(uint64_t addr) {
     asm volatile("invlpg (%0)" : : "r"(addr) : "memory");
 }
@@ -257,6 +253,8 @@ void process_init(void) {
         processes[i].pid = -1;
         processes[i].state = PROC_UNUSED;
         processes[i].saved_rsp = 0;
+        processes[i].cwd[0] = '/';
+        processes[i].cwd[1] = '\0';
         for (int j = 0; j < 16; j++)
             processes[i].fd_table[j] = -1;
     }
@@ -280,6 +278,8 @@ int process_create(void (*entry)(void), const char *name, proc_ring_t ring) {
     proc->ppid = current_process;
     proc->state = PROC_READY;
     proc->ring = ring;
+    proc->cwd[0] = '/';
+    proc->cwd[1] = '\0';
 
     int len = 0;
     while (name[len] && len < PROCESS_NAME_LEN - 1) {

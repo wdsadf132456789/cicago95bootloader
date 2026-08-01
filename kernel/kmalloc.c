@@ -419,7 +419,11 @@ void *fcache_get(uint32_t cluster) {
         }
     }
 
-    /* TODO: write back dirty entry to disk */
+    /* Write back dirty entry before eviction */
+    if (fcache[lru_idx].valid && fcache[lru_idx].dirty) {
+        uint64_t old_lba = (uint64_t)fcache[lru_idx].cluster * (CLUSTER_SIZE / 512);
+        ata_write_sectors(0, (uint32_t)old_lba, CLUSTER_SIZE / 512, (uint16_t *)fcache[lru_idx].data);
+    }
     fcache[lru_idx].valid = 1;
     fcache[lru_idx].cluster = cluster;
     fcache[lru_idx].age = ++fcache_clock;

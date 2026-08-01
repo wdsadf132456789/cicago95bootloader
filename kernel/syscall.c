@@ -6,11 +6,13 @@
 #include "syscall.h"
 #include "kernel.h"
 #include "process.h"
+#include "gdt.h"
 #include "timer.h"
 #include "console.h"
 #include "kmalloc.h"
 #include "keyboard.h"
 #include "vfs.h"
+#include "elf.h"
 #include <stdint.h>
 
 /* MSR constants */
@@ -118,8 +120,11 @@ static int64_t sys_read(uint64_t fd, uint64_t buf, uint64_t len,
     vfs_node_t *node = vfs_fd_get(vfs_fd);
     if (!node) return -1;
 
-    ssize_t result = vfs_read(node, node->length ? 0 : 0, (void *)buf, len);
-    /* TODO: maintain per-fd offset */
+    uint64_t *offset = vfs_fd_offset(vfs_fd);
+    if (!offset) return -1;
+
+    ssize_t result = vfs_read(node, *offset, (void *)buf, len);
+    if (result > 0) *offset += (uint64_t)result;
     return result;
 }
 
@@ -160,7 +165,15 @@ static int64_t sys_write(uint64_t fd, uint64_t buf, uint64_t len,
     vfs_node_t *node = vfs_fd_get(vfs_fd);
     if (!node) return -1;
 
-    return vfs_write(node, 0, (const void *)buf, len);
+    uint64_t *offset = vfs_fd_offset(vfs_fd);
+    if (!offset) return -1;
+
+    uint64_t off = *offset;
+    if (node->flags & O_APPEND) off = node->length;
+
+    ssize_t result = vfs_write(node, off, (const void *)buf, len);
+    if (result > 0) *offset = off + (uint64_t)result;
+    return result;
 }
 
 static int64_t sys_open(uint64_t path_ptr, uint64_t flags, uint64_t a3,
@@ -230,12 +243,120 @@ static int64_t sys_fork(uint64_t a1, uint64_t a2, uint64_t a3,
     return (int64_t)process_fork();
 }
 
+/* Frame of the currently executing syscall, so exec can redirect the
+ * sysret return directly into the loaded image. */
+static syscall_frame_t *current_frame = NULL;
+
 static int64_t sys_exec(uint64_t path_ptr, uint64_t a2, uint64_t a3,
                          uint64_t a4, uint64_t a5, uint64_t a6) {
     (void)a2; (void)a3; (void)a4; (void)a5; (void)a6;
-    (void)path_ptr;
-    /* TODO: ELF exec — stub for now */
-    return -1;
+    process_t *proc = process_get_current();
+    if (!proc) return -1;
+    if (proc->pid == 0) return -1;  /* init cannot exec */
+
+    /* Copy path from user */
+    char path[VFS_PATH_LEN];
+    memset(path, 0, sizeof(path));
+
+    if (!syscall_validate_user_ptr(path_ptr, 1)) return -1;
+    for (int i = 0; i < VFS_PATH_LEN - 1; i++) {
+        char c;
+        if (syscall_copy_from_user(&c, (const void *)(path_ptr + i), 1) < 0)
+            return -1;
+        path[i] = c;
+        if (c == '\0') break;
+    }
+
+    /* Open and read the ELF header */
+    vfs_node_t *node = vfs_open(path, O_RDONLY);
+    if (!node) return -1;
+    uint32_t file_size = node->length;
+
+    elf64_header_t hdr;
+    if (vfs_read(node, 0, &hdr, sizeof(hdr)) != (ssize_t)sizeof(hdr)) {
+        vfs_close(node);
+        return -1;
+    }
+    if (!elf_validate(&hdr)) {
+        vfs_close(node);
+        return -1;
+    }
+
+    /* Read the whole image into a kernel buffer */
+    uint8_t *image = (uint8_t *)kmalloc(file_size);
+    if (!image) {
+        vfs_close(node);
+        return -1;
+    }
+    memset(image, 0, file_size);
+    if (vfs_read(node, 0, image, file_size) != (ssize_t)file_size) {
+        kfree(image);
+        vfs_close(node);
+        return -1;
+    }
+    vfs_close(node);
+
+    /* Map the PT_LOAD segments in the process address space, then copy the
+     * bytes through the kernel identity map (we stay on the kernel cr3). */
+    if ((uint64_t)hdr.e_phoff + (uint64_t)hdr.e_phnum * hdr.e_phentsize > file_size) {
+        kfree(image);
+        return -1;
+    }
+    elf64_phdr_t *phdr = (elf64_phdr_t *)(image + hdr.e_phoff);
+    for (int i = 0; i < hdr.e_phnum; i++) {
+        if (phdr[i].p_type != PT_LOAD) continue;
+        if (phdr[i].p_offset + phdr[i].p_filesz > file_size) continue;
+
+        uint64_t seg_end = phdr[i].p_vaddr + phdr[i].p_memsz;
+        uint64_t page = phdr[i].p_vaddr & ~0xFFFULL;
+        uint64_t page_end = (seg_end + 0xFFFULL) & ~0xFFFULL;
+        for (; page < page_end; page += PAGE_SIZE) {
+            uint64_t phys = vmm_translate(proc->cr3, page);
+            if (!phys) {
+                void *pg = pmm_alloc_page();
+                if (!pg) { kfree(image); return -1; }
+                memset(pg, 0, PAGE_SIZE);
+                vmm_map_page(proc->cr3, page, (uint64_t)pg, PML4_RW | PML4_USER);
+                phys = (uint64_t)pg;
+            }
+
+            uint64_t seg_off = page - phdr[i].p_vaddr;
+            /* Copy the file-backed bytes for this page */
+            if (seg_off < phdr[i].p_filesz) {
+                uint64_t n = phdr[i].p_filesz - seg_off;
+                if (n > PAGE_SIZE) n = PAGE_SIZE;
+                memcpy((void *)phys, image + phdr[i].p_offset + seg_off, n);
+            }
+            /* Zero the rest of the page that belongs to the segment */
+            uint64_t page_end_off = seg_off + PAGE_SIZE;
+            if (page_end_off > phdr[i].p_memsz) page_end_off = phdr[i].p_memsz;
+            if (page_end_off > phdr[i].p_filesz) {
+                uint64_t zstart = seg_off > phdr[i].p_filesz ? seg_off : phdr[i].p_filesz;
+                if (zstart < page_end_off)
+                    memset((void *)phys + (zstart - seg_off), 0, page_end_off - zstart);
+            }
+        }
+    }
+    uint64_t entry = hdr.e_entry;
+    kfree(image);
+
+    /* Reload the process to run the new image in user mode */
+    proc->ring = RING3;
+    proc->entry_point = entry;
+    proc->context.rip = entry;
+    proc->context.rflags = 0x202;
+    proc->context.cs = USER_CS;
+    proc->context.ss = USER_DS;
+    proc->context.rsp = proc->user_stack;
+
+    /* Redirect the sysret return into the new image (never returns to caller) */
+    if (current_frame) {
+        current_frame->rip = entry;
+        current_frame->rsp = proc->user_stack;
+        current_frame->rflags = 0x202;
+    }
+
+    return 0;
 }
 
 static int64_t sys_exit(uint64_t code, uint64_t a2, uint64_t a3,
@@ -553,7 +674,10 @@ static int64_t sys_getcwd(uint64_t buf_ptr, uint64_t size, uint64_t a3,
     (void)a3; (void)a4; (void)a5; (void)a6;
     if (!syscall_validate_user_ptr(buf_ptr, size)) return -1;
 
-    const char *cwd = "/";
+    process_t *proc = process_get_current();
+    if (!proc) return -1;
+
+    const char *cwd = proc->cwd[0] ? proc->cwd : "/";
     size_t len = strlen(cwd);
     if (len >= size) return -1;
 
@@ -564,8 +688,33 @@ static int64_t sys_getcwd(uint64_t buf_ptr, uint64_t size, uint64_t a3,
 static int64_t sys_chdir(uint64_t path_ptr, uint64_t a2, uint64_t a3,
                           uint64_t a4, uint64_t a5, uint64_t a6) {
     (void)a2; (void)a3; (void)a4; (void)a5; (void)a6;
-    (void)path_ptr;
-    /* TODO: store cwd per-process */
+    process_t *proc = process_get_current();
+    if (!proc) return -1;
+
+    /* Copy path from user */
+    char path[VFS_PATH_LEN];
+    memset(path, 0, sizeof(path));
+
+    if (!syscall_validate_user_ptr(path_ptr, 1)) return -1;
+    for (int i = 0; i < VFS_PATH_LEN - 1; i++) {
+        char c;
+        if (syscall_copy_from_user(&c, (const void *)(path_ptr + i), 1) < 0)
+            return -1;
+        path[i] = c;
+        if (c == '\0') break;
+    }
+
+    /* Must resolve to an existing directory */
+    vfs_node_t *dir = vfs_resolve(path);
+    if (!dir || dir->type != VFS_DIR) return -1;
+
+    /* Store per-process cwd */
+    int i = 0;
+    while (path[i] && i < VFS_PATH_LEN - 1) {
+        proc->cwd[i] = path[i];
+        i++;
+    }
+    proc->cwd[i] = '\0';
     return 0;
 }
 
@@ -628,6 +777,7 @@ static syscall_fn_t syscall_table[MAX_SYSCALLS] = {
 /* ---------- main handler ---------- */
 
 void syscall_handler(syscall_frame_t *frame) {
+    current_frame = frame;
     uint64_t num = frame->rax;
     uint64_t a1  = frame->rdi;
     uint64_t a2  = frame->rsi;
