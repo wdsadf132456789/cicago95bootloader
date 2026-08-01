@@ -15,30 +15,35 @@ A from-scratch x86_64 bootloader with an integrated kernel, security suite, and 
 
 ## Build
 
-**CMake (recommended):**
+**CMake is required** — you must run `cmake` before `make`. Running `make`
+without configuring CMake first refuses to build.
+
+**Out-of-source (recommended):**
 
 ```bash
-cmake .          # configure (builds into ./bin, ./obj, ./chicago95.bin)
-make            # full build; after the stages it asks:
-                #   "Would you like to compile the kernel now? Y [Yes] N [No]"
-                #   then confirms with "Are you sure you want to (not) compile
-                #   the kernel?" before building/skipping
+cmake -S . -B build-cmake   # configure once
+make                        # full build; after the stages it asks:
+                            #   "Would you like to compile the kernel now? Y [Yes] N [No]"
+                            #   then confirms with "Are you sure you want to (not) compile
+                            #   the kernel?" before building/skipping
 ```
 
-Out-of-source builds work too:
+**In-source:**
 
 ```bash
-cmake -S . -B build-cmake && cmake --build build-cmake
+cmake .                     # configure once (replaces this Makefile with CMake's generated one)
+make
 ```
 
-**Makefile (original):**
+**Makefile (original, not required):** the hand-written build is preserved as
+`Makefile.original` and still works standalone:
 
 ```bash
-make clean && make              # Bootloader (470KB)
-cd kernel && make clean && make # Kernel (70KB)
+make -f Makefile.original && make -f Makefile.original all  # Bootloader
+cd kernel && make clean && make                             # Kernel
 ```
 
-**Toolchain:** `gcc -m32` (stage 2), `gcc -m64 -mcmodel=kernel` (kernel), `nasm -f bin`, `cmake` (optional), `python3`, `dd`, `truncate`
+**Toolchain:** `gcc -m32` (stage 2), `gcc -m64 -mcmodel=kernel` (kernel), `nasm -f bin`, `cmake` (required), `python3`, `dd`, `truncate`
 
 The CMake build detects the build machine's PCI devices via `tools/scan_driver.c` and only compiles the wifi/optional drivers that are actually needed — exactly like `make scan && make` in the Makefile flow.
 
