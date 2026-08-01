@@ -1,14 +1,46 @@
 [bits 16]
-[org 0x7C00]
+[org 0]
 
-STAGE2_OFFSET        equ 0x0600
-STAGE2_SECTOR_COUNT  equ 64
-STAGE2_LOAD_OFF      equ 0x0600
-E820_MAP_OFFSET      equ 0x8000
-E820_MAP_ENTRIES     equ 0x8002
-DAP_OFFSET           equ 0x9000
-PART_TABLE_OFFSET    equ 0x9100
-STAGE2_SIGNATURE     equ 0x7A3B
+; NOTE: assembled with [org 0] so every label is a file offset. The boot
+; sector is loaded by the BIOS at 0x0000:0x7C00, but the loader is relocated
+; to LOADER_SEG and runs there with DS=CS=LOADER_SEG, so label-based
+; references resolve to LOADER_SEG:file_offset == the relocated copy.
+
+; ============================================================================
+; Chicago-95 stage1 boot sector
+;
+; Loads the full chain in real mode, then hands off to stage2 at 0x0600:
+;   stage2 (LBA 1,      1023 sectors) -> 0x0600..0x80400
+;   stage3 (LBA 0x0400,   34 sectors) -> 0x100000..0x104400
+;   kernel (LBA 0x1000,  148 sectors) -> 0x10000..0x22800
+;
+; The stage2 region (0x0600..0x80400) covers the boot sector at 0x7C00, so the
+; whole 512-byte loader is copied to the scratch area 0x9F00:0x0000 first and
+; continues there, outside every load target.
+; ============================================================================
+
+LOADER_SEG         equ 0x9F00          ; segment for relocated loader (0x9F000)
+STACK_SEG          equ 0x9F80          ; stack segment (0x9F800)
+STACK_TOP          equ 0x0400          ; sp -> stack spans 0x9F800..0x9FC00
+
+STAGE2_LBA         equ 1
+STAGE2_SECTORS     equ 1023
+STAGE2_DEST        equ 0x0600
+
+STAGE3_LBA         equ 0x0400
+STAGE3_SECTORS     equ 34
+STAGE3_SEG         equ 0xF000          ; segment base 0xF0000
+STAGE3_OFF         equ 0x1000          ; + offset -> physical 0x100000
+
+KERNEL_LBA         equ 0x1000
+KERNEL_SECTORS     equ 148
+KERNEL_SEG         equ 0x1000          ; segment base 0x10000
+KERNEL_OFF         equ 0x0000
+
+STAGE2_SIGNATURE   equ 0x7A3B
+
+MAX_BATCH          equ 62              ; sectors per int 13h call (keeps the
+                                       ; buffer inside one 64K segment window)
 
 ; BPB for FAT12/16 BIOS compatibility
     jmp short start
@@ -34,72 +66,138 @@ bpb_volume_label:        db 'CHICAGO-95'
 bpb_filesystem_type:     db 'FAT12   '
 
 start:
-    mov [bp_drive], dl
+    ; Boot drive (DL) survives the relocation below (rep movsw uses AX/SI/DI/CX
+    ; only) and is saved to bp_drive after we are running from the relocated
+    ; copy, where label-based stores resolve to LOADER_SEG.
     cli
     xor ax, ax
     mov ds, ax
     mov es, ax
+    mov ax, STACK_SEG
     mov ss, ax
-    mov sp, 0x7C00
+    mov sp, STACK_TOP
     sti
 
+    ; Relocate the whole 512-byte loader to LOADER_SEG so it survives the
+    ; stage2 load that otherwise overwrites 0x7C00..0x7E00.
     mov si, 0x7C00
-    mov di, STAGE2_OFFSET
+    mov ax, LOADER_SEG
+    mov es, ax
+    xor di, di
     mov cx, 256
     cld
     rep movsw
-    jmp 0x0000:relocated_start
+    jmp LOADER_SEG:relocated_start
 
 relocated_start:
-    xor ax, ax
+    ; Run from the relocated copy: DS must point at it so all label-based
+    ; references (messages, DAP) resolve to the relocated data.
+    mov ax, LOADER_SEG
     mov ds, ax
     mov es, ax
+
+    mov [bp_drive], dl
 
     mov si, msg_boot
     call print_string_16
 
-    call detect_memory_e820
     call enable_a20
-    call read_mbr
-    call load_stage2
 
-    jmp 0x0000:STAGE2_LOAD_OFF
+    ; Load stage2 (LBA 1, 1023 sectors) to 0x0600.
+    mov dl, [bp_drive]
+    xor ax, ax
+    mov es, ax              ; es = 0
+    mov eax, STAGE2_LBA
+    mov cx, STAGE2_SECTORS
+    mov di, STAGE2_DEST
+    call load_sectors
+    jc .load_fail
 
-; E820 Memory Detection
-detect_memory_e820:
-    push es
-    push di
-    push bp
-    mov di, E820_MAP_OFFSET
-    xor bp, bp
-    mov edx, 0x534D4150
-    xor ebx, ebx
-.e820_loop:
-    mov eax, 0xE820
-    mov ecx, 24
-    int 0x15
-    jc .e820_done
-    cmp eax, 0x534D4150
-    jne .e820_done
-    cmp dword [di], 0
-    jne .e820_valid
-    cmp dword [di + 4], 0
-    je .e820_next
-.e820_valid:
-    inc bp
-    add di, 24
-.e820_next:
-    cmp ebx, 0
-    je .e820_done
-    jmp .e820_loop
-.e820_done:
-    mov [E820_MAP_ENTRIES], bp
-    pop bp
-    pop di
-    pop es
+    ; Verify stage2 signature at 0x0600.
+    push ds
+    xor ax, ax
+    mov ds, ax
+    cmp word [STAGE2_DEST], STAGE2_SIGNATURE
+    pop ds
+    jne .load_fail
+    mov si, msg_s2
+    call print_string_16
+
+    ; Load stage3 (LBA 0x400, 34 sectors) to 0x100000.
+    mov ax, STAGE3_SEG
+    mov es, ax
+    mov eax, STAGE3_LBA
+    mov cx, STAGE3_SECTORS
+    mov di, STAGE3_OFF
+    call load_sectors
+    jc .load_fail
+
+    ; Load kernel (LBA 0x1000, 148 sectors) to 0x10000.
+    mov ax, KERNEL_SEG
+    mov es, ax
+    mov eax, KERNEL_LBA
+    mov cx, KERNEL_SECTORS
+    mov di, KERNEL_OFF
+    call load_sectors
+    jc .load_fail
+
+    mov si, msg_ok
+    call print_string_16
+
+    ; Hand off to stage2 (its own copy of boot_drive is in DL).
+    mov dl, [bp_drive]
+    jmp 0x0000:STAGE2_DEST
+
+.load_fail:
+    mov si, msg_fail
+    call print_string_16
+    jmp $
+
+; ============================================================================
+; load_sectors -- int 13h extended read of `cx` sectors from LBA `eax` into
+; ES:DI, advancing ES by one 64K window per MAX_BATCH sectors.
+; Returns: CF=0 ok, CF=1 error.
+; ============================================================================
+load_sectors:
+    pusha
+    ; int 13h may clobber EAX, so the running LBA lives in memory (cur_lba),
+    ; never in EAX across the call.
+    mov dword [cur_lba], eax
+.s_loop:
+    mov word [dap_count], MAX_BATCH
+    cmp cx, MAX_BATCH
+    jae .go
+    mov word [dap_count], cx
+.go:
+    mov word [dap_offset], di
+    mov word [dap_segment], es
+    mov eax, [cur_lba]
+    mov dword [dap_lba], eax
+    mov dword [dap_lba + 4], 0
+
+    mov si, dap
+    mov ah, 0x42
+    int 0x13
+    jc .done
+
+    movzx ebx, word [dap_count]   ; sectors actually read
+    sub cx, bx
+    jz .done
+
+    ; lba += count, es += count * 32 (512-byte sectors / 16-byte paragraphs)
+    add dword [cur_lba], ebx
+    shl ebx, 5
+    mov ax, es
+    add ax, bx
+    mov es, ax
+    jmp .s_loop
+.done:
+    popa
     ret
 
+; ============================================================================
 ; A20 Line Enable
+; ============================================================================
 enable_a20:
     mov ax, 0x2401
     int 0x15
@@ -110,81 +208,9 @@ enable_a20:
 .a20_done:
     ret
 
-; Read MBR Partition Table
-read_mbr:
-    mov si, 0x7C00 + 0x1BE
-    mov cx, 4
-    xor bx, bx
-.parse:
-    cmp byte [si], 0x80
-    je .found
-    cmp byte [si + 4], 0
-    je .next
-    ; Copy first non-empty non-active partition we find (if no active found)
-    cmp byte [part_active], 1
-    je .next
-    mov di, PART_TABLE_OFFSET
-    mov cx, 16
-    push si
-    rep movsb
-    pop si
-    jmp .next2
-.found:
-    mov byte [part_active], 1
-    mov di, PART_TABLE_OFFSET
-    mov cx, 16
-    push si
-    rep movsb
-    pop si
-.next2:
-    mov cx, 4
-.next:
-    add si, 16
-    loop .parse
-    cmp byte [part_active], 1
-    je .ok
-    cmp word [PART_TABLE_OFFSET + 4], 0
-    je .fail
-.ok:
-    mov si, msg_pt
-    call print_string_16
-    ret
-.fail:
-    mov si, msg_err
-    call print_string_16
-    jmp $
-
-; Load Stage 2 from disk
-load_stage2:
-    mov si, PART_TABLE_OFFSET
-    mov eax, [si + 8]
-    xor edx, edx
-    div word [bpb_sectors_per_track]
-    inc dx
-    mov cl, dl
-    xor dx, dx
-    div word [bpb_num_heads]
-    mov ch, al
-    shl ah, 6
-    or cl, ah
-    mov dh, dl
-    mov ah, 0x02
-    mov al, STAGE2_SECTOR_COUNT
-    mov dl, [bp_drive]
-    mov bx, STAGE2_LOAD_OFF
-    int 0x13
-    jc .fail
-    cmp word [STAGE2_LOAD_OFF + 0], STAGE2_SIGNATURE
-    jne .fail
-    mov si, msg_ok
-    call print_string_16
-    ret
-.fail:
-    mov si, msg_fail
-    call print_string_16
-    jmp $
-
+; ============================================================================
 ; Print String (null-terminated, 16-bit real mode)
+; ============================================================================
 print_string_16:
     pusha
 .loop:
@@ -198,15 +224,24 @@ print_string_16:
     popa
     ret
 
+; ============================================================================
 ; Data
-bp_drive:     db 0
-part_active:  db 0
+; ============================================================================
+dap:
+    db 0x10, 0
+dap_count:      dw 0
+dap_offset:     dw 0
+dap_segment:    dw 0
+dap_lba:        dd 0, 0
 
-msg_boot:     db 'C95', 0
-msg_pt:       db 'OK', 0
-msg_ok:       db 'RDY', 0
-msg_err:      db '!', 0
-msg_fail:     db '?', 0
+cur_lba:        dd 0
+
+bp_drive:       db 0
+
+msg_boot:       db 'C95', 0
+msg_s2:         db 'L2', 0
+msg_ok:         db 'RDY', 0
+msg_fail:       db '?', 0
 
 ; Pad to 446 bytes
 times 446-($-$$) db 0

@@ -271,28 +271,46 @@ static void cmd_dmesg(void) {
     }
 }
 
+static void fmt_disk(uint64_t bytes) {
+    if (bytes >= (1ULL << 30))
+        console_printf("%u.%u GiB", (uint32_t)(bytes >> 30), (uint32_t)(((bytes >> 20) & 1023) * 10 / 1024));
+    else if (bytes >= (1ULL << 20))
+        console_printf("%u MiB", (uint32_t)(bytes >> 20));
+    else if (bytes >= (1ULL << 10))
+        console_printf("%u KiB", (uint32_t)(bytes >> 10));
+    else
+        console_printf("%u B", (uint32_t)bytes);
+}
+
+static void nf_label(const char *label) {
+    int len = 0;
+    while (label[len]) len++;
+    for (int i = 0; i < 38 + (8 - len); i++) console_putc(' ', CONSOLE_WHITE | (CONSOLE_BLACK << 4));
+    console_puts(label, CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
+    console_putc(' ', CONSOLE_WHITE | (CONSOLE_BLACK << 4));
+}
+
 static void cmd_neofetch(void) {
     uint32_t ip = net_get_ip();
-    uint32_t total_pages = (uint32_t)pmm_get_total_pages();
-    uint32_t free_pages = (uint32_t)pmm_get_free_pages();
-    uint32_t used_pages = total_pages - free_pages;
-    uint32_t total_kb = (total_pages * 4096) / 1024;
-    uint32_t used_kb = (used_pages * 4096) / 1024;
+    uint64_t total_pages = pmm_get_total_pages();
+    uint64_t free_pages = pmm_get_free_pages();
+    uint64_t used_pages = total_pages - free_pages;
+    uint32_t total_mb = (uint32_t)((total_pages * 4096) / (1024 * 1024));
+    uint32_t used_mb = (uint32_t)((used_pages * 4096) / (1024 * 1024));
+    uint32_t pct = total_pages ? (uint32_t)((used_pages * 100) / total_pages) : 0;
     uint64_t seconds = timer_get_seconds();
     uint32_t hrs = (uint32_t)(seconds / 3600);
     uint32_t mins = (uint32_t)((seconds % 3600) / 60);
     uint32_t secs = (uint32_t)(seconds % 60);
     int pci_count = pci_get_device_count();
     int usb_count = usb_get_device_count();
-    uint32_t ticks = (uint32_t)timer_get_ticks();
 
-    /* CPUID for vendor and brand */
     uint32_t eax, ebx, ecx, edx;
-    char vendor[13] = {0};
     asm volatile("cpuid" : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx) : "a"(0));
-    *((uint32_t*)&vendor[0]) = ebx;
-    *((uint32_t*)&vendor[4]) = edx;
-    *((uint32_t*)&vendor[8]) = ecx;
+    uint32_t ebx1;
+    asm volatile("cpuid" : "=a"(eax), "=b"(ebx1) : "a"(1) : "ecx", "edx");
+    int cores = (int)((ebx1 >> 16) & 0xFF);
+    if (cores == 0) cores = 1;
 
     char brand[49] = {0};
     asm volatile("cpuid" : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx) : "a"(0x80000002));
@@ -311,9 +329,27 @@ static void cmd_neofetch(void) {
     *((uint32_t*)&brand[40]) = ecx;
     *((uint32_t*)&brand[44]) = edx;
 
-    /* Strip leading spaces from brand */
     const char *cpu_name = brand;
     while (*cpu_name == ' ') cpu_name++;
+    char cpu[33];
+    int ci = 0;
+    while (cpu_name[ci] && ci < 32) { cpu[ci] = cpu_name[ci]; ci++; }
+    cpu[ci] = 0;
+
+    int procs = 0;
+    for (int i = 0; i < MAX_PROCESSES; i++)
+        if (processes[i].state != PROC_UNUSED) procs++;
+
+    int disk_count = 0;
+    uint64_t disk_bytes = 0;
+    for (int i = 0; i < 4; i++) {
+        ata_info_t *d = ata_get_info(i);
+        if (d) {
+            disk_count++;
+            uint64_t lba = d->lba48 ? d->max_lba48 : d->max_lba;
+            disk_bytes += lba * (d->sector_size ? d->sector_size : 512);
+        }
+    }
 
     uint8_t cyan = CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4);
     uint8_t white = CONSOLE_WHITE | (CONSOLE_BLACK << 4);
@@ -322,51 +358,86 @@ static void cmd_neofetch(void) {
     uint8_t grey = CONSOLE_LIGHT_GREY | (CONSOLE_BLACK << 4);
     uint8_t dim = CONSOLE_DARK_GREY | (CONSOLE_BLACK << 4);
 
-    /* ASCII art logo — Chicago skyline */
-    console_puts("           .---.        ", cyan);
-    console_puts(" OS:       Chicago-95 ", white); console_puts("Kernel ", grey);
-    console_puts("0.1.0-beta\n", yellow);
-
-    console_puts("          /     \\       ", cyan);
-    console_puts(" Host:     Bare-metal x86_64\n", white);
-
-    console_puts("          | |_| |       ", cyan);
-    console_printf(" CPU:      %s\n", cpu_name);
-
-    console_puts("     .----|     |----.  ", cyan);
-    console_printf(" Memory:   %u KB / %u KB\n", used_kb, total_kb);
-
-    console_puts("    /     |  _  |     \\ ", cyan);
-    console_printf(" Uptime:   %uh %um %us\n", hrs, mins, secs);
-
-    console_puts("   /  ||  | | | |  ||  \\", cyan);
-    console_printf(" Disk:     %d drive(s)\n", ata_get_detected_count());
-
-    console_puts("  |   ||  |_| |_|  ||   |", cyan);
-    console_printf(" NIC:      %s", e1000_is_ready() ? "e1000 UP" : "none");
-    if (e1000_is_ready()) {
-        console_printf(" (%d.%d.%d.%d)", ip&0xFF,(ip>>8)&0xFF,(ip>>16)&0xFF,(ip>>24)&0xFF);
+    enum { SKY_W = 36, SKY_H = 12 };
+    char sky[SKY_H][SKY_W + 1];
+    for (int r = 0; r < SKY_H; r++) {
+        for (int c = 0; c < SKY_W; c++) sky[r][c] = ' ';
+        sky[r][SKY_W] = 0;
     }
+    static const uint8_t sp[6][3] = {
+        {0, 4, 5}, {5, 5, 8}, {11, 7, 10}, {19, 6, 9}, {26, 4, 6}, {31, 4, 4}
+    };
+    for (int b = 0; b < 6; b++) {
+        int sx = sp[b][0], w = sp[b][1], h = sp[b][2];
+        for (int r = 0; r < h; r++) {
+            int row = 10 - r;
+            for (int c = 0; c < w; c++) {
+                int x = sx + c;
+                char ch = (char)('0' + b);
+                if (r != h - 1 && ((x * 7 + row * 13 + b * 3) % 11) == 0) ch = 'o';
+                sky[row][x] = ch;
+            }
+        }
+    }
+    for (int c = 0; c < SKY_W; c++) sky[11][c] = '-';
+    sky[0][14] = '*';
+
+    for (int r = 0; r < SKY_H; r++) {
+        for (int c = 0; c < SKY_W; c++) {
+            char ch = sky[r][c];
+            uint8_t cl = 0;
+            if (ch >= '0' && ch <= '5')
+                cl = ((ch - '0') & 1) ? (CONSOLE_BLUE | (CONSOLE_BLACK << 4)) : (CONSOLE_DARK_GREY | (CONSOLE_BLACK << 4));
+            else if (ch == 'o') cl = CONSOLE_YELLOW | (CONSOLE_BLACK << 4);
+            else if (ch == '-') cl = CONSOLE_DARK_GREY | (CONSOLE_BLACK << 4);
+            else if (ch == '*' || ch == '|') cl = CONSOLE_LIGHT_GREY | (CONSOLE_BLACK << 4);
+            console_putc((ch >= '0' && ch <= '5') || ch == 'o' ? 0xDB : ch, cl);
+        }
+        switch (r) {
+        case 0: nf_label("OS"); console_puts("Chicago-95", white); console_puts("  BrainFS x86_64", grey); break;
+        case 1: nf_label("Host"); console_puts("Bare-metal x86_64", white); break;
+        case 2: nf_label("Kernel"); console_puts("0.1.0-beta", yellow); break;
+        case 3: nf_label("Uptime"); console_printf("%uh %um %us", hrs, mins, secs); break;
+        case 4: nf_label("Shell"); console_puts("bfsh 0.1 (cmd)", white); break;
+        case 5: nf_label("Terminal"); console_puts("VGA 80x25", white); break;
+        case 6: nf_label("CPU"); console_printf("%s (%d cores)", cpu, cores); break;
+        case 7: nf_label("Memory"); console_printf("%u MiB / %u MiB ", used_mb, total_mb);
+                console_putc('[', grey);
+                for (int i = 0; i < 10; i++)
+                    console_putc(0xDB, (i * 10 < (int)pct) ? (CONSOLE_YELLOW | (CONSOLE_BLACK << 4)) : (CONSOLE_DARK_GREY | (CONSOLE_BLACK << 4)));
+                console_putc(']', grey);
+                console_printf(" %u%%", pct);
+                break;
+        case 8: nf_label("Disk"); console_printf("%d drive(s) ", disk_count); fmt_disk(disk_bytes); break;
+        case 9: nf_label("NIC");
+                if (e1000_is_ready()) {
+                    console_puts("e1000 UP", green);
+                    console_printf(" (%d.%d.%d.%d)", ip & 0xFF, (ip >> 8) & 0xFF, (ip >> 16) & 0xFF, (ip >> 24) & 0xFF);
+                } else {
+                    console_puts("none", dim);
+                }
+                break;
+        case 10: nf_label("PCI"); console_printf("%d device(s)", pci_count); break;
+        case 11: nf_label("USB"); console_printf("%d device(s)", usb_count); break;
+        }
+        console_putc('\n', white);
+    }
+
+    nf_label("Procs"); console_printf("%d running", procs);
+    console_putc('\n', white);
+    nf_label("Boot"); console_puts("BIOS", white);
+    console_putc('\n', white);
+    nf_label("Theme"); console_puts("Chicago-95", white);
     console_putc('\n', white);
 
-    console_puts("  |   ||            ||   |", cyan);
-    console_printf(" PCI:      %d device(s)\n", pci_count);
-
-    console_puts("  |   ||  ||||||||  ||   |", cyan);
-    console_printf(" USB:      %d device(s)\n", usb_count);
-
-    console_puts("  '---''----......----''---'", cyan);
-    console_printf(" Ticks:    %u\n", ticks);
-
-    console_puts(" ", cyan);
+    console_putc('\n', white);
+    for (int i = 0; i < 38; i++) console_putc(' ', white);
     for (int i = 0; i < 31; i++) console_putc('-', dim);
     console_putc('\n', dim);
-
-    /* Color palette */
-    console_puts(" ", cyan);
+    for (int i = 0; i < 38; i++) console_putc(' ', white);
     for (int i = 0; i < 8; i++) console_putc(' ', CONSOLE_BLACK | (i << 4));
-    console_puts("  ", white);
-    console_puts("chicago-95 bootloader", grey);
+    for (int i = 8; i < 16; i++) console_putc(' ', CONSOLE_BLACK | (i << 4));
+    console_puts("  chicago-95 bootloader", grey);
     console_putc('\n', white);
 }
 

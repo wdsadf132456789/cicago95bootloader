@@ -12,7 +12,7 @@ ASFLAGS = -f bin -Wno-label-redef-late
 CFLAGS_32 = -m32 -ffreestanding -fno-pie -fno-stack-protector -nostdlib -nostdinc -Iinclude -c -O2 -Wall
 CFLAGS_64 = -m64 -ffreestanding -fno-pie -fno-stack-protector -nostdlib -nostdinc -Iinclude -Istage3 -c -O2 -Wall
 LDFLAGS_32 = -m elf_i386 -Ttext 0x0600 --oformat binary -e stage2_entry
-LDFLAGS_64 = -Ttext 0x1000 --oformat binary -e stage3_entry
+LDFLAGS_64 = -Ttext 0x100000 --oformat binary -e stage3_entry
 LDFLAGS_64_STAGE4 = -Ttext 0x2000 --oformat binary -e stage4_entry
 LDFLAGS_64_STAGE5 = -Ttext 0x30000 --oformat binary -e stage5_entry
 LDFLAGS_64_STAGE6 = -Ttext 0x40000 --oformat binary -e stage6_entry
@@ -180,6 +180,7 @@ STAGE8_BIN = $(BUILD)/stage8.bin
 STAGE2_BIN = $(BUILD)/stage2.bin
 STAGE3_BIN = $(BUILD)/stage3.bin
 STAGE4_BIN = $(BUILD)/stage4.bin
+KERNEL_BIN = kernel/build/kernel.bin
 BOOT_IMG   = $(BUILD)/chicago95.bin
 
 # Include generated stages 9-100 definitions and LDFLAGS (auto-generated if missing)
@@ -196,8 +197,11 @@ STAGE6_LBA = 0x810
 
 .PHONY: all clean dirs gen-stages
 
-all: dirs $(STAGE1_BIN) $(STAGE2_BIN) $(STAGE3_BIN) $(STAGE4_BIN) $(STAGE5_BIN) $(STAGE6_BIN) $(STAGE7_BIN) $(STAGE8_BIN) $(STAGE_BINS) $(BOOT_IMG)
+all: dirs $(STAGE1_BIN) $(STAGE2_BIN) $(STAGE3_BIN) $(STAGE4_BIN) $(STAGE5_BIN) $(STAGE6_BIN) $(STAGE7_BIN) $(STAGE8_BIN) $(STAGE_BINS) $(KERNEL_BIN) $(BOOT_IMG)
 	@echo "Build complete: $(BOOT_IMG)"
+
+$(KERNEL_BIN):
+	$(MAKE) -C kernel
 
 dirs:
 	@mkdir -p $(BUILD)/$(STAGE1) \
@@ -348,24 +352,27 @@ $(STAGE8_BIN): $(STAGE8_OBJS)
 # Layout on disk (512-byte sectors):
 #   LBA 0x0000:      Stage1
 #   LBA 0x0001+:     Stage2 + Stage3 + Stage4 (concatenated)
+#   LBA 0x0400:      Stage3 (loaded by Stage1 to 0x100000)
+#   LBA 0x0430:      Stage4 (unused by current chain)
 #   LBA 0x0800:      Stage5 (boot manager)
 #   LBA 0x0810:      Stage6 (recovery shell)
 #   LBA 0x0820:      Stage7 (Tetris)
 #   LBA 0x0830:      Stage8 (Snake)
 #   LBA 0x0840-0x0DF0: Stages 9-100 (each 16 sectors)
-#   LBA 0x1000:      Kernel (loaded by Stage2)
+#   LBA 0x1000:      Kernel (loaded by Stage1 to 0x10000)
 # All remaining space padded to 1GB
 1GB = 1073741824
 
-$(BOOT_IMG): $(STAGE1_BIN) $(STAGE2_BIN) $(STAGE3_BIN) $(STAGE4_BIN) $(STAGE5_BIN) $(STAGE6_BIN) $(STAGE7_BIN) $(STAGE8_BIN) $(STAGE_BINS)
+$(BOOT_IMG): $(STAGE1_BIN) $(STAGE2_BIN) $(STAGE3_BIN) $(STAGE4_BIN) $(STAGE5_BIN) $(STAGE6_BIN) $(STAGE7_BIN) $(STAGE8_BIN) $(STAGE_BINS) $(KERNEL_BIN)
 	rm -f $@
 	# Stage 1 at LBA 0
 	dd if=$(STAGE1_BIN) of=$@ bs=512 seek=0 count=1 conv=notrunc 2>/dev/null
-	# Stages 2-4 concatenated after stage1
-	cat $(STAGE2_BIN) $(STAGE3_BIN) $(STAGE4_BIN) >> $@
-	# Pad to LBA 0x800 (so stage5 sits at the right offset)
-	sz=$$(wc -c < $@); target=$$((0x800 * 512)); pad=$$((target - sz)); \
-	[ $$pad -gt 0 ] && dd if=/dev/zero bs=1 count=$$pad >> $@ 2>/dev/null; true
+	# Stage 2 at LBA 1 (full 1023-sector image; padded by dd to a sector boundary)
+	dd if=$(STAGE2_BIN) of=$@ bs=512 seek=1 conv=notrunc 2>/dev/null
+	# Stage 3 at LBA 0x400
+	dd if=$(STAGE3_BIN) of=$@ bs=512 seek=1024 conv=notrunc 2>/dev/null
+	# Stage 4 at LBA 0x430
+	dd if=$(STAGE4_BIN) of=$@ bs=512 seek=1072 conv=notrunc 2>/dev/null
 	# Stage5 at LBA 0x800 through Stage100 at LBA 0xDF0
 	for n in 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 \
 	         31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 \
@@ -376,7 +383,9 @@ $(BOOT_IMG): $(STAGE1_BIN) $(STAGE2_BIN) $(STAGE3_BIN) $(STAGE4_BIN) $(STAGE5_BI
 		bin="$(BUILD)/stage$${n}.bin"; \
 		[ -f "$$bin" ] && dd if="$$bin" of=$@ bs=512 seek=$$lba conv=notrunc 2>/dev/null; \
 	done
-	@echo "Stages 1-100 written at designated LBAs"
+	# Kernel at LBA 0x1000
+	dd if=$(KERNEL_BIN) of=$@ bs=512 seek=4096 conv=notrunc 2>/dev/null
+	@echo "Stages 1-100 + kernel written at designated LBAs"
 	@echo "Unpadded size: $$(wc -c < $@) bytes"
 	# Pad to exactly 1GB using truncate
 	truncate -s $(1GB) $@

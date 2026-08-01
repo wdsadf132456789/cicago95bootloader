@@ -1,5 +1,11 @@
 # Chicago-95 / BrainFS Bootloader
 
+> **WARNING: WORK IS IN BETA USE IT AT YOUR OWN COST NO CARGES WILL NOT BE PRESSED FOR BROKEN DEVICES**
+>
+> Status: BETA - Not for production use.
+>
+> This software is currently in beta. Expect bugs, incomplete features, and breaking changes between versions. Do not use this in any production or mission-critical environment.
+
 A from-scratch x86_64 bootloader with an integrated kernel, security suite, and shell — all running bare-metal before any OS loads. No libc, no operating system, no compromise.
 
 **Status:** BETA — Not for production use
