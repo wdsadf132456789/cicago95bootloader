@@ -1,7 +1,7 @@
 # Chicago-95 / BrainFS Bootloader
 
-> **WARNING: WORK IS IN BETA USE IT AT YOUR OWN COST NO CARGES WILL NOT BE PRESSED FOR BROKEN DEVICES**
->
+> **WARNING: WORK IS IN BETA USE IT AT YOUR OWN COST NO CHARGES CAN'T BE PRESSED TO THE OWNER OF THIS PROJECT DUE TO BROKEN DEVICES,BOOTLODER PROBLEMS OR BIOS NOT WORKING**
+> **YOU HAVE BEEN WARNED**
 > Status: BETA - Not for production use.
 >
 > This software is currently in beta. Expect bugs, incomplete features, and breaking changes between versions. Do not use this in any production or mission-critical environment.
