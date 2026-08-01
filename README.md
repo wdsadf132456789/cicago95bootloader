@@ -11,7 +11,7 @@ A from-scratch x86_64 bootloader with an integrated kernel, security suite, and 
 
 **Status:** BETA — Not for production use
 
-**Version:** 0.1.0-beta | **Lines:** ~1.4 million | **Target:** x86_64 ring-0 bare-metal
+**Version:** 0.1.1-beta | **Lines:** ~1.4 million | **Target:** x86_64 ring-0 bare-metal
 
 ## Build
 
@@ -228,6 +228,7 @@ Built-in wordlist of 131 passwords. Rule mutations: prefix, suffix, replace, dup
 - `ps`, `mem`, `pci`, `date`, `ifconfig`, `usb`/`lsusb`, `ping`
 - `dmesg` — kernel ring buffer with timestamps and severity-colored output
 - `neofetch` — ASCII art Chicago skyline with CPU brand, memory, uptime, disk, NIC, PCI, USB
+- `hyfetch` — same system info recolored with the HyFetch pride-flag (rainbow) gradient
 - `btop` — 7-section system monitor: CPU (vendor/brand via CPUID), memory, disk (ATA models), network (e1000 status), PCI count, process table with state colors, uptime — live refresh
 - Command history (Up/Down arrows), Ctrl+A/E/K/U/L shortcuts
 
@@ -271,7 +272,7 @@ chicago95/
     loader.c                   # ELF64 loader (higher-half aware, subtracts KERNEL_BASE)
   kernel/
     kernel.c                   # kernel_main: PCI scan → e1000/xHCI init → net_init → shell
-    shell.c                    # Kernel shell: dmesg, neofetch, ps, mem, btop, command history
+    shell.c                    # Kernel shell: dmesg, neofetch, hyfetch, ps, mem, btop, command history
     kmsg.c                     # Kernel ring buffer: 256 entries, timestamps, severity levels
     btop.c                     # System monitor (453 lines, 7 sections)
     process.c                  # Process manager: create, fork, exit, sleep, scheduler (498 lines)

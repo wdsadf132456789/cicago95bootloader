@@ -7,7 +7,7 @@ This software is currently in beta. Expect bugs, incomplete features,
 and breaking changes between versions. Do not use this in any
 production or mission-critical environment.
 
-Current version: 0.1.0-beta
+Current version: 0.1.1-beta
 Lines of code: ~1.4 million (bootloader + kernel)
 Target: x86_64 bare-metal, ring-0, no OS dependency
 Bootloader: 470KB | Kernel: 70KB

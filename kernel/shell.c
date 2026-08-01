@@ -61,6 +61,7 @@ static void cmd_ping(const char *args);
 static void cmd_btop(void);
 static void cmd_dmesg(void);
 static void cmd_neofetch(void);
+static void cmd_hyfetch(void);
 
 static void print_prompt(void) {
     console_puts("chicago-95> ", CONSOLE_LIGHT_GREEN | (CONSOLE_BLACK << 4));
@@ -83,6 +84,7 @@ static void cmd_help(void) {
     console_puts("  btop           System monitor\n", CONSOLE_LIGHT_GREY | (CONSOLE_BLACK << 4));
     console_puts("  dmesg          Kernel log buffer\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
     console_puts("  neofetch       System info display\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
+    console_puts("  hyfetch        System info with pride flag colors\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
     console_puts("\nNavigation: Up/Down arrows = history, Ctrl+A = home, Ctrl+E = end\n",
                  CONSOLE_DARK_GREY | (CONSOLE_BLACK << 4));
 }
@@ -290,7 +292,7 @@ static void nf_label(const char *label) {
     console_putc(' ', CONSOLE_WHITE | (CONSOLE_BLACK << 4));
 }
 
-static void cmd_neofetch(void) {
+static void cmd_fetch(int hy) {
     uint32_t ip = net_get_ip();
     uint64_t total_pages = pmm_get_total_pages();
     uint64_t free_pages = pmm_get_free_pages();
@@ -351,12 +353,31 @@ static void cmd_neofetch(void) {
         }
     }
 
-    uint8_t cyan = CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4);
     uint8_t white = CONSOLE_WHITE | (CONSOLE_BLACK << 4);
     uint8_t green = CONSOLE_LIGHT_GREEN | (CONSOLE_BLACK << 4);
     uint8_t yellow = CONSOLE_YELLOW | (CONSOLE_BLACK << 4);
     uint8_t grey = CONSOLE_LIGHT_GREY | (CONSOLE_BLACK << 4);
     uint8_t dim = CONSOLE_DARK_GREY | (CONSOLE_BLACK << 4);
+
+    /* HyFetch pride-flag palette (rainbow), mapped to VGA 16 colors:
+     *   #E50000 red, #FF8D00 orange, #FFEE00 yellow,
+     *   #028121 green, #004CFF blue, #770088 purple */
+    static const uint8_t pride_fg[6] = {
+        CONSOLE_RED | (CONSOLE_BLACK << 4),
+        CONSOLE_BROWN | (CONSOLE_BLACK << 4),
+        CONSOLE_YELLOW | (CONSOLE_BLACK << 4),
+        CONSOLE_GREEN | (CONSOLE_BLACK << 4),
+        CONSOLE_BLUE | (CONSOLE_BLACK << 4),
+        CONSOLE_MAGENTA | (CONSOLE_BLACK << 4)
+    };
+    static const uint8_t pride_bg[6] = {
+        CONSOLE_BLACK | (CONSOLE_RED << 4),
+        CONSOLE_BLACK | (CONSOLE_BROWN << 4),
+        CONSOLE_BLACK | (CONSOLE_YELLOW << 4),
+        CONSOLE_BLACK | (CONSOLE_GREEN << 4),
+        CONSOLE_BLACK | (CONSOLE_BLUE << 4),
+        CONSOLE_BLACK | (CONSOLE_MAGENTA << 4)
+    };
 
     enum { SKY_W = 36, SKY_H = 12 };
     char sky[SKY_H][SKY_W + 1];
@@ -383,11 +404,15 @@ static void cmd_neofetch(void) {
     sky[0][14] = '*';
 
     for (int r = 0; r < SKY_H; r++) {
+        int pride_idx = (r - 3) * 6 / 8;   /* gradient across building rows 3..10 */
+        if (pride_idx < 0) pride_idx = 0;
+        if (pride_idx > 5) pride_idx = 5;
         for (int c = 0; c < SKY_W; c++) {
             char ch = sky[r][c];
             uint8_t cl = 0;
             if (ch >= '0' && ch <= '5')
-                cl = ((ch - '0') & 1) ? (CONSOLE_BLUE | (CONSOLE_BLACK << 4)) : (CONSOLE_DARK_GREY | (CONSOLE_BLACK << 4));
+                cl = hy ? pride_fg[pride_idx]
+                        : (((ch - '0') & 1) ? (CONSOLE_BLUE | (CONSOLE_BLACK << 4)) : (CONSOLE_DARK_GREY | (CONSOLE_BLACK << 4)));
             else if (ch == 'o') cl = CONSOLE_YELLOW | (CONSOLE_BLACK << 4);
             else if (ch == '-') cl = CONSOLE_DARK_GREY | (CONSOLE_BLACK << 4);
             else if (ch == '*' || ch == '|') cl = CONSOLE_LIGHT_GREY | (CONSOLE_BLACK << 4);
@@ -396,7 +421,7 @@ static void cmd_neofetch(void) {
         switch (r) {
         case 0: nf_label("OS"); console_puts("Chicago-95", white); console_puts("  BrainFS x86_64", grey); break;
         case 1: nf_label("Host"); console_puts("Bare-metal x86_64", white); break;
-        case 2: nf_label("Kernel"); console_puts("0.1.0-beta", yellow); break;
+        case 2: nf_label("Kernel"); console_puts("0.1.1-beta", yellow); break;
         case 3: nf_label("Uptime"); console_printf("%uh %um %us", hrs, mins, secs); break;
         case 4: nf_label("Shell"); console_puts("bfsh 0.1 (cmd)", white); break;
         case 5: nf_label("Terminal"); console_puts("VGA 80x25", white); break;
@@ -435,11 +460,20 @@ static void cmd_neofetch(void) {
     for (int i = 0; i < 31; i++) console_putc('-', dim);
     console_putc('\n', dim);
     for (int i = 0; i < 38; i++) console_putc(' ', white);
-    for (int i = 0; i < 8; i++) console_putc(' ', CONSOLE_BLACK | (i << 4));
-    for (int i = 8; i < 16; i++) console_putc(' ', CONSOLE_BLACK | (i << 4));
-    console_puts("  chicago-95 bootloader", grey);
+    if (hy) {
+        for (int i = 0; i < 6; i++)
+            for (int b = 0; b < 6; b++) console_putc(' ', pride_bg[i]);
+        console_puts("  chicago-95 bootloader", grey);
+    } else {
+        for (int i = 0; i < 8; i++) console_putc(' ', CONSOLE_BLACK | (i << 4));
+        for (int i = 8; i < 16; i++) console_putc(' ', CONSOLE_BLACK | (i << 4));
+        console_puts("  chicago-95 bootloader", grey);
+    }
     console_putc('\n', white);
 }
+
+static void cmd_neofetch(void) { cmd_fetch(0); }
+static void cmd_hyfetch(void) { cmd_fetch(1); }
 
 static int process_command(const char *cmd) {
     while (*cmd == ' ') cmd++;
@@ -459,6 +493,7 @@ static int process_command(const char *cmd) {
     else if (strcmp(cmd, "btop") == 0) cmd_btop();
     else if (strcmp(cmd, "dmesg") == 0) cmd_dmesg();
     else if (strcmp(cmd, "neofetch") == 0) cmd_neofetch();
+    else if (strcmp(cmd, "hyfetch") == 0) cmd_hyfetch();
     else {
         console_puts("Unknown command: ", CONSOLE_RED | (CONSOLE_BLACK << 4));
         console_puts(cmd, CONSOLE_RED | (CONSOLE_BLACK << 4));
