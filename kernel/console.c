@@ -69,7 +69,18 @@ void console_scroll(int lines) {
     update_cursor();
 }
 
+static int (*redirect_hook)(char c) = 0;
+
+void console_set_redirect(int (*hook)(char c)) {
+    redirect_hook = hook;
+}
+
 void console_putc(char c, uint8_t color) {
+    if (redirect_hook) {
+        if (redirect_hook(c)) {
+            return;
+        }
+    }
     switch (c) {
         case '\n':
             cursor_x = 0;

@@ -39,6 +39,29 @@ static inline uint8_t inb(uint16_t port) {
 static inline void outw(uint16_t port, uint16_t val) {
     asm volatile("outw %0, %1" : : "a"(val), "Nd"(port));
 }
+static inline void enable_sse(void) {
+    /* The compiler freely emits SSE (movdqa/movsd/...).  Without
+     * CR4.OSFXSR|CR4.OSXMMEXCPT those #UD; clear CR0.TS/EM so the
+     * x87/SSE state is usable as early as real mode. */
+    asm volatile(
+        "mov %%cr0, %%eax\n"
+        "and $0xFFFFFFF3, %%eax\n"
+        "mov %%eax, %%cr0\n"
+        "mov %%cr4, %%eax\n"
+        "or $0x600, %%eax\n"
+        "mov %%eax, %%cr4\n"
+        : : : "eax"
+    );
+}
+static inline void quiesce_interrupts(void) {
+    asm volatile("cli");
+    /* Mask every IRQ on both PICs.  Until the kernel installs its own IDT
+     * and remaps the PIC, any delivered interrupt (especially the PIT timer
+     * IRQ0) would be routed through the still-loaded real-mode IVT and
+     * fault (#GP -> #DF). */
+    outb(0x21, 0xFF);
+    outb(0xA1, 0xFF);
+}
 static inline uint16_t inw(uint16_t port) {
     uint16_t val;
     asm volatile("inw %1, %0" : "=a"(val) : "Nd"(port));
@@ -56,6 +79,26 @@ static inline uint32_t inl(uint16_t port) {
 /* ======================================================================== */
 /* TSC tick counter (for boot timing)                                       */
 /* ======================================================================== */
+
+/* Stage2 is emitted as a plain binary without its .bss section: the linker
+ * places the ~14 MB of static data at 0x7E300.._end, far beyond the ~523 KB
+ * image that stage1 loads into RAM.  Everything past the binary's tail is
+ * whatever was left in memory, so globals must be zeroed at entry.  The
+ * range skips the stage3 image that stage1 already parked at 0x100000. */
+static void zero_bss(void) {
+    extern char __bss_start[], _end[];
+    uintptr_t b = (uintptr_t)__bss_start;
+    uintptr_t e = (uintptr_t)_end;
+    uintptr_t cur;
+
+    for (cur = b; cur < e; cur += 4) {
+        if (cur >= 0x100000 && cur < 0x104400) {
+            cur = 0x1043FC;
+            continue;
+        }
+        *(volatile uint32_t *)cur = 0;
+    }
+}
 
 static inline uint64_t rdtsc(void) {
     uint32_t lo, hi;
@@ -85,7 +128,9 @@ static uint64_t pit_measure_tsc(uint16_t pit_count) {
     outb(0x61, val | 0x01);
 
     uint64_t start = rdtsc();
-    while ((inb(0x61) & 0x20) == 0) {
+    /* Channel-2 OUT is bit 4 of port 0x61; bit 5 is the system-tick OUT,
+     * which would never indicate channel-2 terminal count. */
+    while ((inb(0x61) & 0x10) == 0) {
         if (rdtsc() - start > 200000000ULL) break;
     }
     uint64_t end = rdtsc();
@@ -347,23 +392,66 @@ static void boot_args_parse(void) {
 static mem_e820_entry_t *e820_map = (mem_e820_entry_t *)E820_MAP_ADDR;
 static uint32_t e820_count = 0;
 
+static void serial_puts(const char *s);
+static void serial_puthex(uint64_t val);
+
+static uint8_t cmos_read(uint8_t reg) {
+    outb(0x70, reg | 0x80);   /* disable NMI */
+    return inb(0x71);
+}
+
+/* Memory detection by probing, since BIOS INT 15h E820 is only reachable
+ * from real mode and stage2 is already in protected mode when this runs.
+ * CMOS extended-memory registers are capped at 64MB and unreliable above
+ * that, so walk physical RAM in 4MB steps, saving and restoring each byte. */
+static uint64_t probe_memory_top(void) {
+    const uint64_t start = 0x1000000ULL;      /* 16MB */
+    const uint64_t limit = 0xC0000000ULL;     /* stay below PCI hole */
+    const uint64_t step  = 0x400000ULL;       /* 4MB */
+
+    for (uint64_t addr = start; addr < limit; addr += step) {
+        volatile uint8_t *p = (volatile uint8_t *)addr;
+        uint8_t old = *p;
+        *p = 0xA5;
+        if (*p != 0xA5) {
+            return addr;   /* unmapped / MMIO: RAM ends here */
+        }
+        *p = old;
+    }
+    return limit;
+}
+
 static void detect_memory(void) {
-    uint32_t continuation = 0;
+    uint64_t top = probe_memory_top();
+
     uint32_t idx = 0;
 
-    do {
-        uint32_t signature, bytes;
-        asm volatile(
-            "int $0x15"
-            : "=a"(signature), "=c"(bytes), "=d"(continuation)
-            : "a"(0xE820), "b"(continuation), "D"(&e820_map[idx]),
-              "c"(24), "d"(0x534D4150)
-        );
-
-        if (signature != 0x534D4150) break;
+    /* Conventional memory (0 .. 0x9FC00) */
+    e820_map[idx].base = 0;
+    e820_map[idx].len  = 0x9FC00ULL;
+    e820_map[idx].type = E820_TYPE_USABLE;
+    e820_map[idx].acpi_ext = 0;
+    idx++;
+    /* EBDA / VGA region */
+    e820_map[idx].base = 0x9FC00ULL;
+    e820_map[idx].len  = 0x400ULL;
+    e820_map[idx].type = E820_TYPE_RESERVED;
+    e820_map[idx].acpi_ext = 0;
+    idx++;
+    /* ROM / BIOS area below 1MB */
+    e820_map[idx].base = 0xE0000ULL;
+    e820_map[idx].len  = 0x20000ULL;
+    e820_map[idx].type = E820_TYPE_RESERVED;
+    e820_map[idx].acpi_ext = 0;
+    idx++;
+    /* RAM above 1MB */
+    if (top > 0x100000ULL) {
+        e820_map[idx].base = 0x100000ULL;
+        e820_map[idx].len  = top - 0x100000ULL;
+        e820_map[idx].type = E820_TYPE_USABLE;
+        e820_map[idx].acpi_ext = 0;
         idx++;
-        if (idx >= E820_MAX_ENTRIES) break;
-    } while (continuation);
+    }
 
     e820_count = idx;
 }
@@ -398,12 +486,14 @@ static int enable_a20(void) {
     while (inb(0x64) & 0x02);
     outb(0x60, val);
 
-    /* Method 3: BIOS INT 15h, AX=2401h */
-    uint16_t result;
-    asm volatile("int $0x15" : "=a"(result) : "a"(0x2401));
-    if ((result & 0xFF00) == 0) return 1;
+    /* Method 3: keyboard-controller fallback via fast A20 (no BIOS call:
+     * INT 15h AX=2401h is unreachable from protected mode) */
+    val = inb(0x92);
+    val |= 0x02;
+    val &= ~0x01;
+    outb(0x92, val);
 
-    return 0;
+    return 1;
 }
 
 /* ======================================================================== */
@@ -545,38 +635,40 @@ static void enter_long_mode(void) {
 }
 
 /* ======================================================================== */
-/* Disk I/O (INT 13h extensions)                                             */
+/* Disk I/O (ATA PIO, replaces INT 13h which is unreachable from PM/LM)      */
 /* ======================================================================== */
 
-typedef struct {
-    uint8_t  size;
-    uint8_t  reserved;
-    uint16_t count;
-    uint16_t offset;
-    uint16_t segment;
-    uint64_t lba;
-} __attribute__((packed)) dap_t;
-
-#define DAP_ADDR 0x9000
+#define ATA_PRIMARY_IO  0x1F0
 
 static int disk_read_sectors(uint8_t drive, uint64_t lba, uint32_t count,
-                              uint16_t segment, uint16_t offset) {
-    dap_t *dap = (dap_t *)DAP_ADDR;
-    dap->size = 0x10;
-    dap->reserved = 0;
-    dap->count = count;
-    dap->offset = offset;
-    dap->segment = segment;
-    dap->lba = lba;
+                              uint32_t phys_addr) {
+    /* stage2 boots off the primary IDE master; ignore the BIOS drive number */
+    (void)drive;
+    uint8_t *buf = (uint8_t *)phys_addr;
+    uint16_t io = ATA_PRIMARY_IO;
 
-    uint16_t result;
-    asm volatile(
-        "int $0x13\n"
-        : "=a"(result)
-        : "a"(0x4200), "d"(drive), "S"(dap)
-    );
+    for (volatile int i = 0; i < 1000; i++) inb(io + 7);
 
-    return (result & 0xFF00) ? 0 : 1;
+    outb(io + 1, (uint8_t)count);
+    outb(io + 2, lba & 0xFF);
+    outb(io + 3, (lba >> 8) & 0xFF);
+    outb(io + 4, (lba >> 16) & 0xFF);
+    outb(io + 6, 0xE0 | ((lba >> 24) & 0x0F));
+    outb(io + 7, 0x20);  /* READ SECTORS */
+
+    for (uint32_t s = 0; s < count; s++) {
+        int timeout = 10000000;
+        uint8_t status;
+        do {
+            status = inb(io + 7);
+            if (status & 0x01) return 0;          /* error */
+            if (--timeout <= 0) return 0;         /* stalled */
+        } while ((status & 0x08) == 0);           /* wait for DRQ */
+
+        asm volatile("rep insw" : "+D"(buf) : "d"(io), "c"(256) : "memory");
+        inb(io + 7);  /* clear INTRQ for the next sector */
+    }
+    return 1;
 }
 
 /* ======================================================================== */
@@ -584,33 +676,27 @@ static int disk_read_sectors(uint8_t drive, uint64_t lba, uint32_t count,
 /* ======================================================================== */
 
 #define KERNEL_LBA         0x1000    /* Sector offset for kernel */
-#define KERNEL_SEGMENT     0x1000    /* Segment address (0x10000 physical) */
-#define KERNEL_OFFSET      0x0000
+#define KERNEL_PHYS_BASE   0x200000  /* Physical address 0x200000 (2MB) */
 #define KERNEL_MAX_SECTORS 2048      /* 1MB */
 
 #define STAGE4_LBA         0x3000    /* Sector offset for stage4 */
-#define STAGE4_SEGMENT     0x2000    /* Segment address (0x20000 physical) */
-#define STAGE4_OFFSET      0x0000
+#define STAGE4_PHYS_BASE   0x20000   /* Physical address 0x20000 (128KB) */
 #define STAGE4_MAX_SECTORS 64        /* 32KB max */
 
 static uint8_t load_kernel(uint8_t drive) {
     uint32_t remaining = KERNEL_MAX_SECTORS;
     uint32_t lba = KERNEL_LBA;
-    uint16_t segment = KERNEL_SEGMENT;
-    uint16_t offset = KERNEL_OFFSET;
-    uint32_t total_read = 0;
+    uint32_t dest = KERNEL_PHYS_BASE;
 
     while (remaining > 0) {
         uint32_t batch = remaining > 128 ? 128 : remaining;
-        if (!disk_read_sectors(drive, lba, batch, segment, offset))
+        if (!disk_read_sectors(drive, lba, batch, dest))
             return 0;
 
         uint32_t bytes = batch * 512;
-        uint32_t paragraphs = bytes / 16;
-        segment += paragraphs;
+        dest += bytes;
         lba += batch;
         remaining -= batch;
-        total_read += batch;
     }
 
     return 1;
@@ -619,15 +705,13 @@ static uint8_t load_kernel(uint8_t drive) {
 static uint8_t load_stage4(uint8_t drive) {
     uint32_t remaining = STAGE4_MAX_SECTORS;
     uint32_t lba = STAGE4_LBA;
-    uint16_t segment = STAGE4_SEGMENT;
-    uint16_t offset = STAGE4_OFFSET;
+    uint32_t dest = STAGE4_PHYS_BASE;
     while (remaining > 0) {
         uint32_t batch = remaining > 128 ? 128 : remaining;
-        if (!disk_read_sectors(drive, lba, batch, segment, offset))
+        if (!disk_read_sectors(drive, lba, batch, dest))
             return 0;
         uint32_t bytes = batch * 512;
-        uint32_t paragraphs = bytes / 16;
-        segment += paragraphs;
+        dest += bytes;
         lba += batch;
         remaining -= batch;
     }
@@ -669,7 +753,7 @@ static uint32_t snapshot_crc32(const uint8_t *data, uint32_t len) {
 
 /* Save kernel from 0x10000 to /boot/kernel.snap on disk */
 static int kernel_snapshot_save(uint8_t drive, uint8_t fat_width) {
-    uint8_t *kern = (uint8_t *)0x10000;
+    uint8_t *kern = (uint8_t *)0x200000;
     uint32_t kern_size = KERNEL_MAX_SECTORS * 512;
 
     /* Verify kernel has real content */
@@ -741,7 +825,7 @@ static int kernel_snapshot_restore(uint8_t *out_fat_width) {
     }
 
     /* Restore kernel image into 0x10000 */
-    uint8_t *kern = (uint8_t *)0x10000;
+    uint8_t *kern = (uint8_t *)0x200000;
     uint32_t loaded = 0;
     while (loaded < hdr.size) {
         uint32_t chunk = hdr.size - loaded;
@@ -787,6 +871,20 @@ static void serial_puts(const char *s) {
     while (*s) {
         if (*s == '\n') serial_putc('\r');
         serial_putc(*s++);
+    }
+}
+
+void s2_log(const char *s) { serial_puts(s); }
+
+static void serial_puthex(uint64_t val) {
+    const char hex[] = "0123456789ABCDEF";
+    int started = 0;
+    for (int i = 60; i >= 0; i -= 4) {
+        int d = (val >> i) & 0xF;
+        if (d || started || i == 0) {
+            serial_putc(hex[d]);
+            started = 1;
+        }
     }
 }
 
@@ -1031,6 +1129,9 @@ static void init_brainfs(void) {
 /* ======================================================================== */
 
 void stage2_entry(uint8_t boot_drive) {
+    zero_bss();
+    quiesce_interrupts();
+    enable_sse();
     uint8_t white = VGA_COLOR(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
     uint8_t cyan  = VGA_COLOR(VGA_COLOR_LIGHT_CYAN, VGA_COLOR_BLACK);
     uint8_t green = VGA_COLOR(VGA_COLOR_LIGHT_GREEN, VGA_COLOR_BLACK);
@@ -1043,6 +1144,7 @@ void stage2_entry(uint8_t boot_drive) {
     /* ---- Phase 0: VGA + Serial ---- */
     vga_text_init();
     serial_init();
+    serial_puts("[S2-ENTRY]\n");
 
     vga_text_puts("============================================\n", cyan);
     vga_text_puts("  Chicago-95 BrainFS Bootloader v1.4M\n", white);
@@ -1051,7 +1153,8 @@ void stage2_entry(uint8_t boot_drive) {
 
     serial_puts("\n[BOOT] Chicago-95 BrainFS Bootloader v1.4M\n");
     serial_puts("[BOOT] Stage 2 at 0x0600, boot_drive=");
-    serial_putc('0' + boot_drive);
+    serial_putc("0123456789ABCDEF"[(boot_drive >> 4) & 0x0F]);
+    serial_putc("0123456789ABCDEF"[boot_drive & 0x0F]);
     serial_puts("\n");
 
     /* ---- Phase 1: TSC calibration ---- */
@@ -1101,7 +1204,9 @@ void stage2_entry(uint8_t boot_drive) {
     }
 
     /* ---- Phase 4.5: Pre-initialization ---- */
+    serial_puts("[PHASE4.5] pre_init enter\n");
     pre_init();
+    serial_puts("[PHASE4.5] pre_init done\n");
 
     /* ---- Phase 5: Security modules (28 modules) ---- */
     init_security_modules();
@@ -1251,7 +1356,7 @@ void stage2_entry(uint8_t boot_drive) {
     vga_text_puts("Verifying boot integrity...\n", white);
     {
         uint32_t crc = 0;
-        uint8_t *kern = (uint8_t *)0x10000;
+        uint8_t *kern = (uint8_t *)0x200000;
         for (uint32_t i = 0; i < 65536; i++) {
             crc = crc ^ kern[i];
             for (int j = 0; j < 8; j++) crc = (crc >> 1) ^ (0xEDB88320 & -(crc & 1));
@@ -1415,7 +1520,7 @@ void stage2_entry(uint8_t boot_drive) {
             serial_puts("\n");
             while(1) asm volatile("hlt");
         }
-        vga_text_puts("  Kernel loaded at 0x10000 (", green);
+        vga_text_puts("  Kernel loaded at 0x200000 (", green);
         print_uint64(KERNEL_MAX_SECTORS * 512 / 1024, green);
         vga_text_puts(" KB)\n", green);
 

@@ -11,7 +11,7 @@ A from-scratch x86_64 bootloader with an integrated kernel, security suite, and 
 
 **Status:** BETA — Not for production use
 
-**Version:** 0.1.1-beta | **Lines:** ~1.4 million | **Target:** x86_64 ring-0 bare-metal
+**Version:** 0.1.2-Alpha | **Lines:** ~1.4 million | **Target:** x86_64 ring-0 bare-metal
 
 ## Build
 

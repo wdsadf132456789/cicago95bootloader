@@ -68,6 +68,9 @@ pm_entry:
     xor eax, eax
     mov al, [boot_drive_save]
     push eax
+    ; 16-byte-align the stack so C's SSE stack accesses (movaps/movdqa)
+    ; don't #GP.  After realignment ESP is 16-aligned at the call site.
+    and esp, -16
     call stage2_entry
     add esp, 4
 

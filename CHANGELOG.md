@@ -5,19 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.1.2-Alpha] - 2026-08-02
+
 ### Added
-- `exec` syscall now loads an ELF64 binary from the VFS into the calling
-  process's address space and redirects `sysret` into the new image (user
-  mode), replacing the previous always-fail stub.
-- Per-process current working directory: `chdir` validates the path resolves
-  to a directory and stores it; `getcwd` returns the stored path instead of
-  a hardcoded `/`.
+- Kernel shell memory-stream piping support (`|`) for chaining commands (e.g. `ps | grep R0`).
+- Built-in text processing & filtering commands in Ring-0 kernel shell: `grep`, `head`, `tail`, `wc`.
+- Full VFS file navigation and management commands: `pwd`, `cd`, `ls`, `cat`, `touch`, `mkdir`, `rm`, `write`, `echo`, `stat`.
+- Kernel console output redirection support (`>` and `>>`) to VFS files.
+- `uptime` kernel shell command displaying ticks, formatted uptime, and timer frequency.
 
 ### Changed
-- `read`/`write` syscalls now track a per-file-descriptor offset (via
-  `vfs_fd_offset`), advancing it on successful I/O; `write` honors `O_APPEND`.
-- File cache: a dirty entry is now written back to disk on LRU eviction in
-  `fcache_get` (previously only on `fcache_invalidate`/`fcache_flush`).
+- Prompts now show active working directory (`chicago-95:<cwd>> `).
+- Version bumped from `0.1.1-beta` to `0.1.2-Alpha` across README, kernel shell, and stage2 shell.
 
 ## [0.1.1-beta] - 2026-08-01
 

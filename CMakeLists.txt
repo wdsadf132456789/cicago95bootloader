@@ -205,6 +205,8 @@ add_custom_command(
     OUTPUT "${BIN_DIR}/stage2.bin"
     COMMAND ${LD} -m elf_i386 -Ttext 0x0600 --oformat binary -e stage2_entry
             ${STAGE2_OBJS} -o "${BIN_DIR}/stage2.bin"
+    COMMAND ${LD} -m elf_i386 -Ttext 0x0600 -e stage2_entry
+            ${STAGE2_OBJS} -o "${BIN_DIR}/stage2.elf"
     DEPENDS ${STAGE2_OBJS}
     COMMENT "LD  stage2.bin")
 

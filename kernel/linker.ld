@@ -1,13 +1,13 @@
 /**
  * Chicago-95 Kernel Linker Script
  * Linked at 0xFFFFFFFF80000000 (higher-half)
- * Physical load at 0x10000 via Stage 2, mapped by VMM: KERNEL_BASE -> phys 0
+ * Physical load at 0x200000 via Stage 2, mapped by VMM: KERNEL_BASE -> phys 0
  */
 
 ENTRY(_start)
 SECTIONS
 {
-    . = 0xFFFFFFFF80000000 + 0x10000;
+    . = 0xFFFFFFFF80000000 + 0x200000;
 
     .text : AT(ADDR(.text) - 0xFFFFFFFF80000000) {
         *(.text)

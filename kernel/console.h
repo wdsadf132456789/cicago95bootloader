@@ -36,5 +36,6 @@ int console_get_x(void);
 int console_get_y(void);
 void console_printf(const char *fmt, ...);
 void console_vprintf(const char *fmt, va_list args);
+void console_set_redirect(int (*hook)(char c));
 
 #endif

@@ -11,6 +11,8 @@ typedef struct {
 
 static preinit_state_t g_preinit;
 
+extern void s2_log(const char *s);
+
 static inline void pi_outl(uint16_t port, uint32_t val) {
     __asm__ volatile("outl %0, %1" : : "a"(val), "Nd"(port));
 }
@@ -348,7 +350,7 @@ int pre_init_boot_integrity(preinit_integrity_t *integrity) {
     integrity->stage2_crc32 = pre_init_crc32((const void *)(uintptr_t)0x0600, 128 * 1024);
     integrity->stage2_size  = 128 * 1024;
 
-    integrity->stage3_crc32 = pre_init_crc32((const void *)(uintptr_t)0x10000, 0x8000);
+    integrity->stage3_crc32 = pre_init_crc32((const void *)(uintptr_t)0x100000, 0x8000);
     integrity->stage3_size  = 0x8000;
 
     integrity->kernel_crc32 = 0;
@@ -483,30 +485,37 @@ int pre_init(void) {
     int result;
 
     result = pre_init_cpu_fingerprint(&g_preinit.cpu);
+    s2_log("[PRE-01] cpu\n");
     pre_init_vga_puts("[PRE-01] CPU fingerprint: ");
     pre_init_vga_puts(result == PREINIT_OK ? "OK\n" : "FAIL\n");
 
     result = pre_init_memory_fingerprint(&g_preinit.mem);
+    s2_log("[PRE-02] mem\n");
     pre_init_vga_puts("[PRE-02] Memory fingerprint: ");
     pre_init_vga_puts(result == PREINIT_OK ? "OK\n" : "FAIL\n");
 
     result = pre_init_rng_seed(&g_preinit.rng);
+    s2_log("[PRE-03] rng\n");
     pre_init_vga_puts("[PRE-03] RNG seed: ");
     pre_init_vga_puts(result == PREINIT_OK ? "OK\n" : "FAIL\n");
 
     result = pre_init_boot_integrity(&g_preinit.integrity);
+    s2_log("[PRE-04] integrity\n");
     pre_init_vga_puts("[PRE-04] Boot integrity: ");
     pre_init_vga_puts(result == PREINIT_OK ? "OK\n" : "FAIL\n");
 
     result = pre_init_anti_tamper(&g_preinit.tamper);
+    s2_log("[PRE-05] tamper\n");
     pre_init_vga_puts("[PRE-05] Anti-tamper: ");
     pre_init_vga_puts(result == PREINIT_OK ? "OK\n" : "FAIL\n");
 
     result = pre_init_dma_protect(&g_preinit.dma);
+    s2_log("[PRE-06] dma\n");
     pre_init_vga_puts("[PRE-06] DMA protection: ");
     pre_init_vga_puts(result == PREINIT_OK ? "OK\n" : "FAIL\n");
 
     result = pre_init_smi_counter(&g_preinit.smi);
+    s2_log("[PRE-07] smi\n");
     pre_init_vga_puts("[PRE-07] SMI counter: ");
     pre_init_vga_puts(result == PREINIT_OK ? "OK\n" : "FAIL\n");
 

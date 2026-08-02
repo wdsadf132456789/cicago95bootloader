@@ -16,7 +16,7 @@
 #define SHELL_MAX_CMD     256
 #define SHELL_MAX_ARGS    16
 #define SHELL_HISTORY_SLOTS 32
-#define SHELL_VERSION     "0.1.1"
+#define SHELL_VERSION     "0.1.2-Alpha"
 
 typedef struct {
     char     cmd[SHELL_MAX_CMD];

@@ -44,7 +44,11 @@ void stage3_entry(void) {
         splash_dash_item(10, "Kernel", "NOT FOUND", COL_ERR);
         __asm__ volatile("cli\n1: hlt\njmp 1b");
     }
-    splash_dash_item(10, "Kernel", "found at 0x10000", COL_OK);
+    if ((uint64_t)elf_base == 0x200000) {
+        splash_dash_item(10, "Kernel", "found at 0x200000", COL_OK);
+    } else {
+        splash_dash_item(10, "Kernel", "found in memory", COL_OK);
+    }
     elf64_ehdr_t *ehdr = (elf64_ehdr_t *)elf_base;
 
     splash_dash_item(11, "CRC32", "computing...", COL_WARN);

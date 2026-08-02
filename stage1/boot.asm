@@ -34,8 +34,9 @@ STAGE3_OFF         equ 0x1000          ; + offset -> physical 0x100000
 
 KERNEL_LBA         equ 0x1000
 KERNEL_SECTORS     equ 148
-KERNEL_SEG         equ 0x1000          ; segment base 0x10000
-KERNEL_OFF         equ 0x0000
+    KERNEL_SEG         equ 0x20000          ; segment base 0x200000
+    KERNEL_OFF         equ 0x0000
+
 
 STAGE2_SIGNATURE   equ 0x7A3B
 
@@ -132,7 +133,7 @@ relocated_start:
     call load_sectors
     jc .load_fail
 
-    ; Load kernel (LBA 0x1000, 148 sectors) to 0x10000.
+    ; Load kernel (LBA 0x1000, 148 sectors) to 0x200000.
     mov ax, KERNEL_SEG
     mov es, ax
     mov eax, KERNEL_LBA

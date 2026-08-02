@@ -32,7 +32,7 @@ int elf_load_segment(const elf64_phdr_t *phdr, const uint8_t *elf_base) {
 uint8_t *elf_find_in_memory(void) {
     cons_color("  Scanning for ELF...\n", COL_DEFAULT);
     uint8_t *bases[] = {
-        (uint8_t *)0x10000, (uint8_t *)0x100000,
+        (uint8_t *)0x200000, (uint8_t *)0x10000, (uint8_t *)0x100000,
         (uint8_t *)0x80000, (uint8_t *)0x20000
     };
     for (int i = 0; i < 4; i++) {

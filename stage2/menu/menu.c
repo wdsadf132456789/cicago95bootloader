@@ -186,6 +186,21 @@ static uint8_t menu_get_key(void) {
     return menu_inb(0x60);
 }
 
+static uint64_t menu_rdtsc(void) {
+    uint32_t lo, hi;
+    asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
+    return ((uint64_t)hi << 32) | lo;
+}
+
+/* ~55ms tick delay via TSC (replaces BIOS INT 15h AH=86h, which is
+ * unreachable from protected/long mode).  Assumes >=2GHz TSC fallback. */
+static void menu_tick_delay(void) {
+    uint64_t start = menu_rdtsc();
+    uint64_t ticks = 110000000ULL; /* ~55ms @ 2GHz */
+    while ((menu_rdtsc() - start) < ticks) {
+    }
+}
+
 /* ---- Menu entry point ---- */
 
 int boot_menu_show(uint8_t drive) {
@@ -236,10 +251,7 @@ int boot_menu_show(uint8_t drive) {
         }
 
         /* Tick delay (~18.2 Hz) */
-        asm volatile(
-            "push %%ax; mov $0x86, %%ah; int $0x15; pop %%ax"
-            : : : "memory"
-        );
+        menu_tick_delay();
 
         timeout_counter++;
         if (timeout_counter >= 18) { /* ~1 second */
