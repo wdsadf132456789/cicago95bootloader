@@ -12,7 +12,7 @@
 ; Loads the full chain in real mode, then hands off to stage2 at 0x0600:
 ;   stage2 (LBA 1,      1023 sectors) -> 0x0600..0x80400
 ;   stage3 (LBA 0x0400,   34 sectors) -> 0x100000..0x104400
-;   kernel (LBA 0x1000,  148 sectors) -> 0x10000..0x22800
+;   kernel (LBA 0x1000,  256 sectors) -> 0x200000..0x220000
 ;
 ; The stage2 region (0x0600..0x80400) covers the boot sector at 0x7C00, so the
 ; whole 512-byte loader is copied to the scratch area 0x9F00:0x0000 first and
@@ -33,7 +33,7 @@ STAGE3_SEG         equ 0xF000          ; segment base 0xF0000
 STAGE3_OFF         equ 0x1000          ; + offset -> physical 0x100000
 
 KERNEL_LBA         equ 0x1000
-KERNEL_SECTORS     equ 148
+KERNEL_SECTORS     equ 256
     KERNEL_SEG         equ 0x20000          ; segment base 0x200000
     KERNEL_OFF         equ 0x0000
 
@@ -133,7 +133,7 @@ relocated_start:
     call load_sectors
     jc .load_fail
 
-    ; Load kernel (LBA 0x1000, 148 sectors) to 0x200000.
+    ; Load kernel (LBA 0x1000, 256 sectors) to 0x200000.
     mov ax, KERNEL_SEG
     mov es, ax
     mov eax, KERNEL_LBA

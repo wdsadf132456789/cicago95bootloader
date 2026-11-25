@@ -14,7 +14,7 @@ BUILD = build
 
 C_SRCS = entry.c kernel.c gdt.c idt.c irq.c timer.c keyboard.c \
          console.c serial.c kmalloc.c process.c pci.c ata.c elf.c \
-         init.c shell.c libc.c syscall.c vfs.c device.c btop.c kmsg.c \
+         init.c init_system.c shell.c libc.c syscall.c vfs.c device.c btop.c kmsg.c \
          drivers/xhci.c drivers/nvme.c drivers/usb.c \
          drivers/e1000.c drivers/net.c
 

@@ -12,6 +12,7 @@
 #include "ata.h"
 #include "elf.h"
 #include "init.h"
+#include "init_system.h"
 #include "syscall.h"
 #include "vfs.h"
 #include "device.h"
@@ -128,6 +129,9 @@ void kernel_main(void) {
 
     fcache_init();
     kmsg_info("File cache initialized");
+
+    init_system_init();
+    kmsg_info("Init system initialized");
 
     irq_enable(0);
 
