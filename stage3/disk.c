@@ -50,14 +50,23 @@ int disk_ata_read(uint32_t lba, uint32_t count, void *buf) {
     return 1;
 }
 
-int disk_load_modules(module_dir_t *dir) {
+static void copy_module_name(char *dst, const char *src) {
+    uint32_t i;
+    for (i = 0; i < BOOT_MODULE_NAME_LEN - 1 && src[i]; i++)
+        dst[i] = src[i];
+    dst[i] = 0;
+}
+
+int disk_load_modules(module_dir_t *dir, boot_module_t *mods, uint32_t capacity) {
     cons_color("  Loading modules...\n", COL_DEFAULT);
     uint32_t loaded = 0;
-    uint32_t next_load = MODULE_LOAD_ADDR;
-    for (uint32_t i = 0; i < dir->count && i < 16; i++) {
+    uint64_t next_load = MODULE_LOAD_ADDR;
+
+    for (uint32_t i = 0; i < dir->count && i < 16 && loaded < capacity; i++) {
         uint32_t lba = dir->entries[i].lba;
         uint32_t sectors = dir->entries[i].sectors;
         if (lba == 0 || sectors == 0) continue;
+
         cons_color("    ", COL_DEFAULT);
         cons_color(dir->entries[i].name, COL_LABEL);
         cons_color(" [LBA ", COL_DEFAULT);
@@ -65,12 +74,22 @@ int disk_load_modules(module_dir_t *dir) {
         cons_color(" + ", COL_DEFAULT);
         cons_dec32(sectors);
         cons_color(" sectors]...", COL_DEFAULT);
-        dir->entries[i].load_addr = next_load;
-        if (disk_ata_read(lba, sectors, (void *)(uint64_t)next_load)) {
+
+        dir->entries[i].load_addr = (uint32_t)next_load;
+        if (disk_ata_read(lba, sectors, (void *)next_load)) {
+            boot_module_t *mod = &mods[loaded];
+            copy_module_name(mod->name, dir->entries[i].name);
+            mod->address = next_load;
+            mod->size = (uint64_t)sectors * 512ULL;
+            mod->entry = 0;
+            mod->flags = 0;
+            mod->reserved = 0;
+
             cons_color(" loaded at ", COL_OK);
-            cons_hex32(next_load);
+            cons_hex32((uint32_t)next_load);
             cons_puts("\n");
-            next_load += sectors * 512;
+
+            next_load += mod->size;
             loaded++;
         } else {
             cons_color(" FAILED\n", COL_ERR);

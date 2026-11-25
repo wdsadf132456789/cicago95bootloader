@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "boot/bootinfo.h"
 
 #define VGA_BUF    ((volatile uint16_t *)0xB8000)
 #define VGA_ROWS   25
@@ -16,29 +17,6 @@
 
 #define KBD_DATA    0x60
 #define KBD_STAT    0x64
-
-#define BOOT_INFO_ADDR 0x7000
-
-typedef struct {
-    uint64_t entry_point;
-    uint32_t kernel_crc;
-    uint32_t e820_count;
-    uint64_t e820_addr;
-    uint32_t module_count;
-    uint64_t module_list_addr;
-    uint64_t framebuffer_addr;
-    uint32_t framebuffer_width;
-    uint32_t framebuffer_height;
-    uint32_t framebuffer_bpp;
-    uint64_t rsdp_addr;
-    uint32_t lapic_count;
-    uint64_t lapic_addr;
-    uint32_t ioapic_count;
-    uint64_t ioapic_addr;
-    uint64_t boot_ticks;
-    uint8_t  measured_hash[32];
-    char     bootloader_id[16];
-} boot_info_t;
 
 static uint8_t crow = 0, ccol = 0;
 
@@ -136,7 +114,7 @@ void stage6_entry(void) {
     boot_info_t *bi = (boot_info_t *)BOOT_INFO_ADDR;
 
     ps("  System: ", COL_LABEL);
-    ps(bi->bootloader_id, COL_DEFAULT);
+    ps(bi->boot_loader, COL_DEFAULT);
     ps("\n", COL_DEFAULT);
     ps("  Type 'help' for commands.\n\n", COL_DIM);
 
@@ -172,7 +150,7 @@ void stage6_entry(void) {
             ps("\n  System Information:\n", COL_LABEL);
             ps("  Kernel entry: 0x", COL_DIM);
             { const char *h = "0123456789ABCDEF"; char b[17];
-              for (int j=0;j<16;j++) b[j]=h[(bi->entry_point>>(60-j*4))&0xF];
+              for (int j=0;j<16;j++) b[j]=h[(bi->kernel_entry>>(60-j*4))&0xF];
               b[16]=0; ps(b, COL_DEFAULT); }
             ps("\n", COL_DEFAULT);
             ps("  E820 entries: ", COL_DIM);
@@ -193,15 +171,17 @@ void stage6_entry(void) {
                 ps("  No modules loaded.\n", COL_WARN);
             } else {
                 ps("  Loaded modules:\n", COL_OK);
-                uint64_t *mod_list = (uint64_t *)(unsigned long)bi->module_list_addr;
-                for (uint32_t i = 0; i < bi->module_count; i++) {
+                boot_module_t *mod_list = (boot_module_t *)(unsigned long)bi->module_list;
+                for (uint32_t i = 0; i < bi->module_count && i < BOOT_MODULE_MAX; i++) {
                     ps("    [", COL_DIM);
                     { char b[12]; int j=11; b[j]=0; uint32_t v=i;
                       if(v==0) b[--j]='0'; else while(v>0){b[--j]='0'+(v%10);v/=10;}
                       ps(&b[j], COL_DIM); }
-                    ps("] 0x", COL_DIM);
+                    ps("] ", COL_DIM);
+                    ps(mod_list[i].name, COL_LABEL);
+                    ps(" @ 0x", COL_DIM);
                     { const char *h = "0123456789ABCDEF"; char b[17];
-                      for (int j=0;j<16;j++) b[j]=h[(mod_list[i]>>(60-j*4))&0xF];
+                      for (int j=0;j<16;j++) b[j]=h[(mod_list[i].address>>(60-j*4))&0xF];
                       b[16]=0; ps(b, COL_DEFAULT); }
                     ps("\n", COL_DEFAULT);
                 }
@@ -213,11 +193,11 @@ void stage6_entry(void) {
         if (seq(cmd, "boot") == 0) {
             ps("  Booting kernel at 0x", COL_OK);
             { const char *h = "0123456789ABCDEF"; char b[17];
-              for (int j=0;j<16;j++) b[j]=h[(bi->entry_point>>(60-j*4))&0xF];
+              for (int j=0;j<16;j++) b[j]=h[(bi->kernel_entry>>(60-j*4))&0xF];
               b[16]=0; ps(b, COL_OK); }
             ps("...\n\n", COL_OK);
 
-            void (*entry)(boot_info_t *) = (void (*)(boot_info_t *))bi->entry_point;
+            void (*entry)(boot_info_t *) = (void (*)(boot_info_t *))bi->kernel_entry;
             __asm__ volatile("mov $0x90000, %%rsp\n" : : : "memory");
             __asm__ volatile("xor %%rbp, %%rbp\n" : : : "rbp");
             entry(bi);

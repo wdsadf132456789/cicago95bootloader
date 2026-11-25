@@ -153,35 +153,27 @@ int vmm_init(void) {
         }
     }
 
-    uint64_t kernel_virt = KERNEL_BASE;
-    uint64_t kernel_phys = 0;
-    page_entry_t *kpdpt = vmm_get_pdpt(vmm_pml4, kernel_virt, 1);
+    /*
+     * Map the first 4 GiB into the high-half kernel region as 2 MiB pages.
+     * The kernel is linked at KERNEL_BASE + 0x200000, so mapping only the
+     * first 2 MiB would leave its entry point unmapped.
+     */
+    page_entry_t *kpdpt = vmm_get_pdpt(vmm_pml4, KERNEL_BASE, 1);
     if (!kpdpt) return -1;
-    uint32_t kpdpt_idx = (kernel_virt >> 39) & 0x1FF;
 
-    page_entry_t *kpd = (page_entry_t *)((uint64_t)kpdpt[kpdpt_idx].frame << PAGE_SHIFT);
-    if (!kpdpt[kpdpt_idx].present) {
-        kpd = vmm_alloc_table();
+    for (uint64_t phys = 0; phys < 0x100000000ULL; phys += 0x200000ULL) {
+        uint64_t virt = KERNEL_BASE + phys;
+        page_entry_t *kpd = vmm_get_pd(kpdpt, virt, 1);
         if (!kpd) return -1;
-        kpdpt[kpdpt_idx].present = 1;
-        kpdpt[kpdpt_idx].rw = 1;
-        pte_set_frame(&kpdpt[kpdpt_idx], (uint64_t)kpd);
-    }
 
-    uint32_t kpd_idx = (kernel_virt >> 30) & 0x1FF;
-    page_entry_t *kpt = vmm_alloc_table();
-    if (!kpt) return -1;
-    for (int i = 0; i < 512; i++) {
-        kpt[i].present = 1;
-        kpt[i].rw = 1;
-        kpt[i].user = 0;
-        kpt[i].global = 1;
-        pte_set_frame(&kpt[i], kernel_phys + (uint64_t)i * PAGE_SIZE);
+        uint32_t pd_idx = (virt >> 21) & 0x1FF;
+        kpd[pd_idx].present = 1;
+        kpd[pd_idx].rw = 1;
+        kpd[pd_idx].user = 0;
+        kpd[pd_idx].global = 1;
+        kpd[pd_idx].huge = 1;
+        pte_set_frame(&kpd[pd_idx], phys);
     }
-    kpd[kpd_idx].present = 1;
-    kpd[kpd_idx].rw = 1;
-    kpd[kpd_idx].huge = 0;
-    pte_set_frame(&kpd[kpd_idx], (uint64_t)kpt);
 
     vmm_flush_tlb();
     return 0;

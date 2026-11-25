@@ -75,10 +75,12 @@ void stage3_entry(void) {
 
     splash_dash_item(14, "Modules", "scanning disk...", COL_WARN);
     module_dir_t mod_dir;
+    boot_module_t boot_modules[BOOT_MODULE_MAX];
     uint32_t modules_loaded = 0;
     if (disk_ata_read(MODULE_DIR_LBA, 1, &mod_dir) &&
         mod_dir.magic == MODULE_DIR_MAGIC) {
-        modules_loaded = disk_load_modules(&mod_dir);
+        modules_loaded = disk_load_modules(&mod_dir, boot_modules,
+                                           BOOT_MODULE_MAX);
     }
     char mod_buf[12];
     format_dec(mod_buf, modules_loaded);
@@ -91,8 +93,8 @@ void stage3_entry(void) {
 
     splash_dash_item(16, "Boot Info", "building...", COL_WARN);
     boot_info_t *bih = (boot_info_t *)BOOT_INFO_ADDR;
-    bootinfo_build(bih, ehdr->e_entry, kernel_crc, modules_loaded,
-                   start_ticks, &acpi);
+    bootinfo_build(bih, ehdr->e_entry, kernel_crc, boot_modules,
+                   modules_loaded, start_ticks, &acpi);
     bootinfo_stamp_msr(kernel_crc, modules_loaded);
     splash_dash_item(16, "Boot Info", "0x7000", COL_OK);
 

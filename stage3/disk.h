@@ -2,9 +2,10 @@
 #define STAGE3_DISK_H
 
 #include <stdint.h>
+#include "boot/bootinfo.h"
 
 #define MODULE_DIR_LBA   0x5000
-#define MODULE_LOAD_ADDR 0x200000
+#define MODULE_LOAD_ADDR 0x400000ULL
 #define MODULE_DIR_MAGIC 0x4C444F4D
 
 typedef struct {
@@ -20,6 +21,6 @@ typedef struct {
 } __attribute__((packed)) module_dir_t;
 
 int  disk_ata_read(uint32_t lba, uint32_t count, void *buf);
-int  disk_load_modules(module_dir_t *dir);
+int  disk_load_modules(module_dir_t *dir, boot_module_t *mods, uint32_t capacity);
 
 #endif

@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "boot/bootinfo.h"
 
 #define VGA_BUF    ((volatile uint16_t *)0xB8000)
 #define VGA_ROWS   25
@@ -18,34 +19,12 @@
 #define KBD_DATA    0x60
 #define KBD_STAT    0x64
 
-#define BOOT_INFO_ADDR 0x7000
 #define PAGE_SIZE   8
 #define MIN_STAGE   5
 #define MAX_STAGE   100
 
 #define STAGE_BASE_ADDR  0x30000
 #define STAGE_ADDR_STEP  0x10000
-
-typedef struct {
-    uint64_t entry_point;
-    uint32_t kernel_crc;
-    uint32_t e820_count;
-    uint64_t e820_addr;
-    uint32_t module_count;
-    uint64_t module_list_addr;
-    uint64_t framebuffer_addr;
-    uint32_t framebuffer_width;
-    uint32_t framebuffer_height;
-    uint32_t framebuffer_bpp;
-    uint64_t rsdp_addr;
-    uint32_t lapic_count;
-    uint64_t lapic_addr;
-    uint32_t ioapic_count;
-    uint64_t ioapic_addr;
-    uint64_t boot_ticks;
-    uint8_t  measured_hash[32];
-    char     bootloader_id[16];
-} boot_info_t;
 
 static uint8_t crow = 0, ccol = 0;
 
@@ -156,8 +135,8 @@ static void show_system_info(boot_info_t *bi) {
     ps("   System Information\n", COL_HI);
     ps("========================================\n\n", COL_HDR);
 
-    ps("  Kernel entry:     0x", COL_LABEL); h64(bi->entry_point); ps("\n", COL_DEFAULT);
-    ps("  Bootloader ID:    ", COL_LABEL); ps(bi->bootloader_id, COL_DEFAULT); ps("\n", COL_DEFAULT);
+    ps("  Kernel entry:     0x", COL_LABEL); h64(bi->kernel_entry); ps("\n", COL_DEFAULT);
+    ps("  Bootloader ID:    ", COL_LABEL); ps(bi->boot_loader, COL_DEFAULT); ps("\n", COL_DEFAULT);
     ps("  E820 entries:     ", COL_LABEL); d32(bi->e820_count); ps("\n", COL_DEFAULT);
     ps("  Module count:     ", COL_LABEL); d32(bi->module_count); ps("\n", COL_DEFAULT);
     ps("  RSDP address:     0x", COL_LABEL); h64(bi->rsdp_addr); ps("\n", COL_DEFAULT);
@@ -246,7 +225,7 @@ void stage5_entry(void) {
                 }
             }
 
-            if (sc == 0x25) { ps("boot\n\n", COL_OK); ps("Jumping to kernel...\n", COL_OK); void (*entry)(boot_info_t *) = (void (*)(boot_info_t *))bi->entry_point; __asm__ volatile("mov $0x90000, %%rsp\n" : : : "memory"); __asm__ volatile("xor %%rbp, %%rbp\n" : : : "rbp"); entry(bi); __asm__ volatile("cli\n1: hlt\njmp 1b"); handled = 1; }
+            if (sc == 0x25) { ps("boot\n\n", COL_OK); ps("Jumping to kernel...\n", COL_OK); void (*entry)(boot_info_t *) = (void (*)(boot_info_t *))bi->kernel_entry; __asm__ volatile("mov $0x90000, %%rsp\n" : : : "memory"); __asm__ volatile("xor %%rbp, %%rbp\n" : : : "rbp"); entry(bi); __asm__ volatile("cli\n1: hlt\njmp 1b"); handled = 1; }
             if (sc == 0x17) { show_system_info(bi); handled = 1; }
             if (sc == 0x13) { ps("reboot\n\n", COL_WARN); __asm__ volatile("movw $0x1234, 0x472\noutb %%al, %%dx\n" : : "a"((uint8_t)0xFE), "d"((uint16_t)0x64) : "memory"); __asm__ volatile("1: hlt\njmp 1b"); handled = 1; }
             if (sc == 0x23) { ps("halt\n\n", COL_WARN); __asm__ volatile("cli\n1: hlt\njmp 1b"); handled = 1; }

@@ -4,9 +4,12 @@
  * Maintains small static registries of built-in kernel modules and services.
  * Modules are loaded during kernel_main(); services are launched as processes
  * by PID 1 once the process scheduler is running.
+ *
+ * Boot modules come from the shared boot_info_t ABI filled in by stage 3.
  */
 
 #include "init_system.h"
+#include "boot_info.h"
 #include "kernel.h"
 #include "kmsg.h"
 #include "device.h"
@@ -28,26 +31,46 @@ static uint32_t service_count = 0;
  * so a failed device setup is reported by the init system instead of being
  * silently ignored.
  */
-static int module_console(void) {
+static int module_console(uint64_t arg1, uint64_t arg2) {
+    (void)arg1;
+    (void)arg2;
     return device_find_by_name("console") ? 0 : -1;
 }
 
-static int module_serial(void) {
+static int module_serial(uint64_t arg1, uint64_t arg2) {
+    (void)arg1;
+    (void)arg2;
     return device_find_by_name("serial0") ? 0 : -1;
 }
 
-static int module_keyboard(void) {
+static int module_keyboard(uint64_t arg1, uint64_t arg2) {
+    (void)arg1;
+    (void)arg2;
     return device_find_by_name("keyboard") ? 0 : -1;
 }
 
-static int module_timer(void) {
+static int module_timer(uint64_t arg1, uint64_t arg2) {
+    (void)arg1;
+    (void)arg2;
     return device_find_by_name("timer") ? 0 : -1;
 }
 
-static int module_storage(void) {
+static int module_storage(uint64_t arg1, uint64_t arg2) {
+    (void)arg1;
+    (void)arg2;
     if (device_find_by_name("sda")) return 0;
     if (device_find_by_name("nvme0")) return 0;
     return -1;
+}
+
+/* ---- Boot modules ------------------------------------------------------- */
+
+static int module_boot(uint64_t address, uint64_t size) {
+    if (address == 0 || size == 0) return -1;
+
+    kmsg_info("init: boot module mapped at 0x%x (%u bytes)",
+              (uint64_t)address, (uint64_t)size);
+    return 0;
 }
 
 /* ---- Built-in services -------------------------------------------------- */
@@ -70,9 +93,13 @@ static void service_sysmon(void) {
 /* ---- Registry helpers --------------------------------------------------- */
 
 static void copy_name(char *dst, const char *src) {
-    size_t len = strlen(src);
-    if (len >= INIT_NAME_LEN) len = INIT_NAME_LEN - 1;
-    memcpy(dst, src, len);
+    uint32_t len = 0;
+    if (!src) {
+        dst[0] = '\0';
+        return;
+    }
+    while (src[len] && len < INIT_NAME_LEN - 1) len++;
+    for (uint32_t i = 0; i < len; i++) dst[i] = src[i];
     dst[len] = '\0';
 }
 
@@ -92,7 +119,9 @@ static init_service_t *find_service(const char *name) {
 
 /* ---- Registration API --------------------------------------------------- */
 
-int init_system_register_module(const char *name, init_module_fn load) {
+int init_system_register_module(const char *name, init_module_fn load,
+                                uint64_t arg1, uint64_t arg2,
+                                uint32_t origin) {
     if (!name || !load) return -1;
     if (module_count >= INIT_MAX_MODULES) return -1;
     if (find_module(name)) return -1;
@@ -100,6 +129,9 @@ int init_system_register_module(const char *name, init_module_fn load) {
     init_module_t *module = &modules[module_count++];
     copy_name(module->name, name);
     module->load = load;
+    module->arg1 = arg1;
+    module->arg2 = arg2;
+    module->origin = origin;
     module->loaded = 0;
     module->failed = 0;
     return 0;
@@ -127,7 +159,7 @@ int init_system_load_module(const char *name) {
     if (!module) return -1;
     if (module->loaded) return 0;
 
-    if (module->load() != 0) {
+    if (module->load(module->arg1, module->arg2) != 0) {
         module->failed = 1;
         kmsg_warn("init: module '%s' failed to load", module->name);
         return -1;
@@ -143,6 +175,36 @@ int init_system_load_modules(void) {
     int failures = 0;
     for (uint32_t i = 0; i < module_count; i++) {
         if (init_system_load_module(modules[i].name) != 0) failures++;
+    }
+    return failures ? -1 : 0;
+}
+
+int init_system_load_boot_modules(void) {
+    if (!kernel_boot_info_valid) return 0;
+    if (kernel_boot_info.magic != BOOT_INFO_MAGIC) return 0;
+
+    uint32_t count = kernel_boot_info.module_count;
+    if (count > BOOT_MODULE_MAX) count = BOOT_MODULE_MAX;
+
+    int failures = 0;
+    for (uint32_t i = 0; i < count; i++) {
+        boot_module_t *mod = &kernel_boot_info.modules[i];
+        if (mod->address == 0 || mod->size == 0) {
+            kmsg_warn("init: boot module %u has no image", (uint64_t)i);
+            failures++;
+            continue;
+        }
+
+        if (init_system_register_module(mod->name, module_boot,
+                                        mod->address, mod->size,
+                                        INIT_MODULE_BOOT) != 0) {
+            kmsg_warn("init: boot module '%s' could not be registered",
+                      mod->name);
+            failures++;
+            continue;
+        }
+
+        if (init_system_load_module(mod->name) != 0) failures++;
     }
     return failures ? -1 : 0;
 }
@@ -202,22 +264,42 @@ uint32_t init_system_running_service_count(void) {
 /* ---- Built-in registry setup -------------------------------------------- */
 
 void init_system_init(void) {
-    memset(modules, 0, sizeof(modules));
-    memset(services, 0, sizeof(services));
+    for (uint32_t i = 0; i < INIT_MAX_MODULES; i++) {
+        modules[i].name[0] = '\0';
+        modules[i].load = NULL;
+        modules[i].arg1 = 0;
+        modules[i].arg2 = 0;
+        modules[i].origin = 0;
+        modules[i].loaded = 0;
+        modules[i].failed = 0;
+    }
+    for (uint32_t i = 0; i < INIT_MAX_SERVICES; i++) {
+        services[i].name[0] = '\0';
+        services[i].entry = NULL;
+        services[i].flags = 0;
+        services[i].pid = -1;
+        services[i].started = 0;
+    }
     module_count = 0;
     service_count = 0;
 
-    init_system_register_module("console", module_console);
-    init_system_register_module("serial", module_serial);
-    init_system_register_module("keyboard", module_keyboard);
-    init_system_register_module("timer", module_timer);
-    init_system_register_module("storage", module_storage);
+    init_system_register_module("console", module_console, 0, 0,
+                                INIT_MODULE_BUILTIN);
+    init_system_register_module("serial", module_serial, 0, 0,
+                                INIT_MODULE_BUILTIN);
+    init_system_register_module("keyboard", module_keyboard, 0, 0,
+                                INIT_MODULE_BUILTIN);
+    init_system_register_module("timer", module_timer, 0, 0,
+                                INIT_MODULE_BUILTIN);
+    init_system_register_module("storage", module_storage, 0, 0,
+                                INIT_MODULE_BUILTIN);
 
     init_system_register_service("sysmon", INIT_SERVICE_AUTOSTART, service_sysmon);
     init_system_register_service("shell", INIT_SERVICE_AUTOSTART, service_shell);
     init_system_register_service("btop", 0, service_btop);
 
     init_system_load_modules();
+    init_system_load_boot_modules();
 
     kmsg_info("init system ready (%u modules loaded, %u services registered)",
               (uint64_t)init_system_loaded_module_count(),

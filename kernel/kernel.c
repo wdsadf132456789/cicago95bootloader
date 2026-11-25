@@ -17,6 +17,7 @@
 #include "vfs.h"
 #include "device.h"
 #include "kmsg.h"
+#include "boot_info.h"
 #include "drivers/e1000.h"
 #include "drivers/net.h"
 #include "drivers/xhci.h"
@@ -43,6 +44,15 @@ void kernel_main(void) {
 
     kmsg_info("Chicago-95 Kernel v1.0 booting");
     kmsg_info("Serial initialized");
+
+    if (kernel_boot_info_valid) {
+        kmsg_info("Boot info v%u: kernel 0x%x, %u boot module(s)",
+                  (uint64_t)kernel_boot_info.version,
+                  (uint64_t)kernel_boot_info.kernel_entry,
+                  (uint64_t)kernel_boot_info.module_count);
+    } else {
+        kmsg_warn("No valid boot info from bootloader");
+    }
 
     gdt_init();
     kmsg_info("GDT initialized");
