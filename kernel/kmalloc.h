@@ -9,6 +9,7 @@
 
 /* ---- Physical Page Manager ---- */
 void     pmm_init(void);
+void     pmm_reserve_region(uint64_t base, uint64_t length);
 void    *pmm_alloc_page(void);
 void    *pmm_alloc_pages(size_t count);
 void     pmm_free_page(void *addr);

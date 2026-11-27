@@ -102,6 +102,21 @@ void pmm_init(void) {
         if (bm_test(i)) pmm_used_pages++;
 }
 
+void pmm_reserve_region(uint64_t base, uint64_t length) {
+    if (length == 0) return;
+
+    uint64_t first = base / PAGE_SIZE;
+    uint64_t last = (base + length + PAGE_SIZE - 1) / PAGE_SIZE;
+    if (last > pmm_total_pages) last = pmm_total_pages;
+
+    for (uint64_t i = first; i < last; i++) {
+        if (!bm_test(i)) {
+            bm_set(i);
+            pmm_used_pages++;
+        }
+    }
+}
+
 void *pmm_alloc_page(void) {
     for (uint64_t i = 0; i < pmm_total_pages; i++) {
         if (!bm_test(i)) {

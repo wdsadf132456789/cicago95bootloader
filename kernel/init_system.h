@@ -54,6 +54,8 @@ int init_system_start_service(const char *name);
 int init_system_start_services(void);
 
 /* Introspection used by the boot log and shell commands. */
+const init_module_t *init_system_get_module(uint32_t index);
+const init_service_t *init_system_get_service(uint32_t index);
 uint32_t init_system_module_count(void);
 uint32_t init_system_service_count(void);
 uint32_t init_system_loaded_module_count(void);

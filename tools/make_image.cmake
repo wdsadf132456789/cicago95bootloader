@@ -1,21 +1,27 @@
 # Chicago-95 image assembly (invoked by CMake as `cmake -P`).
 #
 # Usage:
-#   cmake -DIMG_OUT=<path> -DSTAGE_BIN_DIR=<dir> -DKERNEL_BIN=<path> -P make_image.cmake
+#   cmake -DIMG_OUT=<path> -DSTAGE_BIN_DIR=<dir> -DKERNEL_BIN=<path>
+#         -DMODULE_DIR_BIN=<path> -DMODULE_PAYLOAD_DIR=<dir> -DMODULE_COUNT=<n>
+#         -P make_image.cmake
 #
 # Layout on disk (512-byte sectors):
 #   LBA 0x0000:      Stage1
 #   LBA 0x0001+:     Stage2
-#   LBA 0x0400:      Stage3
+#   LBA 0x0400:      Stage3 (64 sectors)
 #   LBA 0x0430:      Stage4
 #   LBA 0x0800-0x0DF0: Stages 5-100 (16 sectors each)
 #   LBA 0x1000:      Kernel
+#   LBA 0x5000:      Boot module directory (2 sectors)
+#   LBA 0x5100+:     Boot module payloads (16 sectors each)
 #   All remaining space padded to 1 GB.
 
-if(NOT DEFINED IMG_OUT OR NOT DEFINED STAGE_BIN_DIR OR NOT DEFINED KERNEL_BIN)
+if(NOT DEFINED IMG_OUT OR NOT DEFINED STAGE_BIN_DIR OR NOT DEFINED KERNEL_BIN
+   OR NOT DEFINED MODULE_DIR_BIN OR NOT DEFINED MODULE_PAYLOAD_DIR OR NOT DEFINED MODULE_COUNT)
     message(FATAL_ERROR
         "Usage: cmake -DIMG_OUT=<path> -DSTAGE_BIN_DIR=<dir> "
-        "-DKERNEL_BIN=<path> -P make_image.cmake")
+        "-DKERNEL_BIN=<path> -DMODULE_DIR_BIN=<path> "
+        "-DMODULE_PAYLOAD_DIR=<dir> -DMODULE_COUNT=<n> -P make_image.cmake")
 endif()
 
 set(IMG_SIZE 1073741824)   # 1 GB
@@ -94,6 +100,29 @@ if(EXISTS "${KERNEL_BIN}")
 else()
     message(WARNING "kernel.bin not found (kernel build skipped) -- image has no kernel")
 endif()
+
+# Boot module directory at LBA 0x5000 (20480), two sectors.
+execute_process(
+    COMMAND dd if=${MODULE_DIR_BIN} of=${IMG_OUT} bs=512 seek=20480
+            conv=notrunc
+    RESULT_VARIABLE _rc)
+if(NOT _rc EQUAL 0)
+    message(FATAL_ERROR "dd module directory failed: ${_rc}")
+endif()
+
+# Boot module payloads start at LBA 0x5100 (20736), 16 sectors apart.
+math(EXPR _module_last "${MODULE_COUNT} - 1")
+foreach(i RANGE ${_module_last})
+    math(EXPR lba "20736 + (${i} * 16)")
+    set(payload "${MODULE_PAYLOAD_DIR}/module_${i}.bin")
+    execute_process(
+        COMMAND dd if=${payload} of=${IMG_OUT} bs=512 seek=${lba}
+                conv=notrunc
+        RESULT_VARIABLE _rc)
+    if(NOT _rc EQUAL 0)
+        message(FATAL_ERROR "dd module payload ${i} failed: ${_rc}")
+    endif()
+endforeach()
 
 # Pad to exactly 1 GB.
 execute_process(

@@ -46,10 +46,19 @@ void kernel_main(void) {
     kmsg_info("Serial initialized");
 
     if (kernel_boot_info_valid) {
+        uint32_t module_count = kernel_boot_info.module_count;
+        if (module_count > BOOT_MODULE_MAX) module_count = BOOT_MODULE_MAX;
+
         kmsg_info("Boot info v%u: kernel 0x%x, %u boot module(s)",
                   (uint64_t)kernel_boot_info.version,
                   (uint64_t)kernel_boot_info.kernel_entry,
-                  (uint64_t)kernel_boot_info.module_count);
+                  (uint64_t)module_count);
+        for (uint32_t i = 0; i < module_count; i++) {
+            const boot_module_t *mod = &kernel_boot_info.modules[i];
+            kmsg_info("  boot module %u: '%s' @ 0x%x (%u bytes)",
+                      (uint64_t)i, mod->name, (uint64_t)mod->address,
+                      (uint64_t)mod->size);
+        }
     } else {
         kmsg_warn("No valid boot info from bootloader");
     }
@@ -71,6 +80,19 @@ void kernel_main(void) {
     kmsg_info("Keyboard initialized (PS/2, extended scancodes)");
 
     pmm_init();
+
+    /* Keep the kernel image, BSS, and boot modules out of the page allocator. */
+    pmm_reserve_region(0x200000, 0x660000 - 0x200000);
+    if (kernel_boot_info_valid) {
+        uint32_t module_count = kernel_boot_info.module_count;
+        if (module_count > BOOT_MODULE_MAX) module_count = BOOT_MODULE_MAX;
+        for (uint32_t i = 0; i < module_count; i++) {
+            const boot_module_t *mod = &kernel_boot_info.modules[i];
+            if (mod->address && mod->size)
+                pmm_reserve_region(mod->address, mod->size);
+        }
+    }
+
     uint64_t free = pmm_get_free_pages();
     uint64_t total = pmm_get_total_pages();
     kmsg_info("PMM: %u KB free / %u KB total", (free * 4096) / 1024, (total * 4096) / 1024);

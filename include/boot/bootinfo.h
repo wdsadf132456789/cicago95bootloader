@@ -20,6 +20,25 @@
 
 /* boot_module_t.flags */
 #define BOOT_MODULE_FLAG_EXECUTABLE 0x01U
+#define BOOT_MODULE_FLAG_DATA      0x02U
+
+/*
+ * Minimal on-disk/in-memory module image header.  tools/gen_modules.py emits
+ * one of these at the start of every module payload; stage 3 validates it and
+ * copies flags/entry into boot_module_t, and the kernel init system validates
+ * it again before accepting the module.
+ */
+#define MODULE_IMAGE_MAGIC   0x31444F4DU  /* "MOD1" */
+#define MODULE_IMAGE_VERSION 1U
+
+typedef struct {
+    uint32_t magic;
+    uint32_t version;
+    char     name[BOOT_MODULE_NAME_LEN];
+    uint64_t entry;
+    uint32_t flags;
+    uint32_t reserved;
+} __attribute__((packed)) module_image_header_t;
 
 /*
  * A boot module descriptor. Stage 3 fills one per module it loads from the
@@ -70,5 +89,9 @@ typedef struct {
     uint32_t ioapic_count;
     uint8_t  _pad[4];
 } __attribute__((packed)) boot_info_t;
+
+_Static_assert(sizeof(boot_module_t) == 64, "boot_module_t ABI changed");
+_Static_assert(sizeof(module_image_header_t) == 56, "module image header ABI changed");
+_Static_assert(sizeof(boot_info_t) == 1184, "boot_info_t ABI changed");
 
 #endif

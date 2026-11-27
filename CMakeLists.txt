@@ -10,6 +10,8 @@ find_program(PYTHON3 python3 REQUIRED)
 
 set(BIN_DIR "${CMAKE_BINARY_DIR}/bin")
 set(OBJ_DIR "${CMAKE_BINARY_DIR}/obj")
+set(MODULE_GEN_DIR "${CMAKE_BINARY_DIR}/gen/modules")
+set(MODULE_COUNT 3)
 set(IMG_OUT "${CMAKE_BINARY_DIR}/chicago95.bin")
 set(SRC "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -253,7 +255,21 @@ foreach(_n RANGE 9 100)
     list(APPEND EXTRA_BINS "${BIN_DIR}/stage${_n}.bin")
 endforeach()
 
-set(IMG_DEPS "${BIN_DIR}/stage1.bin" "${BIN_DIR}/stage2.bin" "${BIN_DIR}/stage3.bin" ${EXTRA_BINS})
+set(MODULE_DIR_BIN "${MODULE_GEN_DIR}/module_dir.bin")
+set(MODULE_PAYLOADS)
+math(EXPR _module_last "${MODULE_COUNT} - 1")
+foreach(_i RANGE ${_module_last})
+    list(APPEND MODULE_PAYLOADS "${MODULE_GEN_DIR}/module_${_i}.bin")
+endforeach()
+
+add_custom_command(
+    OUTPUT "${MODULE_DIR_BIN}" ${MODULE_PAYLOADS}
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${MODULE_GEN_DIR}"
+    COMMAND ${PYTHON3} "${SRC}/tools/gen_modules.py" --output-dir "${MODULE_GEN_DIR}"
+    DEPENDS "${SRC}/tools/gen_modules.py" "${SRC}/include/boot/bootinfo.h"
+)
+
+set(IMG_DEPS "${BIN_DIR}/stage1.bin" "${BIN_DIR}/stage2.bin" "${BIN_DIR}/stage3.bin" ${EXTRA_BINS} "${MODULE_DIR_BIN}" ${MODULE_PAYLOADS})
 set(KERNEL_BIN "${SRC}/kernel/build/kernel.bin")
 set(KERNEL_ARG "-DKERNEL_BIN=${KERNEL_BIN}")
 if(BUILD_KERNEL)
@@ -267,7 +283,9 @@ endif()
 
 add_custom_command(
     OUTPUT "${IMG_OUT}"
-    COMMAND ${CMAKE_COMMAND} -DIMG_OUT="${IMG_OUT}" -DSTAGE_BIN_DIR="${BIN_DIR}" ${KERNEL_ARG} -P "${SRC}/tools/make_image.cmake"
+    COMMAND ${CMAKE_COMMAND} -DIMG_OUT="${IMG_OUT}" -DSTAGE_BIN_DIR="${BIN_DIR}" ${KERNEL_ARG}
+            -DMODULE_DIR_BIN="${MODULE_DIR_BIN}" -DMODULE_PAYLOAD_DIR="${MODULE_GEN_DIR}" -DMODULE_COUNT=${MODULE_COUNT}
+            -P "${SRC}/tools/make_image.cmake"
     DEPENDS ${IMG_DEPS}
 )
 add_custom_target(chicago95 ALL DEPENDS "${IMG_OUT}")

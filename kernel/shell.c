@@ -9,6 +9,8 @@
 #include "ata.h"
 #include "btop.h"
 #include "kmsg.h"
+#include "boot_info.h"
+#include "init_system.h"
 #include "drivers/e1000.h"
 #include "drivers/net.h"
 #include "drivers/usb.h"
@@ -192,6 +194,9 @@ static void cmd_head(const char *args, const char *pipe_in);
 static void cmd_tail(const char *args, const char *pipe_in);
 static void cmd_wc(const char *args, const char *pipe_in);
 static void cmd_uptime(void);
+static void cmd_modules(void);
+static void cmd_services(void);
+static void cmd_init(void);
 
 static void print_prompt(void) {
     console_puts("chicago-95", CONSOLE_LIGHT_GREEN | (CONSOLE_BLACK << 4));
@@ -216,6 +221,9 @@ static void cmd_help(void) {
     console_puts("  ping <ip>      Ping a host\n", CONSOLE_LIGHT_GREY | (CONSOLE_BLACK << 4));
     console_puts("  btop           System monitor\n", CONSOLE_LIGHT_GREY | (CONSOLE_BLACK << 4));
     console_puts("  dmesg          Kernel log buffer\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
+    console_puts("  init           Init system summary\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
+    console_puts("  modules        List init modules\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
+    console_puts("  services       List init services\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
     console_puts("  neofetch       System info display\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
     console_puts("  hyfetch        System info with pride flag colors\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
     console_puts("  pwd            Print working directory\n", CONSOLE_LIGHT_GREEN | (CONSOLE_BLACK << 4));
@@ -945,6 +953,64 @@ static void cmd_dmesg(void) {
     }
 }
 
+static void cmd_modules(void) {
+    uint32_t count = init_system_module_count();
+    console_printf("Modules (%u total, %u loaded):\n",
+                   (unsigned long)count,
+                   (unsigned long)init_system_loaded_module_count());
+
+    for (uint32_t i = 0; i < count; i++) {
+        const init_module_t *module = init_system_get_module(i);
+        if (!module) continue;
+
+        const char *state = module->failed ? "FAILED" :
+                            (module->loaded ? "loaded" : "pending");
+        const char *origin = module->origin == INIT_MODULE_BOOT ? "boot" : "builtin";
+        console_printf("  [%u] %s - %s (%s)\n",
+                       (unsigned long)i, module->name, state, origin);
+    }
+}
+
+static void cmd_services(void) {
+    uint32_t count = init_system_service_count();
+    console_printf("Services (%u total, %u running):\n",
+                   (unsigned long)count,
+                   (unsigned long)init_system_running_service_count());
+
+    for (uint32_t i = 0; i < count; i++) {
+        const init_service_t *service = init_system_get_service(i);
+        if (!service) continue;
+
+        const char *mode = service->flags & INIT_SERVICE_AUTOSTART ?
+                           "autostart" : "manual";
+        if (service->started) {
+            console_printf("  [%u] %s - PID %d (%s)\n",
+                           (unsigned long)i, service->name, service->pid, mode);
+        } else {
+            console_printf("  [%u] %s - stopped (%s)\n",
+                           (unsigned long)i, service->name, mode);
+        }
+    }
+}
+
+static void cmd_init(void) {
+    console_printf("Init system: %u modules (%u loaded), %u services (%u running)\n",
+                   (unsigned long)init_system_module_count(),
+                   (unsigned long)init_system_loaded_module_count(),
+                   (unsigned long)init_system_service_count(),
+                   (unsigned long)init_system_running_service_count());
+
+    if (!kernel_boot_info_valid) {
+        console_puts("Boot info: unavailable\n", CONSOLE_YELLOW | (CONSOLE_BLACK << 4));
+        return;
+    }
+
+    console_printf("Boot info: v%u, %u boot module(s), loader '%s'\n",
+                   (unsigned long)kernel_boot_info.version,
+                   (unsigned long)kernel_boot_info.module_count,
+                   kernel_boot_info.boot_loader);
+}
+
 static void fmt_disk(uint64_t bytes) {
     if (bytes >= (1ULL << 30))
         console_printf("%u.%u GiB", (uint32_t)(bytes >> 30), (uint32_t)(((bytes >> 20) & 1023) * 10 / 1024));
@@ -1164,6 +1230,9 @@ static int dispatch_single_cmd(const char *cmd, const char *pipe_in) {
     else if (strncmp(cmd, "ping ", 5) == 0) cmd_ping(cmd + 5);
     else if (strcmp(cmd, "btop") == 0) cmd_btop();
     else if (strcmp(cmd, "dmesg") == 0) cmd_dmesg();
+    else if (strcmp(cmd, "init") == 0) cmd_init();
+    else if (strcmp(cmd, "modules") == 0) cmd_modules();
+    else if (strcmp(cmd, "services") == 0) cmd_services();
     else if (strcmp(cmd, "neofetch") == 0) cmd_neofetch();
     else if (strcmp(cmd, "hyfetch") == 0) cmd_hyfetch();
     else if (strcmp(cmd, "pwd") == 0) cmd_pwd();

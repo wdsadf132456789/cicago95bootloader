@@ -5,7 +5,7 @@
 #include "boot/bootinfo.h"
 
 #define MODULE_DIR_LBA   0x5000
-#define MODULE_LOAD_ADDR 0x400000ULL
+#define MODULE_LOAD_ADDR 0x700000ULL
 #define MODULE_DIR_MAGIC 0x4C444F4D
 
 typedef struct {

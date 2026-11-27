@@ -66,10 +66,27 @@ static int module_storage(uint64_t arg1, uint64_t arg2) {
 /* ---- Boot modules ------------------------------------------------------- */
 
 static int module_boot(uint64_t address, uint64_t size) {
-    if (address == 0 || size == 0) return -1;
+    if (address == 0 || size < sizeof(module_image_header_t)) {
+        kmsg_warn("init: boot module image is too small");
+        return -1;
+    }
 
-    kmsg_info("init: boot module mapped at 0x%x (%u bytes)",
-              (uint64_t)address, (uint64_t)size);
+    const module_image_header_t *hdr =
+        (const module_image_header_t *)(unsigned long)address;
+    if (hdr->magic != MODULE_IMAGE_MAGIC) {
+        kmsg_warn("init: boot module at 0x%x has no MOD1 header",
+                  (uint64_t)address);
+        return -1;
+    }
+    if (hdr->version != MODULE_IMAGE_VERSION) {
+        kmsg_warn("init: boot module '%s' has unsupported version %u",
+                  hdr->name, (uint64_t)hdr->version);
+        return -1;
+    }
+
+    kmsg_info("init: module '%s' image @ 0x%x (%u bytes, flags 0x%x)",
+              hdr->name, (uint64_t)address, (uint64_t)size,
+              (uint64_t)hdr->flags);
     return 0;
 }
 
@@ -237,6 +254,16 @@ int init_system_start_services(void) {
 
 /* ---- Introspection ------------------------------------------------------ */
 
+const init_module_t *init_system_get_module(uint32_t index) {
+    if (index >= module_count) return NULL;
+    return &modules[index];
+}
+
+const init_service_t *init_system_get_service(uint32_t index) {
+    if (index >= service_count) return NULL;
+    return &services[index];
+}
+
 uint32_t init_system_module_count(void) {
     return module_count;
 }
@@ -304,4 +331,18 @@ void init_system_init(void) {
     kmsg_info("init system ready (%u modules loaded, %u services registered)",
               (uint64_t)init_system_loaded_module_count(),
               (uint64_t)service_count);
+
+    for (uint32_t i = 0; i < module_count; i++) {
+        const init_module_t *module = &modules[i];
+        kmsg_info("init module[%u]: %s (%s, %s)",
+                  (uint64_t)i, module->name,
+                  module->origin == INIT_MODULE_BOOT ? "boot" : "builtin",
+                  module->failed ? "failed" : (module->loaded ? "loaded" : "pending"));
+    }
+    for (uint32_t i = 0; i < service_count; i++) {
+        const init_service_t *service = &services[i];
+        kmsg_info("init service[%u]: %s (%s)",
+                  (uint64_t)i, service->name,
+                  service->flags & INIT_SERVICE_AUTOSTART ? "autostart" : "manual");
+    }
 }

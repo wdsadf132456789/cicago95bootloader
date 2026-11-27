@@ -76,14 +76,26 @@ int disk_load_modules(module_dir_t *dir, boot_module_t *mods, uint32_t capacity)
         cons_color(" sectors]...", COL_DEFAULT);
 
         dir->entries[i].load_addr = (uint32_t)next_load;
-        if (disk_ata_read(lba, sectors, (void *)next_load)) {
+        if (disk_ata_read(lba, sectors, (void *)(unsigned long)next_load)) {
             boot_module_t *mod = &mods[loaded];
-            copy_module_name(mod->name, dir->entries[i].name);
+            uint64_t size = (uint64_t)sectors * 512ULL;
+            const module_image_header_t *hdr =
+                (const module_image_header_t *)(unsigned long)next_load;
+
             mod->address = next_load;
-            mod->size = (uint64_t)sectors * 512ULL;
+            mod->size = size;
             mod->entry = 0;
             mod->flags = 0;
             mod->reserved = 0;
+
+            if (size >= sizeof(*hdr) && hdr->magic == MODULE_IMAGE_MAGIC &&
+                hdr->version == MODULE_IMAGE_VERSION) {
+                copy_module_name(mod->name, hdr->name);
+                mod->entry = hdr->entry;
+                mod->flags = hdr->flags;
+            } else {
+                copy_module_name(mod->name, dir->entries[i].name);
+            }
 
             cons_color(" loaded at ", COL_OK);
             cons_hex32((uint32_t)next_load);
