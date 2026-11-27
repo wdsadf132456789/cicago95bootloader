@@ -11,6 +11,8 @@
 #include "process.h"
 #include "keyboard.h"
 #include "ata.h"
+#include "boot_info.h"
+#include "init_system.h"
 #include <stdint.h>
 
 /* ---- Global state ---- */
@@ -421,6 +423,201 @@ static ssize_t proc_self_read(vfs_node_t *n, uint64_t off, void *buf, size_t len
     return (ssize_t)copy;
 }
 
+#define PROC_TEXT_MAX 4096
+
+static int proc_append(char *dst, int pos, const char *src) {
+    while (*src && pos < PROC_TEXT_MAX - 1) dst[pos++] = *src++;
+    dst[pos] = '\0';
+    return pos;
+}
+
+static int proc_append_u64(char *dst, int pos, uint64_t value) {
+    char tmp[21];
+    int n = 0;
+    if (value == 0) {
+        tmp[n++] = '0';
+    } else {
+        while (value && n < 20) {
+            tmp[n++] = '0' + (value % 10);
+            value /= 10;
+        }
+    }
+
+    char rev[21];
+    for (int i = 0; i < n; i++) rev[i] = tmp[n - 1 - i];
+    rev[n] = '\0';
+    return proc_append(dst, pos, rev);
+}
+
+static int proc_append_i64(char *dst, int pos, int64_t value) {
+    if (value < 0) {
+        pos = proc_append(dst, pos, "-");
+        value = -value;
+    }
+    return proc_append_u64(dst, pos, (uint64_t)value);
+}
+
+static int proc_append_hex64(char *dst, int pos, uint64_t value) {
+    static const char hex[] = "0123456789ABCDEF";
+    char tmp[19];
+    tmp[0] = '0';
+    tmp[1] = 'x';
+    for (int i = 0; i < 16; i++)
+        tmp[2 + i] = hex[(value >> (60 - i * 4)) & 0xF];
+    tmp[18] = '\0';
+    return proc_append(dst, pos, tmp);
+}
+
+static ssize_t proc_text_finish(char *tmp, int pos, uint64_t off, void *buf, size_t len) {
+    uint64_t total = (uint64_t)pos;
+    if (off >= total) return 0;
+    size_t start = (size_t)off;
+    size_t avail = (size_t)total - start;
+    size_t copy = (len < avail) ? len : avail;
+    memcpy(buf, tmp + start, copy);
+    return (ssize_t)copy;
+}
+
+static ssize_t proc_init_read(vfs_node_t *n, uint64_t off, void *buf, size_t len) {
+    (void)n;
+    char tmp[PROC_TEXT_MAX];
+    int pos = 0;
+    uint32_t failed = 0;
+
+    for (uint32_t i = 0; i < init_system_module_count(); i++) {
+        const init_module_t *module = init_system_get_module(i);
+        if (module && module->failed) failed++;
+    }
+
+    pos = proc_append(tmp, pos, "init: ready\n");
+    pos = proc_append(tmp, pos, "modules: total=");
+    pos = proc_append_u64(tmp, pos, init_system_module_count());
+    pos = proc_append(tmp, pos, " loaded=");
+    pos = proc_append_u64(tmp, pos, init_system_loaded_module_count());
+    pos = proc_append(tmp, pos, " failed=");
+    pos = proc_append_u64(tmp, pos, failed);
+    pos = proc_append(tmp, pos, "\nservices: total=");
+    pos = proc_append_u64(tmp, pos, init_system_service_count());
+    pos = proc_append(tmp, pos, " running=");
+    pos = proc_append_u64(tmp, pos, init_system_running_service_count());
+    pos = proc_append(tmp, pos, "\n");
+
+    return proc_text_finish(tmp, pos, off, buf, len);
+}
+
+static ssize_t proc_init_modules_read(vfs_node_t *n, uint64_t off, void *buf, size_t len) {
+    (void)n;
+    char tmp[PROC_TEXT_MAX];
+    int pos = 0;
+
+    for (uint32_t i = 0; i < init_system_module_count(); i++) {
+        const init_module_t *module = init_system_get_module(i);
+        if (!module) continue;
+
+        pos = proc_append(tmp, pos, "[");
+        pos = proc_append_u64(tmp, pos, i);
+        pos = proc_append(tmp, pos, "] ");
+        pos = proc_append(tmp, pos, module->name);
+        pos = proc_append(tmp, pos, " state=");
+        pos = proc_append(tmp, pos, module->failed ? "failed" :
+                          (module->loaded ? "loaded" : "pending"));
+        pos = proc_append(tmp, pos, " origin=");
+        pos = proc_append(tmp, pos, module->origin == INIT_MODULE_BOOT ? "boot" : "builtin");
+        if (module->origin == INIT_MODULE_BOOT) {
+            pos = proc_append(tmp, pos, " address=");
+            pos = proc_append_hex64(tmp, pos, module->arg1);
+            pos = proc_append(tmp, pos, " size=");
+            pos = proc_append_u64(tmp, pos, module->arg2);
+        }
+        pos = proc_append(tmp, pos, "\n");
+    }
+
+    return proc_text_finish(tmp, pos, off, buf, len);
+}
+
+static ssize_t proc_init_services_read(vfs_node_t *n, uint64_t off, void *buf, size_t len) {
+    (void)n;
+    char tmp[PROC_TEXT_MAX];
+    int pos = 0;
+
+    for (uint32_t i = 0; i < init_system_service_count(); i++) {
+        const init_service_t *service = init_system_get_service(i);
+        if (!service) continue;
+
+        pos = proc_append(tmp, pos, "[");
+        pos = proc_append_u64(tmp, pos, i);
+        pos = proc_append(tmp, pos, "] ");
+        pos = proc_append(tmp, pos, service->name);
+        pos = proc_append(tmp, pos, " pid=");
+        if (service->started)
+            pos = proc_append_i64(tmp, pos, service->pid);
+        else
+            pos = proc_append(tmp, pos, "-1");
+        pos = proc_append(tmp, pos, " mode=");
+        pos = proc_append(tmp, pos, service->flags & INIT_SERVICE_AUTOSTART ?
+                          "autostart" : "manual");
+        pos = proc_append(tmp, pos, "\n");
+    }
+
+    return proc_text_finish(tmp, pos, off, buf, len);
+}
+
+static ssize_t proc_bootinfo_read(vfs_node_t *n, uint64_t off, void *buf, size_t len) {
+    (void)n;
+    char tmp[PROC_TEXT_MAX];
+    int pos = 0;
+
+    if (!kernel_boot_info_valid) {
+        pos = proc_append(tmp, pos, "bootinfo: invalid\n");
+        return proc_text_finish(tmp, pos, off, buf, len);
+    }
+
+    pos = proc_append(tmp, pos, "version=");
+    pos = proc_append_u64(tmp, pos, kernel_boot_info.version);
+    pos = proc_append(tmp, pos, " flags=");
+    pos = proc_append_hex64(tmp, pos, kernel_boot_info.flags);
+    pos = proc_append(tmp, pos, " kernel_entry=");
+    pos = proc_append_hex64(tmp, pos, kernel_boot_info.kernel_entry);
+    pos = proc_append(tmp, pos, "\nloader=");
+    pos = proc_append(tmp, pos, kernel_boot_info.boot_loader);
+    pos = proc_append(tmp, pos, "\nmodules=");
+    pos = proc_append_u64(tmp, pos, kernel_boot_info.module_count);
+    pos = proc_append(tmp, pos, "\n");
+
+    uint32_t count = kernel_boot_info.module_count;
+    if (count > BOOT_MODULE_MAX) count = BOOT_MODULE_MAX;
+    for (uint32_t i = 0; i < count; i++) {
+        const boot_module_t *mod = &kernel_boot_info.modules[i];
+        pos = proc_append(tmp, pos, "[");
+        pos = proc_append_u64(tmp, pos, i);
+        pos = proc_append(tmp, pos, "] ");
+        pos = proc_append(tmp, pos, mod->name);
+        pos = proc_append(tmp, pos, " address=");
+        pos = proc_append_hex64(tmp, pos, mod->address);
+        pos = proc_append(tmp, pos, " size=");
+        pos = proc_append_u64(tmp, pos, mod->size);
+        pos = proc_append(tmp, pos, " flags=");
+        pos = proc_append_hex64(tmp, pos, mod->flags);
+        pos = proc_append(tmp, pos, "\n");
+    }
+
+    return proc_text_finish(tmp, pos, off, buf, len);
+}
+
+static void proc_add_file(vfs_node_t *root, const char *name,
+                          ssize_t (*reader)(vfs_node_t *, uint64_t, void *, size_t)) {
+    vfs_node_t *node = vfs_new_node(name, VFS_FILE, &dev_ops);
+    if (!node) return;
+
+    vfs_ops_t *ops = (vfs_ops_t *)kmalloc(sizeof(vfs_ops_t));
+    if (ops) {
+        memcpy(ops, &dev_ops, sizeof(vfs_ops_t));
+        ops->read = reader;
+        node->ops = ops;
+    }
+    vfs_attach_child(root, node);
+}
+
 void procfs_init(void) {
     vfs_node_t *proc_root = vfs_new_node("proc", VFS_DIR, &dev_ops);
     if (!proc_root) return;
@@ -448,6 +645,12 @@ void procfs_init(void) {
     self_ops->read = proc_self_read;
     self->ops = self_ops;
     vfs_attach_child(proc_root, self);
+
+    /* /proc/init and init system state */
+    proc_add_file(proc_root, "init", proc_init_read);
+    proc_add_file(proc_root, "initmodules", proc_init_modules_read);
+    proc_add_file(proc_root, "initservices", proc_init_services_read);
+    proc_add_file(proc_root, "bootinfo", proc_bootinfo_read);
 
     /* Attach to root */
     proc_root->parent = vfs_root;

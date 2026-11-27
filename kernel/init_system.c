@@ -87,6 +87,22 @@ static int module_boot(uint64_t address, uint64_t size) {
     kmsg_info("init: module '%s' image @ 0x%x (%u bytes, flags 0x%x)",
               hdr->name, (uint64_t)address, (uint64_t)size,
               (uint64_t)hdr->flags);
+
+    if (hdr->flags & BOOT_MODULE_FLAG_DATA) {
+        const char *bytes = (const char *)(unsigned long)address;
+        uint64_t pos = sizeof(*hdr);
+        char text[97];
+        uint32_t out = 0;
+
+        while (pos < size && bytes[pos] == '\0') pos++;
+        while (pos < size && out < sizeof(text) - 1 &&
+               bytes[pos] && bytes[pos] != '\n') {
+            text[out++] = bytes[pos++];
+        }
+        text[out] = '\0';
+        if (out) kmsg_info("init: module '%s' says: %s", hdr->name, text);
+    }
+
     return 0;
 }
 

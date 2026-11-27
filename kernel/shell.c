@@ -196,6 +196,7 @@ static void cmd_wc(const char *args, const char *pipe_in);
 static void cmd_uptime(void);
 static void cmd_modules(void);
 static void cmd_services(void);
+static void cmd_service(const char *args);
 static void cmd_init(void);
 
 static void print_prompt(void) {
@@ -224,6 +225,7 @@ static void cmd_help(void) {
     console_puts("  init           Init system summary\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
     console_puts("  modules        List init modules\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
     console_puts("  services       List init services\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
+    console_puts("  service <name> Start an init service\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
     console_puts("  neofetch       System info display\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
     console_puts("  hyfetch        System info with pride flag colors\n", CONSOLE_LIGHT_CYAN | (CONSOLE_BLACK << 4));
     console_puts("  pwd            Print working directory\n", CONSOLE_LIGHT_GREEN | (CONSOLE_BLACK << 4));
@@ -993,6 +995,31 @@ static void cmd_services(void) {
     }
 }
 
+static void cmd_service(const char *args) {
+    while (*args == ' ') args++;
+    if (*args == '\0') {
+        cmd_services();
+        return;
+    }
+
+    char name[INIT_NAME_LEN];
+    uint32_t len = 0;
+    while (args[len] && args[len] != ' ' && len < sizeof(name) - 1) {
+        name[len] = args[len];
+        len++;
+    }
+    name[len] = '\0';
+
+    int pid = init_system_start_service(name);
+    if (pid < 0) {
+        console_puts("service: unknown service or start failed\n",
+                     CONSOLE_RED | (CONSOLE_BLACK << 4));
+        return;
+    }
+
+    console_printf("service '%s' running with PID %d\n", name, pid);
+}
+
 static void cmd_init(void) {
     console_printf("Init system: %u modules (%u loaded), %u services (%u running)\n",
                    (unsigned long)init_system_module_count(),
@@ -1233,6 +1260,8 @@ static int dispatch_single_cmd(const char *cmd, const char *pipe_in) {
     else if (strcmp(cmd, "init") == 0) cmd_init();
     else if (strcmp(cmd, "modules") == 0) cmd_modules();
     else if (strcmp(cmd, "services") == 0) cmd_services();
+    else if (strcmp(cmd, "service") == 0) cmd_service("");
+    else if (strncmp(cmd, "service ", 8) == 0) cmd_service(cmd + 8);
     else if (strcmp(cmd, "neofetch") == 0) cmd_neofetch();
     else if (strcmp(cmd, "hyfetch") == 0) cmd_hyfetch();
     else if (strcmp(cmd, "pwd") == 0) cmd_pwd();
