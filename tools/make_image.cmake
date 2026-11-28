@@ -9,7 +9,8 @@
 #   LBA 0x0000:      Stage1
 #   LBA 0x0001+:     Stage2
 #   LBA 0x0400:      Stage3 (64 sectors)
-#   LBA 0x0430:      Stage4
+#   LBA 0x0430:      Stage4 (legacy copy)
+#   LBA 0x3000:      Stage4 (loaded by Stage2 to 0x20000)
 #   LBA 0x0800-0x0DF0: Stages 5-100 (16 sectors each)
 #   LBA 0x1000:      Kernel
 #   LBA 0x5000:      Boot module directory (2 sectors)
@@ -65,13 +66,22 @@ if(NOT _rc EQUAL 0)
     message(FATAL_ERROR "dd stage3 failed: ${_rc}")
 endif()
 
-# Stage 4 at LBA 0x430 (1072).
+# Stage 4 at LBA 0x430 (1072), kept for compatibility with older tools.
 execute_process(
     COMMAND dd if=${STAGE_BIN_DIR}/stage4.bin of=${IMG_OUT} bs=512
             seek=1072 conv=notrunc
     RESULT_VARIABLE _rc)
 if(NOT _rc EQUAL 0)
     message(FATAL_ERROR "dd stage4 failed: ${_rc}")
+endif()
+
+# Stage 4 at LBA 0x3000 (12288): this is the copy Stage 2 actually loads.
+execute_process(
+    COMMAND dd if=${STAGE_BIN_DIR}/stage4.bin of=${IMG_OUT} bs=512
+            seek=12288 conv=notrunc
+    RESULT_VARIABLE _rc)
+if(NOT _rc EQUAL 0)
+    message(FATAL_ERROR "dd stage4 at LBA 0x3000 failed: ${_rc}")
 endif()
 
 # Stages 5-100 at LBA 0x800 (2048) + (n - 5) * 16.

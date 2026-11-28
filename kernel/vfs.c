@@ -582,6 +582,8 @@ static ssize_t proc_bootinfo_read(vfs_node_t *n, uint64_t off, void *buf, size_t
     pos = proc_append(tmp, pos, kernel_boot_info.boot_loader);
     pos = proc_append(tmp, pos, "\nmodules=");
     pos = proc_append_u64(tmp, pos, kernel_boot_info.module_count);
+    pos = proc_append(tmp, pos, " boot_ticks=");
+    pos = proc_append_u64(tmp, pos, kernel_boot_info.boot_ticks);
     pos = proc_append(tmp, pos, "\n");
 
     uint32_t count = kernel_boot_info.module_count;

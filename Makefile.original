@@ -13,7 +13,7 @@ CFLAGS_32 = -m32 -ffreestanding -fno-pie -fno-stack-protector -nostdlib -nostdin
 CFLAGS_64 = -m64 -ffreestanding -fno-pie -fno-stack-protector -nostdlib -nostdinc -Iinclude -Istage3 -c -O2 -Wall
 LDFLAGS_32 = -m elf_i386 -Ttext 0x0600 --oformat binary -e stage2_entry
 LDFLAGS_64 = -Ttext 0x100000 --oformat binary -e stage3_entry
-LDFLAGS_64_STAGE4 = -Ttext 0x2000 --oformat binary -e stage4_entry
+LDFLAGS_64_STAGE4 = -Ttext 0x20000 --oformat binary -e stage4_entry
 LDFLAGS_64_STAGE5 = -Ttext 0x30000 --oformat binary -e stage5_entry
 LDFLAGS_64_STAGE6 = -Ttext 0x40000 --oformat binary -e stage6_entry
 LDFLAGS_64_STAGE7 = -Ttext 0x50000 --oformat binary -e stage7_entry
@@ -353,7 +353,8 @@ $(STAGE8_BIN): $(STAGE8_OBJS)
 #   LBA 0x0000:      Stage1
 #   LBA 0x0001+:     Stage2 + Stage3 + Stage4 (concatenated)
 #   LBA 0x0400:      Stage3 (loaded by Stage1 to 0x100000)
-#   LBA 0x0430:      Stage4 (unused by current chain)
+#   LBA 0x0430:      Stage4 (legacy copy)
+#   LBA 0x3000:      Stage4 (loaded by Stage1/Stage2 chain)
 #   LBA 0x0800:      Stage5 (boot manager)
 #   LBA 0x0810:      Stage6 (recovery shell)
 #   LBA 0x0820:      Stage7 (Tetris)
@@ -371,8 +372,10 @@ $(BOOT_IMG): $(STAGE1_BIN) $(STAGE2_BIN) $(STAGE3_BIN) $(STAGE4_BIN) $(STAGE5_BI
 	dd if=$(STAGE2_BIN) of=$@ bs=512 seek=1 conv=notrunc 2>/dev/null
 	# Stage 3 at LBA 0x400
 	dd if=$(STAGE3_BIN) of=$@ bs=512 seek=1024 conv=notrunc 2>/dev/null
-	# Stage 4 at LBA 0x430
+	# Stage 4 at LBA 0x430 (legacy copy)
 	dd if=$(STAGE4_BIN) of=$@ bs=512 seek=1072 conv=notrunc 2>/dev/null
+	# Stage 4 at LBA 0x3000 (loaded by Stage 2)
+	dd if=$(STAGE4_BIN) of=$@ bs=512 seek=12288 conv=notrunc 2>/dev/null
 	# Stage5 at LBA 0x800 through Stage100 at LBA 0xDF0
 	for n in 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 \
 	         31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 \

@@ -207,7 +207,7 @@ add_custom_command(
 )
 
 set(EXTRA_BINS)
-foreach(_row IN ITEMS "4;0x2000;stage4_entry" "5;0x30000;stage5_entry" "6;0x40000;stage6_entry" "7;0x50000;stage7_entry" "8;0x60000;stage8_entry")
+foreach(_row IN ITEMS "4;0x20000;stage4_entry" "5;0x30000;stage5_entry" "6;0x40000;stage6_entry" "7;0x50000;stage7_entry" "8;0x60000;stage8_entry")
     list(GET _row 0 _n)
     list(GET _row 1 _addr)
     list(GET _row 2 _entry)
