@@ -119,7 +119,9 @@ void vfs_register_dev(const char *path, vfs_node_t *node);
 /* Built-in filesystem inits */
 void devfs_init(void);
 void procfs_init(void);
+void sysfs_init(void);
 void tmpfs_init(void);
+void runfs_init(void);
 
 /* Create a new in-memory tmpfs node */
 vfs_node_t *tmpfs_create_node(const char *name, uint32_t type);

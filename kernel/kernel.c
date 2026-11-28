@@ -103,8 +103,10 @@ void kernel_main(void) {
     vfs_init();
     devfs_init();
     procfs_init();
+    sysfs_init();
     tmpfs_init();
-    kmsg_info("VFS initialized (devfs, procfs, tmpfs)");
+    runfs_init();
+    kmsg_info("VFS initialized (devfs, procfs, sysfs, tmpfs, runfs)");
 
     device_init();
     kmsg_info("Device framework initialized");

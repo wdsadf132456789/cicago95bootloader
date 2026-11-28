@@ -147,6 +147,15 @@ static ssize_t dev_zero_read(vfs_node_t *n, uint64_t off, void *buf, size_t len)
     return (ssize_t)len;
 }
 
+static ssize_t dev_full_read(vfs_node_t *n, uint64_t off, void *buf, size_t len) {
+    return dev_zero_read(n, off, buf, len);
+}
+
+static ssize_t dev_full_write(vfs_node_t *n, uint64_t off, const void *buf, size_t len) {
+    (void)n; (void)off; (void)buf; (void)len;
+    return -1; /* /dev/full always fails writes */
+}
+
 static ssize_t dev_console_read(vfs_node_t *n, uint64_t off, void *buf, size_t len) {
     (void)n; (void)off;
     char *kb = (char *)buf;
@@ -267,6 +276,16 @@ void devfs_init(void) {
     zero_ops->read = dev_zero_read;
     zero_dev->ops = zero_ops;
     vfs_attach_child(dev_root, zero_dev);
+
+    /* /dev/full */
+    vfs_node_t *full_dev = vfs_new_node("full", VFS_CHARDEV, &dev_ops);
+    full_dev->major = 1; full_dev->minor = 7;
+    vfs_ops_t *full_ops = (vfs_ops_t *)kmalloc(sizeof(vfs_ops_t));
+    memcpy(full_ops, &dev_ops, sizeof(vfs_ops_t));
+    full_ops->read  = dev_full_read;
+    full_ops->write = dev_full_write;
+    full_dev->ops = full_ops;
+    vfs_attach_child(dev_root, full_dev);
 
     /* /dev/console */
     vfs_node_t *cons_dev = vfs_new_node("console", VFS_CHARDEV, &dev_ops);
@@ -621,7 +640,7 @@ static ssize_t proc_cmdline_read(vfs_node_t *n, uint64_t off, void *buf, size_t 
     return proc_text_finish(tmp, pos, off, buf, len);
 }
 
-static void proc_add_file(vfs_node_t *root, const char *name,
+static void pseudo_add_file(vfs_node_t *root, const char *name,
                           ssize_t (*reader)(vfs_node_t *, uint64_t, void *, size_t)) {
     vfs_node_t *node = vfs_new_node(name, VFS_FILE, &dev_ops);
     if (!node) return;
@@ -633,6 +652,13 @@ static void proc_add_file(vfs_node_t *root, const char *name,
         node->ops = ops;
     }
     vfs_attach_child(root, node);
+}
+
+static vfs_node_t *pseudo_add_dir(vfs_node_t *parent, const char *name) {
+    vfs_node_t *dir = vfs_new_node(name, VFS_DIR, &dev_ops);
+    if (!dir) return NULL;
+    vfs_attach_child(parent, dir);
+    return dir;
 }
 
 void procfs_init(void) {
@@ -664,17 +690,108 @@ void procfs_init(void) {
     vfs_attach_child(proc_root, self);
 
     /* /proc/init and init system state */
-    proc_add_file(proc_root, "init", proc_init_read);
-    proc_add_file(proc_root, "initmodules", proc_init_modules_read);
-    proc_add_file(proc_root, "initservices", proc_init_services_read);
-    proc_add_file(proc_root, "bootinfo", proc_bootinfo_read);
-    proc_add_file(proc_root, "cmdline", proc_cmdline_read);
+    pseudo_add_file(proc_root, "init", proc_init_read);
+    pseudo_add_file(proc_root, "initmodules", proc_init_modules_read);
+    pseudo_add_file(proc_root, "initservices", proc_init_services_read);
+    pseudo_add_file(proc_root, "bootinfo", proc_bootinfo_read);
+    pseudo_add_file(proc_root, "cmdline", proc_cmdline_read);
 
     /* Attach to root */
     proc_root->parent = vfs_root;
     vfs_root->children[vfs_root->child_count++] = proc_root;
 
     console_puts("[VFS] procfs mounted at /proc\n", 0x0A);
+}
+
+/* =============================================
+   SysFS — /sys
+   ============================================= */
+
+static ssize_t sys_version_read(vfs_node_t *n, uint64_t off, void *buf, size_t len) {
+    (void)n;
+    char tmp[256];
+    int pos = 0;
+
+    pos = proc_append(tmp, pos, "Chicago-95 Kernel v1.0\n");
+    pos = proc_append(tmp, pos, "boot_abi=");
+    pos = proc_append_u64(tmp, pos,
+                          kernel_boot_info_valid ? kernel_boot_info.version : 0);
+    pos = proc_append(tmp, pos, "\n");
+    return proc_text_finish(tmp, pos, off, buf, len);
+}
+
+static ssize_t sys_uptime_read(vfs_node_t *n, uint64_t off, void *buf, size_t len) {
+    (void)n;
+    char tmp[128];
+    int pos = 0;
+
+    pos = proc_append(tmp, pos, "ticks=");
+    pos = proc_append_u64(tmp, pos, timer_get_ticks());
+    pos = proc_append(tmp, pos, " seconds=");
+    pos = proc_append_u64(tmp, pos, timer_get_seconds());
+    pos = proc_append(tmp, pos, "\n");
+    return proc_text_finish(tmp, pos, off, buf, len);
+}
+
+static ssize_t sys_memory_read(vfs_node_t *n, uint64_t off, void *buf, size_t len) {
+    (void)n;
+    char tmp[256];
+    int pos = 0;
+    uint64_t total_pages = pmm_get_total_pages();
+    uint64_t free_pages = pmm_get_free_pages();
+    uint64_t used_pages = total_pages - free_pages;
+
+    pos = proc_append(tmp, pos, "total_pages=");
+    pos = proc_append_u64(tmp, pos, total_pages);
+    pos = proc_append(tmp, pos, " free_pages=");
+    pos = proc_append_u64(tmp, pos, free_pages);
+    pos = proc_append(tmp, pos, " used_pages=");
+    pos = proc_append_u64(tmp, pos, used_pages);
+    pos = proc_append(tmp, pos, "\n");
+    return proc_text_finish(tmp, pos, off, buf, len);
+}
+
+static ssize_t sys_boot_read(vfs_node_t *n, uint64_t off, void *buf, size_t len) {
+    (void)n;
+    char tmp[512];
+    int pos = 0;
+
+    if (!kernel_boot_info_valid) {
+        pos = proc_append(tmp, pos, "boot: invalid\n");
+        return proc_text_finish(tmp, pos, off, buf, len);
+    }
+
+    pos = proc_append(tmp, pos, "flags=");
+    pos = proc_append_hex64(tmp, pos, kernel_boot_info.flags);
+    pos = proc_append(tmp, pos, " kernel_entry=");
+    pos = proc_append_hex64(tmp, pos, kernel_boot_info.kernel_entry);
+    pos = proc_append(tmp, pos, " modules=");
+    pos = proc_append_u64(tmp, pos, kernel_boot_info.module_count);
+    pos = proc_append(tmp, pos, " boot_ticks=");
+    pos = proc_append_u64(tmp, pos, kernel_boot_info.boot_ticks);
+    pos = proc_append(tmp, pos, "\nloader=");
+    pos = proc_append(tmp, pos, kernel_boot_info.boot_loader);
+    pos = proc_append(tmp, pos, "\n");
+    return proc_text_finish(tmp, pos, off, buf, len);
+}
+
+void sysfs_init(void) {
+    vfs_node_t *sys_root;
+    if (!vfs_root) return;
+
+    sys_root = pseudo_add_dir(vfs_root, "sys");
+    if (!sys_root) return;
+
+    pseudo_add_file(sys_root, "version", sys_version_read);
+    pseudo_add_file(sys_root, "uptime", sys_uptime_read);
+    pseudo_add_file(sys_root, "memory", sys_memory_read);
+    pseudo_add_file(sys_root, "boot", sys_boot_read);
+    pseudo_add_file(sys_root, "cmdline", proc_cmdline_read);
+    pseudo_add_file(sys_root, "init", proc_init_read);
+    pseudo_add_file(sys_root, "modules", proc_init_modules_read);
+    pseudo_add_file(sys_root, "services", proc_init_services_read);
+
+    console_puts("[VFS] sysfs mounted at /sys\n", 0x0A);
 }
 
 /* =============================================
@@ -778,6 +895,84 @@ void tmpfs_init(void) {
     vfs_root->children[vfs_root->child_count++] = tmp_root;
 
     console_puts("[VFS] tmpfs mounted at /tmp\n", 0x0A);
+}
+
+/* =============================================
+   RunFS — /run (runtime state)
+   ============================================= */
+
+static ssize_t run_status_read(vfs_node_t *n, uint64_t off, void *buf, size_t len) {
+    (void)n;
+    char tmp[256];
+    int pos = 0;
+    uint32_t failed = 0;
+
+    for (uint32_t i = 0; i < init_system_module_count(); i++) {
+        const init_module_t *module = init_system_get_module(i);
+        if (module && module->failed) failed++;
+    }
+
+    pos = proc_append(tmp, pos, "status=ready\n");
+    pos = proc_append(tmp, pos, "modules=");
+    pos = proc_append_u64(tmp, pos, init_system_module_count());
+    pos = proc_append(tmp, pos, " loaded=");
+    pos = proc_append_u64(tmp, pos, init_system_loaded_module_count());
+    pos = proc_append(tmp, pos, " failed=");
+    pos = proc_append_u64(tmp, pos, failed);
+    pos = proc_append(tmp, pos, "\nservices=");
+    pos = proc_append_u64(tmp, pos, init_system_service_count());
+    pos = proc_append(tmp, pos, " running=");
+    pos = proc_append_u64(tmp, pos, init_system_running_service_count());
+    pos = proc_append(tmp, pos, "\n");
+    return proc_text_finish(tmp, pos, off, buf, len);
+}
+
+static ssize_t run_bootid_read(vfs_node_t *n, uint64_t off, void *buf, size_t len) {
+    (void)n;
+    char tmp[96];
+    int pos = 0;
+
+    if (!kernel_boot_info_valid) {
+        pos = proc_append(tmp, pos, "bootid=invalid\n");
+    } else {
+        pos = proc_append(tmp, pos, "bootid=");
+        pos = proc_append_hex64(tmp, pos, kernel_boot_info.kernel_crc);
+        pos = proc_append(tmp, pos, "\n");
+    }
+    return proc_text_finish(tmp, pos, off, buf, len);
+}
+
+void runfs_init(void) {
+    vfs_node_t *run_root;
+    vfs_ops_t *run_ops;
+    vfs_node_t *state;
+
+    if (!vfs_root) return;
+
+    run_root = pseudo_add_dir(vfs_root, "run");
+    if (!run_root) return;
+
+    pseudo_add_file(run_root, "status", run_status_read);
+    pseudo_add_file(run_root, "bootid", run_bootid_read);
+    pseudo_add_file(run_root, "uptime", sys_uptime_read);
+    pseudo_add_file(run_root, "cmdline", proc_cmdline_read);
+
+    /* Make /run writable for transient runtime files. */
+    run_ops = (vfs_ops_t *)kmalloc(sizeof(vfs_ops_t));
+    if (run_ops) {
+        memcpy(run_ops, &dev_ops, sizeof(vfs_ops_t));
+        run_ops->read   = tmpfs_read;
+        run_ops->write  = tmpfs_write;
+        run_ops->create = tmpfs_create;
+        run_ops->mkdir  = tmpfs_mkdir;
+        run_ops->unlink = tmpfs_unlink;
+        run_root->ops = run_ops;
+    }
+
+    state = tmpfs_create_node("state", VFS_FILE);
+    if (state) vfs_attach_child(run_root, state);
+
+    console_puts("[VFS] runfs mounted at /run\n", 0x0A);
 }
 
 /* =============================================
