@@ -15,7 +15,7 @@
 CMAKE      ?= cmake
 BUILD_DIR  ?= build-cmake
 
-.PHONY: all clean scan _require_cmake
+.PHONY: all clean scan bios uefi _require_cmake
 
 all: _require_cmake
 	@if [ -f $(BUILD_DIR)/Makefile ]; then \
@@ -36,6 +36,20 @@ scan: _require_cmake
 		$(MAKE) --no-print-directory -C $(BUILD_DIR) scan; \
 	else \
 		$(CMAKE) --build . --target scan; \
+	fi
+
+bios: _require_cmake
+	@if [ -f $(BUILD_DIR)/Makefile ]; then \
+		$(MAKE) --no-print-directory -C $(BUILD_DIR) chicago95_bios; \
+	else \
+		$(CMAKE) --build . --target chicago95_bios; \
+	fi
+
+uefi: _require_cmake
+	@if [ -f $(BUILD_DIR)/Makefile ]; then \
+		$(MAKE) --no-print-directory -C $(BUILD_DIR) chicago95_uefi; \
+	else \
+		$(CMAKE) --build . --target chicago95_uefi; \
 	fi
 
 _require_cmake:

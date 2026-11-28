@@ -47,6 +47,58 @@ cd kernel && make clean && make                             # Kernel
 
 The CMake build detects the build machine's PCI devices via `tools/scan_driver.c` and only compiles the wifi/optional drivers that are actually needed — exactly like `make scan && make` in the Makefile flow.
 
+## Boot Media (BIOS and UEFI)
+
+The build produces two independent boot paths:
+
+| Target | Artifact | Firmware | Contents |
+|--------|----------|----------|----------|
+| `chicago95` / `chicago95_bios` | `build-cmake/chicago95.bin` | Legacy BIOS | 1 GB raw disk image with stage1 MBR, stages 2–100, kernel, and modules at fixed LBAs |
+| `chicago95_uefi` | `build-cmake/chicago95-uefi.img` | UEFI x86-64 | 64 MB FAT32 image with `/EFI/BOOT/BOOTX64.EFI`, `KERNEL.ELF`, and `MODULEn.BIN` |
+| `chicago95_uefi` | `build-cmake/uefi/BOOTX64.EFI` | UEFI x86-64 | Standalone PE32+ application for an existing EFI System Partition |
+
+Build both explicitly:
+
+```bash
+cmake --build build-cmake --target chicago95_bios
+cmake --build build-cmake --target chicago95_uefi
+```
+
+### BIOS
+
+Write the raw image to a disk (this overwrites the target device):
+
+```bash
+sudo dd if=build-cmake/chicago95.bin of=/dev/sdX bs=4M status=progress conv=fsync
+```
+
+The firmware boots the stage1 MBR, which loads stage2 from LBA 1 and continues
+through the staged boot chain.
+
+### UEFI
+
+Copy the FAT32 image to a USB stick, or mount an existing EFI System Partition
+and copy the files directly:
+
+```bash
+# Whole-image option
+sudo dd if=build-cmake/chicago95-uefi.img of=/dev/sdX bs=4M status=progress conv=fsync
+
+# Existing ESP option
+cp build-cmake/uefi/BOOTX64.EFI /mnt/esp/EFI/BOOT/
+cp kernel/build/kernel.elf /mnt/esp/KERNEL.ELF
+cp build-cmake/gen/modules/module_*.bin /mnt/esp/   # rename to MODULE0.BIN, MODULE1.BIN, ...
+```
+
+The UEFI loader reads `KERNEL.ELF` from the ESP root, loads optional
+`MODULEn.BIN` files into low memory, builds the shared `boot_info_t` ABI, sets
+up identity and higher-half page tables, exits boot services, and jumps to the
+same kernel entry point used by the BIOS path. `/proc/cmdline` reports
+`loader=Chicago95/UEFI` on this path.
+
+The EFI binary is not Secure Boot signed. Disable Secure Boot or enroll your
+own key before using it.
+
 ## Boot Chain
 
 ```
@@ -62,6 +114,10 @@ BIOS
              ├─ Stage 4: Kernel at 0xFFFFFFFF80000000
              ├─ Stages 5–8: Not currently used
              └─ Stages 9–100: 61 unique demo templates
+
+UEFI
+ └─ BOOTX64.EFI (PE32+, loads KERNEL.ELF from the ESP)
+     └─ boot_info_t at 0x7000 → same kernel entry point as the BIOS path
 ```
 
 ## Boot-Time Stages (9–100)

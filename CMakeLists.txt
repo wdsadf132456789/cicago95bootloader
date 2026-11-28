@@ -7,16 +7,24 @@ find_program(GCC gcc REQUIRED)
 find_program(LD ld REQUIRED)
 find_program(NASM nasm REQUIRED)
 find_program(PYTHON3 python3 REQUIRED)
+find_program(TRUNCATE truncate REQUIRED)
+find_program(MKFS_VFAT mkfs.vfat mkfs.fat)
+find_program(MCOPY mcopy)
 
 set(BIN_DIR "${CMAKE_BINARY_DIR}/bin")
 set(OBJ_DIR "${CMAKE_BINARY_DIR}/obj")
 set(MODULE_GEN_DIR "${CMAKE_BINARY_DIR}/gen/modules")
 set(MODULE_COUNT 3)
 set(IMG_OUT "${CMAKE_BINARY_DIR}/chicago95.bin")
+set(UEFI_DIR "${CMAKE_BINARY_DIR}/uefi")
+set(UEFI_STAGE_DIR "${UEFI_DIR}/staging")
+set(UEFI_EFI "${UEFI_DIR}/BOOTX64.EFI")
+set(UEFI_IMG "${CMAKE_BINARY_DIR}/chicago95-uefi.img")
 set(SRC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(CFLAGS_32 -m32 -ffreestanding -fno-pie -fno-stack-protector -nostdlib -nostdinc -I${SRC}/include -c -O2 -Wall)
 set(CFLAGS_64 -m64 -ffreestanding -fno-pie -fno-stack-protector -nostdlib -nostdinc -I${SRC}/include -I${SRC}/stage3 -c -O2 -Wall)
+set(UEFI_CFLAGS -m64 -mabi=ms -ffreestanding -fno-pie -fno-stack-protector -fno-builtin -fshort-wchar -fno-ident -nostdinc -I${SRC}/include -c -O2 -Wall -Wextra -Wno-unused-parameter)
 
 add_custom_command(
     OUTPUT "${BIN_DIR}/stage1.bin"
@@ -271,10 +279,11 @@ add_custom_command(
 
 set(IMG_DEPS "${BIN_DIR}/stage1.bin" "${BIN_DIR}/stage2.bin" "${BIN_DIR}/stage3.bin" ${EXTRA_BINS} "${MODULE_DIR_BIN}" ${MODULE_PAYLOADS})
 set(KERNEL_BIN "${SRC}/kernel/build/kernel.bin")
+set(KERNEL_ELF "${SRC}/kernel/build/kernel.elf")
 set(KERNEL_ARG "-DKERNEL_BIN=${KERNEL_BIN}")
 if(BUILD_KERNEL)
     add_custom_command(
-        OUTPUT "${KERNEL_BIN}"
+        OUTPUT "${KERNEL_BIN}" "${KERNEL_ELF}"
         COMMAND sh "${SRC}/tools/prompt_kernel.sh" "${SRC}/kernel"
         DEPENDS "${SRC}/tools/prompt_kernel.sh"
     )
@@ -289,3 +298,42 @@ add_custom_command(
     DEPENDS ${IMG_DEPS}
 )
 add_custom_target(chicago95 ALL DEPENDS "${IMG_OUT}")
+
+# Explicit convenience target for the legacy BIOS image.  The raw disk image
+# is already built by the default `chicago95` target; this just gives it a
+# purpose-named alias.
+add_custom_target(chicago95_bios DEPENDS "${IMG_OUT}")
+
+# UEFI application: a freestanding PE32+ binary with no gnu-efi dependency.
+add_custom_command(
+    OUTPUT "${UEFI_EFI}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${UEFI_DIR}"
+    COMMAND ${GCC} ${UEFI_CFLAGS} "${SRC}/uefi/bootx64.c" -o "${UEFI_DIR}/bootx64.o"
+    COMMAND ${LD} -m i386pep --subsystem=10 -e efi_main --image-base=0x10000000
+            "${UEFI_DIR}/bootx64.o" -o "${UEFI_EFI}"
+    DEPENDS "${SRC}/uefi/bootx64.c" "${SRC}/include/boot/bootinfo.h" "${SRC}/include/stdint.h"
+    COMMENT "Building BOOTX64.EFI"
+)
+
+if(MKFS_VFAT AND MCOPY)
+    add_custom_command(
+        OUTPUT "${UEFI_IMG}"
+        COMMAND ${CMAKE_COMMAND}
+                -DUEFI_IMG="${UEFI_IMG}"
+                -DUEFI_STAGE_DIR="${UEFI_STAGE_DIR}"
+                -DUEFI_EFI="${UEFI_EFI}"
+                -DKERNEL_ELF="${KERNEL_ELF}"
+                -DMODULE_PAYLOAD_DIR="${MODULE_GEN_DIR}"
+                -DMODULE_COUNT=${MODULE_COUNT}
+                -DTRUNCATE="${TRUNCATE}"
+                -DMKFS_VFAT="${MKFS_VFAT}"
+                -DMCOPY="${MCOPY}"
+                -P "${SRC}/tools/make_uefi_image.cmake"
+        DEPENDS "${UEFI_EFI}" "${KERNEL_ELF}" ${MODULE_PAYLOADS} "${SRC}/tools/make_uefi_image.cmake"
+        COMMENT "Assembling UEFI FAT32 image"
+    )
+    add_custom_target(chicago95_uefi ALL DEPENDS "${UEFI_IMG}")
+else()
+    message(WARNING "mkfs.vfat/mcopy not found: building BOOTX64.EFI only (no UEFI FAT32 image)")
+    add_custom_target(chicago95_uefi ALL DEPENDS "${UEFI_EFI}")
+endif()
