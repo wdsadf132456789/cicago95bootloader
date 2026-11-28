@@ -2,6 +2,75 @@
 #include "bootinfo.h"
 #include "e820.h"
 
+static uint32_t cmdline_append(char *dst, uint32_t pos, const char *src) {
+    while (*src && pos + 1 < BOOT_CMDLINE_LEN) dst[pos++] = *src++;
+    dst[pos] = 0;
+    return pos;
+}
+
+static uint32_t cmdline_append_module_name(char *dst, uint32_t pos, const char *name) {
+    for (uint32_t i = 0; i < BOOT_MODULE_NAME_LEN && name[i] &&
+                         pos + 1 < BOOT_CMDLINE_LEN; i++) {
+        dst[pos++] = name[i];
+    }
+    dst[pos] = 0;
+    return pos;
+}
+
+static uint32_t cmdline_append_u64(char *dst, uint32_t pos, uint64_t value) {
+    char tmp[21];
+    uint32_t n = 0;
+
+    if (value == 0) {
+        tmp[n++] = '0';
+    } else {
+        while (value && n < 20) {
+            tmp[n++] = '0' + (value % 10);
+            value /= 10;
+        }
+    }
+
+    for (uint32_t i = 0; i < n; i++) {
+        if (pos + 1 >= BOOT_CMDLINE_LEN) break;
+        dst[pos++] = tmp[n - 1 - i];
+    }
+    dst[pos] = 0;
+    return pos;
+}
+
+static uint32_t cmdline_append_hex32(char *dst, uint32_t pos, uint32_t value) {
+    static const char hex[] = "0123456789ABCDEF";
+    char tmp[9];
+
+    for (uint32_t i = 0; i < 8; i++)
+        tmp[i] = hex[(value >> (28 - i * 4)) & 0xF];
+    tmp[8] = 0;
+    return cmdline_append(dst, pos, tmp);
+}
+
+static void bootinfo_build_cmdline(boot_info_t *bih, uint32_t crc,
+                                   const boot_module_t *modules,
+                                   uint32_t mod_count, uint64_t boot_ticks) {
+    char *cmd = bih->kernel_cmdline;
+    uint32_t pos = 0;
+
+    pos = cmdline_append(cmd, pos, "loader=Chicago95/Stage3");
+    pos = cmdline_append(cmd, pos, " modules=");
+    pos = cmdline_append_u64(cmd, pos, mod_count);
+    pos = cmdline_append(cmd, pos, " crc=0x");
+    pos = cmdline_append_hex32(cmd, pos, crc);
+    pos = cmdline_append(cmd, pos, " ticks=");
+    pos = cmdline_append_u64(cmd, pos, boot_ticks);
+    pos = cmdline_append(cmd, pos, " names=");
+
+    for (uint32_t i = 0; i < mod_count; i++) {
+        if (i) pos = cmdline_append(cmd, pos, ",");
+        pos = cmdline_append_module_name(cmd, pos, modules[i].name);
+    }
+
+    cmd[pos] = 0;
+}
+
 void bootinfo_build(boot_info_t *bih, uint64_t entry, uint32_t crc,
                     const boot_module_t *modules, uint32_t mod_count,
                     uint64_t boot_ticks, const acpi_info_t *acpi) {
@@ -44,6 +113,8 @@ void bootinfo_build(boot_info_t *bih, uint64_t entry, uint32_t crc,
             bih->boot_loader[i] = id[i];
         bih->boot_loader[i] = 0;
     }
+
+    bootinfo_build_cmdline(bih, crc, modules, mod_count, boot_ticks);
 
     bih->rsdp_addr = acpi->rsdp_addr;
     bih->lapic_addr = acpi->lapic_addr;

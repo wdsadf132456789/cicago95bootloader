@@ -606,6 +606,21 @@ static ssize_t proc_bootinfo_read(vfs_node_t *n, uint64_t off, void *buf, size_t
     return proc_text_finish(tmp, pos, off, buf, len);
 }
 
+static ssize_t proc_cmdline_read(vfs_node_t *n, uint64_t off, void *buf, size_t len) {
+    (void)n;
+    char tmp[BOOT_CMDLINE_LEN + 2];
+    int pos = 0;
+
+    if (!kernel_boot_info_valid) {
+        pos = proc_append(tmp, pos, "cmdline: invalid\n");
+    } else {
+        pos = proc_append(tmp, pos, kernel_boot_info.kernel_cmdline);
+        pos = proc_append(tmp, pos, "\n");
+    }
+
+    return proc_text_finish(tmp, pos, off, buf, len);
+}
+
 static void proc_add_file(vfs_node_t *root, const char *name,
                           ssize_t (*reader)(vfs_node_t *, uint64_t, void *, size_t)) {
     vfs_node_t *node = vfs_new_node(name, VFS_FILE, &dev_ops);
@@ -653,6 +668,7 @@ void procfs_init(void) {
     proc_add_file(proc_root, "initmodules", proc_init_modules_read);
     proc_add_file(proc_root, "initservices", proc_init_services_read);
     proc_add_file(proc_root, "bootinfo", proc_bootinfo_read);
+    proc_add_file(proc_root, "cmdline", proc_cmdline_read);
 
     /* Attach to root */
     proc_root->parent = vfs_root;

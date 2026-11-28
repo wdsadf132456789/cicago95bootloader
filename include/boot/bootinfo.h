@@ -7,7 +7,7 @@
 #define MSR_ADDR        0x700
 
 #define BOOT_INFO_MAGIC   0x46494243U  /* "CBIF" */
-#define BOOT_INFO_VERSION 2U
+#define BOOT_INFO_VERSION 3U
 
 /* boot_info_t.flags */
 #define BOOT_FLAG_KERNEL_VALID 0x01U
@@ -17,6 +17,7 @@
 
 #define BOOT_MODULE_NAME_LEN 32
 #define BOOT_MODULE_MAX      16
+#define BOOT_CMDLINE_LEN     128
 
 /* boot_module_t.flags */
 #define BOOT_MODULE_FLAG_EXECUTABLE 0x01U
@@ -88,10 +89,13 @@ typedef struct {
     uint32_t lapic_count;
     uint32_t ioapic_count;
     uint8_t  _pad[4];
+
+    /* NUL-terminated key=value string exposed to the kernel as /proc/cmdline. */
+    char     kernel_cmdline[BOOT_CMDLINE_LEN];
 } __attribute__((packed)) boot_info_t;
 
 _Static_assert(sizeof(boot_module_t) == 64, "boot_module_t ABI changed");
 _Static_assert(sizeof(module_image_header_t) == 56, "module image header ABI changed");
-_Static_assert(sizeof(boot_info_t) == 1184, "boot_info_t ABI changed");
+_Static_assert(sizeof(boot_info_t) == 1312, "boot_info_t ABI changed");
 
 #endif
